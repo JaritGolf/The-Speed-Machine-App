@@ -34,6 +34,27 @@ class TrainingViewModel: ObservableObject {
     /// Tracks when the first block of a day session began — not reset between blocks.
     private var daySessionStartTime: Date?
 
+    init() {
+        // When the remote program loads after launch, refresh any in-flight block/track
+        // so live session displays (pass threshold, etc.) reflect the new values.
+        programLoader.$program
+            .dropFirst()
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] newProgram in
+                guard let self, let newProgram else { return }
+                if let currentTrack = self.selectedTrack,
+                   let newTrack = newProgram.tracks.first(where: { $0.number == currentTrack.number }) {
+                    self.selectedTrack = newTrack
+                    if let currentBlock = self.selectedBlock,
+                       let newBlock = newTrack.blocks.first(where: { $0.id == currentBlock.id }) {
+                        self.selectedBlock = newBlock
+                    }
+                }
+                self.objectWillChange.send()
+            }
+            .store(in: &cancellables)
+    }
+
     var currentTrack: Int {
         return Int(dataService.userProgress.currentDay)
     }
@@ -149,9 +170,16 @@ class TrainingViewModel: ObservableObject {
         // cases where the display shows e.g. "6.5" but the raw BLE float is
         // 6.5000001 and would otherwise narrowly fail the boundary check.
         let roundedSpeed = (speed * 10).rounded() / 10
-        let tolerance = programLoader.getToleranceForSpeed(targetSpeed)
-        let difference = abs(roundedSpeed - Float(targetSpeed))
-        let isInZone = difference <= tolerance
+        let tolerance: Float
+        let isInZone: Bool
+        if let acceptRange = block.acceptRange {
+            tolerance = (acceptRange.max - acceptRange.min) / 2
+            isInZone = roundedSpeed >= acceptRange.min && roundedSpeed <= acceptRange.max
+        } else {
+            let t = programLoader.getToleranceForSpeed(targetSpeed)
+            tolerance = t
+            isInZone = abs(roundedSpeed - Float(targetSpeed)) <= t
+        }
 
         // Standard putt recording FIRST
         session.recordPutt(actualSpeed: speed)
@@ -225,13 +253,12 @@ class TrainingViewModel: ObservableObject {
                 }
             }
         } else {
-            // Miss logic
-            if session.currentRung <= 2 {
-                // At rungs 0-2 (speeds 3-5): reset all the way to rung 0
+            // Miss logic: lower 60% of rungs reset to start, upper 40% drop one.
+            let resetThreshold = session.ladderSpeeds.count * 3 / 5 - 1
+            if session.currentRung <= resetThreshold {
                 session.resetRung()
                 UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
             } else {
-                // At rungs 3-4 (speeds 6-7): drop one rung
                 let dropped = session.dropRung()
                 if dropped {
                     UIImpactFeedbackGenerator(style: .light).impactOccurred()
@@ -291,7 +318,7 @@ class TrainingViewModel: ObservableObject {
             }
         }
 
-        if block.type == .gateTest && block.isOfficial == true {
+        if block.type == .gateTest && block.passRequirements != nil {
             evaluateGateTest()
             return
         }

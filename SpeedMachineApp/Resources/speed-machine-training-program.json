@@ -1,0 +1,4300 @@
+{
+  "program": {
+    "name": "The Speed Machine 30-Day Precision Putting Training Program",
+    "version": "1.0",
+    "author": "Jarit Golf",
+    "website": "www.jaritgolf.com",
+    "totalDays": 30,
+    "dailyDuration": "8-10 minutes",
+    "puttsPerMinute": 8,
+    "deviceSpecs": {
+      "openingWidth": "4 inches",
+      "ballDistance": "16 inches",
+      "minSpace": "4 feet x 3 feet"
+    }
+  },
+  "speedZones": [
+    {
+      "zone": 1,
+      "name": "Touch",
+      "speedRange": "3-9 MPH",
+      "minSpeed": 3,
+      "maxSpeed": 9,
+      "tolerance": 0.5,
+      "toleranceDisplay": "\u00b10.5 MPH",
+      "example": "Target 5 = 4.5-5.5 MPH",
+      "unlockDay": 1,
+      "description": "Soft, touch putts for short distances"
+    },
+    {
+      "zone": 2,
+      "name": "Moderate",
+      "speedRange": "10-12 MPH",
+      "minSpeed": 10,
+      "maxSpeed": 12,
+      "tolerance": 0.6,
+      "toleranceDisplay": "\u00b10.6 MPH",
+      "example": "Target 11 = 10.4-11.6 MPH",
+      "unlockDay": 9,
+      "description": "Medium-distance putts with moderate force"
+    },
+    {
+      "zone": 3,
+      "name": "Firm",
+      "speedRange": "13-16 MPH",
+      "minSpeed": 13,
+      "maxSpeed": 16,
+      "tolerance": 0.7,
+      "toleranceDisplay": "\u00b10.7 MPH",
+      "example": "Target 14 = 13.3-14.7 MPH",
+      "unlockDay": 12,
+      "description": "Firm putts for longer distances"
+    },
+    {
+      "zone": 4,
+      "name": "Power",
+      "speedRange": "17-18 MPH",
+      "minSpeed": 17,
+      "maxSpeed": 18,
+      "tolerance": 0.8,
+      "toleranceDisplay": "\u00b10.8 MPH",
+      "example": "Target 17 = 16.2-17.8 MPH",
+      "unlockDay": 19,
+      "description": "Powerful putts for very long distances"
+    },
+    {
+      "zone": 5,
+      "name": "Maximum",
+      "speedRange": "19-20 MPH",
+      "minSpeed": 19,
+      "maxSpeed": 20,
+      "tolerance": 0.9,
+      "toleranceDisplay": "\u00b10.9 MPH",
+      "example": "Target 20 = 19.1-20.9 MPH",
+      "unlockDay": 25,
+      "description": "Maximum speed putts - use with caution"
+    }
+  ],
+  "phases": [
+    {
+      "phase": 1,
+      "name": "Foundation",
+      "days": "1-10",
+      "startDay": 1,
+      "endDay": 10,
+      "speedRange": "3-10 MPH",
+      "focus": "Establish basic speed discrimination",
+      "goals": [
+        "Establish reliable motor programs for 3-10 MPH",
+        "Achieve 70%+ zone accuracy at Zone 1 speeds (3-7 MPH)",
+        "Achieve 50%+ zone accuracy at Zone 2 speeds (8-10 MPH)"
+      ]
+    },
+    {
+      "phase": 2,
+      "name": "Development",
+      "days": "11-20",
+      "startDay": 11,
+      "endDay": 20,
+      "speedRange": "3-16 MPH",
+      "focus": "Expand range into moderate speeds and introduce adaptive practice",
+      "goals": [
+        "Command reliable motor programs for 3-16 MPH",
+        "Achieve 70%+ zone accuracy at Zone 1-2 speeds",
+        "Achieve 60%+ zone accuracy at Zone 3 speeds",
+        "Achieve 50%+ zone accuracy at Zone 4 introduction speeds"
+      ]
+    },
+    {
+      "phase": 3,
+      "name": "Mastery",
+      "days": "21-30",
+      "startDay": 21,
+      "endDay": 30,
+      "speedRange": "3-20 MPH",
+      "focus": "Full speed range with competition simulations and pressure protocols",
+      "goals": [
+        "Command the full 3-20 MPH range",
+        "Achieve consistent performance under simulated pressure",
+        "Demonstrate competition-ready skills in Combine Mode"
+      ]
+    }
+  ],
+  "gateTests": [
+    {
+      "id": "gate-zone1",
+      "name": "Zone 1 Gate Test",
+      "day": 5,
+      "unlocksZone": 1,
+      "unlocksSpeeds": [
+        6,
+        7
+      ],
+      "protocol": [
+        {
+          "speed": 3,
+          "putts": 3
+        },
+        {
+          "speed": 4,
+          "putts": 3
+        },
+        {
+          "speed": 5,
+          "putts": 3
+        }
+      ],
+      "totalPutts": 9,
+      "passRequirements": {
+        "zoneAccuracy": {
+          "minimum": 5,
+          "percentage": 56
+        }
+      }
+    },
+    {
+      "id": "gate-zone2",
+      "name": "Zone 2 Gate Test",
+      "day": 9,
+      "unlocksZone": 2,
+      "unlocksSpeeds": [
+        8,
+        9,
+        10
+      ],
+      "protocol": [
+        {
+          "speed": 5,
+          "putts": 4
+        },
+        {
+          "speed": 6,
+          "putts": 4
+        },
+        {
+          "speed": 7,
+          "putts": 4
+        }
+      ],
+      "totalPutts": 12,
+      "passRequirements": {
+        "zoneAccuracy": {
+          "minimum": 8,
+          "percentage": 67
+        }
+      }
+    },
+    {
+      "id": "gate-zone3",
+      "name": "Zone 3 Gate Test",
+      "day": 12,
+      "unlocksZone": 3,
+      "unlocksSpeeds": [
+        11,
+        12,
+        13,
+        14
+      ],
+      "protocol": [
+        {
+          "speed": 8,
+          "putts": 4
+        },
+        {
+          "speed": 9,
+          "putts": 4
+        },
+        {
+          "speed": 10,
+          "putts": 4
+        }
+      ],
+      "totalPutts": 12,
+      "passRequirements": {
+        "zoneAccuracy": {
+          "minimum": 8,
+          "percentage": 67
+        }
+      }
+    },
+    {
+      "id": "gate-zone4",
+      "name": "Zone 4 Gate Test",
+      "day": 19,
+      "unlocksZone": 4,
+      "unlocksSpeeds": [
+        15,
+        16,
+        17,
+        18
+      ],
+      "protocol": [
+        {
+          "speed": 10,
+          "putts": 4
+        },
+        {
+          "speed": 12,
+          "putts": 4
+        },
+        {
+          "speed": 14,
+          "putts": 4
+        }
+      ],
+      "totalPutts": 12,
+      "passRequirements": {
+        "zoneAccuracy": {
+          "minimum": 8,
+          "percentage": 70
+        }
+      }
+    },
+    {
+      "id": "gate-zone5",
+      "name": "Zone 5 Gate Test",
+      "day": 25,
+      "unlocksZone": 5,
+      "unlocksSpeeds": [
+        19,
+        20
+      ],
+      "protocol": [
+        {
+          "speed": 15,
+          "putts": 3
+        },
+        {
+          "speed": 16,
+          "putts": 3
+        },
+        {
+          "speed": 17,
+          "putts": 3
+        },
+        {
+          "speed": 18,
+          "putts": 3
+        }
+      ],
+      "totalPutts": 12,
+      "passRequirements": {
+        "zoneAccuracy": {
+          "minimum": 7,
+          "percentage": 60
+        }
+      }
+    },
+    {
+      "id": "gate-final",
+      "name": "Final Mastery Gate Test",
+      "day": 30,
+      "unlocksZone": 5,
+      "unlocksSpeeds": [],
+      "protocol": [
+        {
+          "speed": 3,
+          "putts": 4
+        },
+        {
+          "speed": 5,
+          "putts": 4
+        },
+        {
+          "speed": 7,
+          "putts": 4
+        },
+        {
+          "speed": 9,
+          "putts": 4
+        },
+        {
+          "speed": 11,
+          "putts": 4
+        },
+        {
+          "speed": 13,
+          "putts": 4
+        },
+        {
+          "speed": 15,
+          "putts": 4
+        },
+        {
+          "speed": 17,
+          "putts": 4
+        },
+        {
+          "speed": 19,
+          "putts": 4
+        }
+      ],
+      "totalPutts": 36,
+      "passRequirements": {
+        "zoneAccuracy": {
+          "minimum": 22,
+          "percentage": 60
+        }
+      }
+    }
+  ],
+  "days": [
+    {
+      "day": 1,
+      "phase": 1,
+      "title": "Speed Discovery",
+      "duration": "8 minutes",
+      "targetPutts": 64,
+      "availableSpeeds": [
+        4,
+        5
+      ],
+      "speedRange": "4-5 MPH",
+      "objective": "Establish baseline speed awareness and familiarize yourself with the device feedback system. Today is about exploration, not perfection.",
+      "science": {
+        "principle": "Exploration before precision",
+        "explanation": "Motor learning research shows that the first exposure to a new skill should prioritize exploration over precision. Your brain needs to experience the range of possible outcomes before it can begin calibrating.",
+        "citation": "Wulf, G., & Shea, C. H. (2002). Principles derived from the study of simple skills do not generalize to complex skill learning. Psychonomic Bulletin & Review."
+      },
+      "blocks": [
+        {
+          "id": "1A",
+          "name": "Free Exploration",
+          "duration": "2 minutes",
+          "putts": 16,
+          "targetSpeed": null,
+          "type": "exploration",
+          "description": "Hit putts at whatever speed feels natural. The app will learn from your results and begin tailoring future sessions to your needs.",
+          "focus": [
+            "What does a 'soft' putt register?",
+            "What does a 'medium' putt register?",
+            "What is the range of your natural putting stroke?"
+          ]
+        },
+        {
+          "id": "1B",
+          "name": "Finding 4 MPH",
+          "duration": "2 minutes",
+          "putts": 16,
+          "targetSpeed": 4,
+          "type": "blocked",
+          "description": "Try to produce putts at exactly 4 MPH. This is a relatively soft putt \u2014 think of a short lag putt. After each stroke, note the actual speed, mentally adjust, and execute the next putt with the adjustment."
+        },
+        {
+          "id": "1C",
+          "name": "Finding 5 MPH",
+          "duration": "2 minutes",
+          "putts": 16,
+          "targetSpeed": 5,
+          "type": "blocked",
+          "description": "Repeat the process targeting 5 MPH. This requires slightly more force than 4 MPH. Notice how small the difference feels."
+        },
+        {
+          "id": "1D",
+          "name": "Alternating 4 and 5",
+          "duration": "2 minutes",
+          "putts": 16,
+          "targetSpeed": null,
+          "type": "alternating",
+          "sequence": [
+            4,
+            5
+          ],
+          "description": "Alternate between 4 and 5 MPH targets. This contrast training helps your brain distinguish between speeds. The app tracks your accuracy at each."
+        }
+      ],
+      "successMetrics": [
+        {
+          "metric": "Zone Accuracy",
+          "target": "40%+",
+          "note": "good for Day 1"
+        }
+      ],
+      "coachingNotes": "Day 1 often feels frustrating. Your results may be inconsistent. This is completely normal \u2014 it's the brain's exploration phase gathering data. Trust the process.",
+      "warnings": []
+    },
+    {
+      "day": 2,
+      "phase": 1,
+      "title": "Establishing 3, 4, and 5 MPH",
+      "duration": "8 minutes",
+      "targetPutts": 64,
+      "availableSpeeds": [
+        3,
+        4,
+        5
+      ],
+      "speedRange": "3-5 MPH",
+      "objective": "Build distinct motor programs for 3, 4, and 5 MPH through blocked practice. Today introduces 3 MPH \u2014 the softest speed in the program.",
+      "science": {
+        "principle": "Blocked practice for acquisition",
+        "explanation": "Blocked practice (repeating the same movement multiple times before switching) is optimal for skill acquisition in early learning stages. While it may feel less 'game-like,' it accelerates the formation of motor programs.",
+        "citation": "Shea, J. B., & Morgan, R. L. (1979). Contextual interference effects on the acquisition, retention, and transfer of a motor skill. Journal of Experimental Psychology."
+      },
+      "blocks": [
+        {
+          "id": "2A",
+          "name": "3 MPH Development",
+          "duration": "2.5 minutes",
+          "putts": 20,
+          "targetSpeed": 3,
+          "type": "blocked",
+          "acceptRange": {
+            "min": 2.5,
+            "max": 3.5
+          },
+          "description": "3 MPH is the softest putt in the program. Think of a 2-3 foot putt on a fast green.",
+          "focus": [
+            "Minimal backswing",
+            "Smooth, controlled acceleration",
+            "Quiet hands through impact"
+          ]
+        },
+        {
+          "id": "2B",
+          "name": "Zone 1 Speed Development",
+          "duration": "2 minutes",
+          "putts": 16,
+          "targetSpeed": 4,
+          "type": "blocked",
+          "acceptRange": {
+            "min": 3.5,
+            "max": 4.5
+          },
+          "description": "Adaptive Zone 1 practice \u2014 speeds selected from the touch zone based on your accuracy data. Your weakest speeds in the range appear more often. Focus on smooth, committed strokes.",
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7
+          ]
+        },
+        {
+          "id": "2C",
+          "name": "Zone 1 Speed Challenge",
+          "duration": "2 minutes",
+          "putts": 16,
+          "targetSpeed": 5,
+          "type": "blocked",
+          "acceptRange": {
+            "min": 4.5,
+            "max": 5.5
+          },
+          "description": "Adaptive Zone 1 challenge set \u2014 a second round weighted toward whichever Zone 1 speeds gave you the most trouble. Build consistency across the full touch zone range.",
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7
+          ]
+        },
+        {
+          "id": "2D",
+          "name": "Sequential Challenge",
+          "duration": "1.5 minutes",
+          "putts": 12,
+          "targetSpeed": null,
+          "type": "sequence",
+          "sequence": [
+            3,
+            4,
+            5,
+            4,
+            3
+          ],
+          "description": "Ladder sequence weighted toward the speeds you need the most work on. Reinforces distinctions between adjacent speeds."
+        }
+      ],
+      "successMetrics": [
+        {
+          "metric": "Zone Accuracy",
+          "target": "50%+",
+          "note": "at each speed"
+        }
+      ],
+      "coachingNotes": "If you consistently hit 3.8 when targeting 3 MPH, consciously reduce your backswing length by approximately 20%. Specific mechanical adjustments beat vague effort adjustments.",
+      "warnings": []
+    },
+    {
+      "day": 3,
+      "phase": 1,
+      "title": "Precision Refinement",
+      "duration": "9 minutes",
+      "targetPutts": 72,
+      "availableSpeeds": [
+        3,
+        4,
+        5
+      ],
+      "speedRange": "3-5 MPH",
+      "objective": "Refine accuracy at 3, 4, and 5 MPH. Today introduces self-assessment protocols that will be used throughout the program.",
+      "science": {
+        "principle": "Self-assessment enhances learning",
+        "explanation": "Self-assessment during motor learning enhances metacognition and accelerates skill development. Before each putt, you will predict your result. This prediction-feedback loop strengthens the connection between intention and execution.",
+        "citation": "Guadagnoli, M. A., & Lee, T. D. (2004). Challenge point: A framework for conceptualizing the effects of various practice conditions in motor learning. Journal of Motor Behavior."
+      },
+      "blocks": [
+        {
+          "id": "3A",
+          "name": "Warm-Up Review",
+          "duration": "1.5 minutes",
+          "putts": 12,
+          "targetSpeed": null,
+          "type": "warmup",
+          "sequence": [
+            3,
+            3,
+            3,
+            3,
+            4,
+            4,
+            4,
+            4,
+            5,
+            5,
+            5,
+            5
+          ],
+          "description": "Warm up across 3, 4, and 5 MPH to re-establish yesterday's patterns. Lightly weighted toward speeds that need attention."
+        },
+        {
+          "id": "3B",
+          "name": "Zone 1 Predictive Practice",
+          "duration": "2.5 minutes",
+          "putts": 20,
+          "targetSpeed": 4,
+          "type": "predictive",
+          "description": "For each putt: (1) Set up, (2) Predict the speed before stroking, (3) Execute, (4) Compare prediction to actual. Speed is selected from Zone 1 based on your accuracy data.",
+          "adaptiveMode": "predictive",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7
+          ]
+        },
+        {
+          "id": "3C",
+          "name": "Zone 1 Predictive Focus",
+          "duration": "2.5 minutes",
+          "putts": 20,
+          "targetSpeed": 3,
+          "type": "predictive",
+          "description": "Adaptive Zone 1 predictive work targeting your weakest touch-zone speed. Small force variations have larger relative effects at low speeds \u2014 pay close attention to feel and prediction accuracy.",
+          "adaptiveMode": "predictive",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7
+          ]
+        },
+        {
+          "id": "3D",
+          "name": "Zone 1 Predictive Build",
+          "duration": "2.5 minutes",
+          "putts": 20,
+          "targetSpeed": 5,
+          "type": "predictive",
+          "description": "Adaptive Zone 1 predictive practice. Speeds weighted toward your weakest zone. Focus on accurately predicting the outcome before each stroke \u2014 the prediction habit is the skill being built here.",
+          "adaptiveMode": "predictive",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7
+          ]
+        }
+      ],
+      "successMetrics": [
+        {
+          "metric": "Zone Accuracy",
+          "target": "55%+"
+        },
+        {
+          "metric": "Prediction Accuracy",
+          "target": "40%+",
+          "note": "within 0.3 of actual"
+        }
+      ],
+      "coachingNotes": null,
+      "warnings": []
+    },
+    {
+      "day": 4,
+      "phase": 1,
+      "title": "Consolidation and Gate Test Preparation",
+      "duration": "9 minutes",
+      "targetPutts": 72,
+      "availableSpeeds": [
+        3,
+        4,
+        5
+      ],
+      "speedRange": "3-5 MPH",
+      "objective": "Consolidate 3-5 MPH skills and prepare for tomorrow's Gate Test to unlock 6-7 MPH.",
+      "science": {
+        "principle": "Memory consolidation",
+        "explanation": "Consolidation occurs when skills transition from working memory to long-term procedural memory. This process happens during rest periods between practice sessions. Today's practice reinforces yesterday's learning while your brain continues to consolidate.",
+        "citation": "Walker, M. P., et al. (2003). Practice with sleep makes perfect: Sleep-dependent motor skill learning. Neuron."
+      },
+      "blocks": [
+        {
+          "id": "4A",
+          "name": "Rapid Alternation",
+          "duration": "3 minutes",
+          "putts": 24,
+          "targetSpeed": null,
+          "type": "alternating",
+          "sequence": [
+            3,
+            5
+          ],
+          "description": "Alternate between 3 and 5 MPH. This extreme contrast sharpens discrimination. The app adapts the mix based on your accuracy at each speed."
+        },
+        {
+          "id": "4B",
+          "name": "Fine Discrimination",
+          "duration": "3 minutes",
+          "putts": 24,
+          "targetSpeed": null,
+          "type": "alternating",
+          "sequence": [
+            4,
+            5
+          ],
+          "description": "Alternate between 4 and 5 MPH \u2014 much harder with only 1 MPH difference. The app adapts the mix based on your accuracy at each speed."
+        },
+        {
+          "id": "4C",
+          "name": "Gate Test Simulation",
+          "duration": "3 minutes",
+          "putts": 24,
+          "targetSpeed": null,
+          "type": "gateTest",
+          "protocol": [
+            {
+              "speed": 3,
+              "putts": 3
+            },
+            {
+              "speed": 4,
+              "putts": 3
+            },
+            {
+              "speed": 5,
+              "putts": 3
+            }
+          ],
+          "rounds": 3,
+          "description": "Practice the Gate Test format."
+        }
+      ],
+      "successMetrics": [
+        {
+          "metric": "Zone Accuracy",
+          "target": "60%+"
+        }
+      ],
+      "coachingNotes": null,
+      "warnings": []
+    },
+    {
+      "day": 5,
+      "phase": 1,
+      "title": "Gate Test and 6-7 MPH Introduction",
+      "duration": "10 minutes",
+      "targetPutts": 80,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "speedRange": "3-7 MPH",
+      "objective": "Pass the Zone 1 Gate Test and begin developing 6 and 7 MPH motor programs.",
+      "science": {
+        "principle": "Desirable difficulties",
+        "explanation": "Gate Tests create 'desirable difficulties.' By requiring demonstrated competence before advancement, we ensure that new speeds are built on a solid foundation. Skipping gates typically results in regression and frustration.",
+        "citation": "Bjork, R. A. (1994). Memory and metamemory considerations in the training of human beings. MIT Press."
+      },
+      "blocks": [
+        {
+          "id": "5A",
+          "name": "Warm-Up",
+          "duration": "1.5 minutes",
+          "putts": 12,
+          "targetSpeed": null,
+          "type": "warmup",
+          "sequence": [
+            3,
+            3,
+            3,
+            3,
+            4,
+            4,
+            4,
+            4,
+            5,
+            5,
+            5,
+            5
+          ],
+          "description": "Warm up across 3, 4, 5 MPH. Lightly weighted toward speeds that need attention."
+        },
+        {
+          "id": "5B",
+          "name": "GATE TEST",
+          "duration": "2 minutes",
+          "putts": 9,
+          "targetSpeed": null,
+          "type": "gateTest",
+          "isOfficial": true,
+          "gateId": "gate-zone1",
+          "protocol": [
+            {
+              "speed": 3,
+              "putts": 3
+            },
+            {
+              "speed": 4,
+              "putts": 3
+            },
+            {
+              "speed": 5,
+              "putts": 3
+            }
+          ],
+          "passRequirements": {
+            "zoneAccuracy": {
+              "minimum": 5,
+              "percentage": 56
+            }
+          },
+          "onPass": "Continue to Block C",
+          "onFail": "Repeat Days 3-4 protocols. Attempt Gate Test again tomorrow."
+        },
+        {
+          "id": "5C",
+          "name": "6 MPH Introduction",
+          "duration": "2.5 minutes",
+          "putts": 20,
+          "targetSpeed": 6,
+          "type": "blocked",
+          "acceptRange": {
+            "min": 5.5,
+            "max": 6.5
+          },
+          "description": "6 MPH is 20% faster than 5 MPH. Should feel like a confident 10-foot putt. Focus on smooth tempo \u2014 don't jab at the ball."
+        },
+        {
+          "id": "5D",
+          "name": "7 MPH Introduction",
+          "duration": "2.5 minutes",
+          "putts": 20,
+          "targetSpeed": 7,
+          "type": "blocked",
+          "acceptRange": {
+            "min": 6.5,
+            "max": 7.5
+          },
+          "description": "7 MPH is the upper limit of Zone 1. This is approaching a 'firm' putt but still well within control range."
+        },
+        {
+          "id": "5E",
+          "name": "Full Zone 1 Integration",
+          "duration": "1.5 minutes",
+          "putts": 12,
+          "targetSpeed": null,
+          "type": "random",
+          "sequence": [
+            5,
+            3,
+            7,
+            4,
+            6,
+            3,
+            7,
+            5,
+            4,
+            6,
+            3,
+            7
+          ],
+          "description": "Adaptive practice across all Zone 1 speeds \u2014 weighted toward the speeds you need the most work on."
+        }
+      ],
+      "successMetrics": [
+        {
+          "metric": "Gate Test",
+          "target": "PASS"
+        },
+        {
+          "metric": "Zone Accuracy at 6-7 MPH",
+          "target": "45%+",
+          "note": "acceptable for introduction day"
+        }
+      ],
+      "coachingNotes": null,
+      "warnings": []
+    },
+    {
+      "day": 6,
+      "phase": 1,
+      "title": "Zone 1 Full Range Development",
+      "duration": "9 minutes",
+      "targetPutts": 72,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "speedRange": "3-7 MPH",
+      "objective": "Develop fluency across the complete 3-7 MPH range with emphasis on the new 6-7 MPH speeds.",
+      "science": {
+        "principle": "Variable practice strengthens schema",
+        "explanation": "Variable practice within a constrained speed range (contextual interference) strengthens motor schema. By practicing multiple speeds within Zone 1, you develop flexible motor programs that can adapt to any speed within the zone.",
+        "citation": "Schmidt, R. A. (1975). A schema theory of discrete motor skill learning. Psychological Review."
+      },
+      "blocks": [
+        {
+          "id": "6A",
+          "name": "6-7 MPH Blocked Practice",
+          "duration": "3 minutes",
+          "putts": 24,
+          "targetSpeed": null,
+          "type": "blocked",
+          "sequence": [
+            6,
+            6,
+            6,
+            6,
+            6,
+            6,
+            6,
+            6,
+            6,
+            6,
+            6,
+            6,
+            7,
+            7,
+            7,
+            7,
+            7,
+            7,
+            7,
+            7,
+            7,
+            7,
+            7,
+            7
+          ],
+          "description": "12 putts at 6 MPH, then 12 putts at 7 MPH. These are still new speeds and benefit from blocked repetition."
+        },
+        {
+          "id": "6B",
+          "name": "Ladder Ascending",
+          "duration": "2 minutes",
+          "putts": 16,
+          "targetSpeed": null,
+          "type": "sequence",
+          "sequence": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            7,
+            6,
+            5,
+            4,
+            3
+          ],
+          "description": "Up and down ladder pattern weighted toward your weaker speeds. Reinforces incremental relationships between speeds."
+        },
+        {
+          "id": "6C",
+          "name": "Random Zone 1",
+          "duration": "3 minutes",
+          "putts": 24,
+          "targetSpeed": null,
+          "type": "random",
+          "sequence": [
+            7,
+            4,
+            5,
+            3,
+            6,
+            5,
+            7,
+            3,
+            4,
+            6,
+            3,
+            7,
+            5,
+            4,
+            6,
+            7,
+            3,
+            5,
+            4,
+            6,
+            7,
+            5,
+            3,
+            4
+          ],
+          "description": "Adaptive practice across Zone 1 speeds \u2014 the app prioritizes the speeds you need the most work on."
+        },
+        {
+          "id": "6D",
+          "name": "Challenge Round",
+          "duration": "1 minute",
+          "putts": 8,
+          "targetSpeed": 5,
+          "type": "challenge",
+          "description": "Consecutive putt challenge at your optimal Zone 1 speed \u2014 selected from 3\u20137 MPH based on where your accuracy is closest to the optimal challenge point. Record your best consecutive streak.",
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7
+          ]
+        }
+      ],
+      "successMetrics": [
+        {
+          "metric": "Zone Accuracy (3-5 MPH)",
+          "target": "65%+"
+        },
+        {
+          "metric": "Zone Accuracy (6-7 MPH)",
+          "target": "55%+"
+        }
+      ],
+      "coachingNotes": null,
+      "warnings": []
+    },
+    {
+      "day": 7,
+      "phase": 1,
+      "title": "Pressure Introduction",
+      "duration": "9 minutes",
+      "targetPutts": 72,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "speedRange": "3-7 MPH",
+      "objective": "Introduce mild pressure conditions while maintaining Zone 1 accuracy. Pressure-proofing begins early.",
+      "science": {
+        "principle": "Pressure inoculation",
+        "explanation": "Skills learned under some pressure transfer better to high-pressure situations. Today's 'consequence' drills begin building pressure tolerance.",
+        "citation": "Baumeister, R. F. (1984). Choking under pressure: Self-consciousness and paradoxical effects of incentives on skillful performance. Journal of Personality and Social Psychology."
+      },
+      "blocks": [
+        {
+          "id": "7A",
+          "name": "Warm-Up",
+          "duration": "2 minutes",
+          "putts": 16,
+          "targetSpeed": null,
+          "type": "warmup",
+          "description": "Warm up across Zone 1 speeds. Lightly weighted toward speeds that need attention."
+        },
+        {
+          "id": "7B",
+          "name": "Make 5 in a Row Challenge",
+          "duration": "3 minutes",
+          "putts": null,
+          "targetSpeed": 5,
+          "type": "pressure",
+          "challengeType": "consecutive",
+          "consecutiveRequired": 5,
+          "requirements": [
+            "on-target",
+            "in-zone"
+          ],
+          "description": "Hit 5 consecutive putts within zone at your optimal challenge speed \u2014 selected from Zone 1 based on your current accuracy data. If you miss, restart at zero.",
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7
+          ]
+        },
+        {
+          "id": "7C",
+          "name": "Elimination Ladder",
+          "duration": "3 minutes",
+          "putts": null,
+          "targetSpeed": null,
+          "type": "pressure",
+          "challengeType": "ladder",
+          "startSpeed": 3,
+          "endSpeed": 7,
+          "description": "Start at 3 MPH. If in zone, move to 4 MPH. If not, restart at 3. Goal: Climb from 3 to 7 without missing. Record highest reached."
+        },
+        {
+          "id": "7D",
+          "name": "Recovery Practice",
+          "duration": "1 minute",
+          "putts": 8,
+          "targetSpeed": 5,
+          "type": "recovery",
+          "description": "Confidence-building recovery. Speed selected from Zone 1 based on your strongest results \u2014 end the session feeling solid and in control.",
+          "adaptiveMode": "recovery",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7
+          ]
+        }
+      ],
+      "successMetrics": [
+        {
+          "metric": "Make 5 Challenge",
+          "target": "completed in under 15 attempts"
+        },
+        {
+          "metric": "Elimination Ladder",
+          "target": "reached at least 5 MPH"
+        }
+      ],
+      "coachingNotes": null,
+      "warnings": []
+    },
+    {
+      "day": 8,
+      "phase": 1,
+      "title": "Zone 2 Gate Test Preparation",
+      "duration": "9 minutes",
+      "targetPutts": 72,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "speedRange": "3-7 MPH",
+      "objective": "Achieve peak Zone 1 performance in preparation for tomorrow's Gate Test to unlock Zone 2 speeds (8-10 MPH).",
+      "science": {
+        "principle": "Overlearning",
+        "explanation": "'Overlearning' \u2014 continued practice after achieving proficiency \u2014 increases retention and automaticity. Today's high-volume Zone 1 practice solidifies these speeds before introducing the new challenge of Zone 2.",
+        "citation": "Driskell, J. E., Willis, R. P., & Copper, C. (1992). Effect of overlearning on retention. Journal of Applied Psychology."
+      },
+      "blocks": [
+        {
+          "id": "8A",
+          "name": "Zone 1 Mastery Drill",
+          "duration": "4 minutes",
+          "putts": 32,
+          "targetSpeed": null,
+          "type": "sequence",
+          "sequence": [
+            3,
+            3,
+            4,
+            4,
+            5,
+            5,
+            6,
+            6,
+            7,
+            7,
+            7,
+            6,
+            6,
+            5,
+            5,
+            4,
+            4,
+            3,
+            3
+          ],
+          "rounds": 2,
+          "description": "Adaptive sequence weighted toward your weaker speeds. Goal: 75% zone accuracy across all speeds."
+        },
+        {
+          "id": "8B",
+          "name": "Random Zone 1 Assessment",
+          "duration": "3 minutes",
+          "putts": 24,
+          "targetSpeed": null,
+          "type": "random",
+          "sequence": [
+            5,
+            7,
+            3,
+            6,
+            4,
+            7,
+            3,
+            5,
+            6,
+            4,
+            3,
+            7,
+            5,
+            6,
+            4,
+            3,
+            7,
+            5,
+            6,
+            4,
+            7,
+            3,
+            5,
+            6
+          ],
+          "description": "Adaptive practice weighted toward your weaker speeds. Check your Stats to track progress heading into the Gate Test."
+        },
+        {
+          "id": "8C",
+          "name": "Gate Test Simulation",
+          "duration": "2 minutes",
+          "putts": 16,
+          "targetSpeed": null,
+          "type": "gateTest",
+          "protocol": [
+            {
+              "speed": 5,
+              "putts": 4
+            },
+            {
+              "speed": 6,
+              "putts": 4
+            },
+            {
+              "speed": 7,
+              "putts": 4
+            }
+          ],
+          "description": "To pass the real test tomorrow: Target 80%+ (10+ of 12), Zone 65%+ (8+ of 12)."
+        }
+      ],
+      "successMetrics": [
+        {
+          "metric": "Zone Accuracy",
+          "target": "70%+"
+        },
+        {
+          "metric": "Gate Test Simulation",
+          "target": "65%+ zone accuracy"
+        }
+      ],
+      "coachingNotes": null,
+      "warnings": []
+    },
+    {
+      "day": 9,
+      "phase": 1,
+      "title": "Zone 2 Gate Test and Introduction",
+      "duration": "10 minutes",
+      "targetPutts": 80,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "speedRange": "3-10 MPH",
+      "objective": "Pass the Zone 2 Gate Test and begin developing 8, 9, and 10 MPH motor programs. This is a significant speed increase \u2014 approach with focus.",
+      "science": {
+        "principle": "Force production variability",
+        "explanation": "Zone 2 speeds represent a transition from 'touch' to 'firm' putting. Research on force production shows that larger forces have inherently more variability, which is why our tolerance expands from \u00b10.5 to \u00b10.7 MPH.",
+        "citation": "Carlton, L. G. (1994). The effects of temporal-loss of feedback on motor performance. Journal of Motor Behavior."
+      },
+      "blocks": [
+        {
+          "id": "9A",
+          "name": "Warm-Up",
+          "duration": "1.5 minutes",
+          "putts": 12,
+          "targetSpeed": null,
+          "type": "warmup",
+          "sequence": [
+            5,
+            5,
+            5,
+            5,
+            6,
+            6,
+            6,
+            6,
+            7,
+            7,
+            7,
+            7
+          ],
+          "description": "Warm up across 5, 6, 7 MPH. Lightly weighted toward speeds that need attention."
+        },
+        {
+          "id": "9B",
+          "name": "ZONE 2 GATE TEST",
+          "duration": "2 minutes",
+          "putts": 12,
+          "targetSpeed": null,
+          "type": "gateTest",
+          "isOfficial": true,
+          "gateId": "gate-zone2",
+          "protocol": [
+            {
+              "speed": 5,
+              "putts": 4
+            },
+            {
+              "speed": 6,
+              "putts": 4
+            },
+            {
+              "speed": 7,
+              "putts": 4
+            }
+          ],
+          "passRequirements": {
+            "zoneAccuracy": {
+              "minimum": 8,
+              "percentage": 67
+            }
+          },
+          "onPass": "Continue to Block C",
+          "onFail": "Return to Day 8 protocol. Attempt Gate Test again tomorrow."
+        },
+        {
+          "id": "9C",
+          "name": "8 MPH Introduction",
+          "duration": "2 minutes",
+          "putts": 16,
+          "targetSpeed": 8,
+          "type": "blocked",
+          "acceptRange": {
+            "min": 7.3,
+            "max": 8.7
+          },
+          "description": "8 MPH is noticeably firmer than 7 MPH. Represents approximately a 20-25 foot putt on medium-speed greens."
+        },
+        {
+          "id": "9D",
+          "name": "9 MPH Introduction",
+          "duration": "2 minutes",
+          "putts": 16,
+          "targetSpeed": 9,
+          "type": "blocked",
+          "acceptRange": {
+            "min": 8.3,
+            "max": 9.7
+          },
+          "description": "Focus on maintaining a smooth stroke despite the increased force."
+        },
+        {
+          "id": "9E",
+          "name": "10 MPH Introduction",
+          "duration": "1.5 minutes",
+          "putts": 12,
+          "targetSpeed": 10,
+          "type": "blocked",
+          "acceptRange": {
+            "min": 9.3,
+            "max": 10.7
+          },
+          "description": "10 MPH is the top of Zone 2 and represents a firm 30+ foot putt. Requires commitment to the stroke."
+        },
+        {
+          "id": "9F",
+          "name": "Cool-Down",
+          "duration": "1 minute",
+          "putts": 8,
+          "targetSpeed": 5,
+          "type": "recovery",
+          "description": "Adaptive Zone 1 cool-down. Speed selected from your strongest touch-zone results \u2014 re-center your speed sense on a confident, relaxed note.",
+          "adaptiveMode": "recovery",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7
+          ]
+        }
+      ],
+      "successMetrics": [
+        {
+          "metric": "Gate Test",
+          "target": "PASS"
+        },
+        {
+          "metric": "Zone Accuracy at 8-10 MPH",
+          "target": "40%+",
+          "note": "acceptable for introduction"
+        }
+      ],
+      "coachingNotes": null,
+      "warnings": [
+        {
+          "type": "caution",
+          "message": "Zone 2 speeds hit the device harder. Ensure proper setup and focus on target accuracy. If you miss the device opening, the ball will strike the device body."
+        }
+      ]
+    },
+    {
+      "day": 10,
+      "phase": 1,
+      "title": "Phase 1 Assessment",
+      "duration": "10 minutes",
+      "targetPutts": 80,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "speedRange": "3-10 MPH",
+      "objective": "Complete Phase 1 with a comprehensive assessment of 3-10 MPH capabilities. Establish benchmark scores for comparison after Phase 2 and 3.",
+      "science": {
+        "principle": "Testing effect",
+        "explanation": "Periodic assessment serves multiple purposes: it provides objective feedback on progress, identifies weaknesses requiring attention, and creates 'testing effect' benefits that strengthen memory.",
+        "citation": "Roediger, H. L., & Karpicke, J. D. (2006). Test-enhanced learning: Taking memory tests improves long-term retention. Psychological Science."
+      },
+      "blocks": [
+        {
+          "id": "10A",
+          "name": "Warm-Up",
+          "duration": "2 minutes",
+          "putts": 16,
+          "targetSpeed": null,
+          "type": "warmup",
+          "description": "Warm up across the full 3-10 MPH range. Lightly weighted toward speeds that need attention."
+        },
+        {
+          "id": "10B",
+          "name": "PHASE 1 ASSESSMENT",
+          "duration": "6 minutes",
+          "putts": 48,
+          "targetSpeed": null,
+          "type": "assessment",
+          "isPhaseAssessment": true,
+          "protocol": [
+            {
+              "speed": 3,
+              "putts": 6
+            },
+            {
+              "speed": 4,
+              "putts": 6
+            },
+            {
+              "speed": 5,
+              "putts": 6
+            },
+            {
+              "speed": 6,
+              "putts": 6
+            },
+            {
+              "speed": 7,
+              "putts": 6
+            },
+            {
+              "speed": 8,
+              "putts": 6
+            },
+            {
+              "speed": 9,
+              "putts": 6
+            },
+            {
+              "speed": 10,
+              "putts": 6
+            }
+          ],
+          "description": "6 putts at each speed in order. Record target and zone accuracy at each speed."
+        },
+        {
+          "id": "10C",
+          "name": "Best Speed Challenge",
+          "duration": "2 minutes",
+          "putts": 16,
+          "targetSpeed": null,
+          "type": "challenge",
+          "description": "Choose your strongest speed from 3-10 MPH \u2014 check your Stats to see which one. Hit 16 consecutive putts and go for a personal best."
+        }
+      ],
+      "successMetrics": [
+        {
+          "metric": "Zone 1 Accuracy (3-7 MPH)",
+          "target": "65%+",
+          "note": "20+ of 30 in zone"
+        },
+        {
+          "metric": "Zone 2 Accuracy (8-10 MPH)",
+          "target": "50%+",
+          "note": "9+ of 18 in zone"
+        }
+      ],
+      "coachingNotes": "If you meet these standards, proceed to Phase 2 tomorrow. If not, repeat Days 8-10 until standards are met. Check your Stats to see exactly which speeds need the most work \u2014 the app will continue to adapt your practice accordingly.",
+      "warnings": []
+    },
+    {
+      "day": 11,
+      "phase": 2,
+      "title": "Zone 2 Consolidation",
+      "duration": "9 minutes",
+      "targetPutts": 72,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "speedRange": "3-10 MPH",
+      "objective": "Strengthen Zone 2 speed control before expanding into Zone 3. The app automatically focuses on the speeds you need the most work on.",
+      "science": {
+        "principle": "Consolidation between phases",
+        "explanation": "The transition between phases benefits from a consolidation day. This allows overnight memory consolidation to strengthen new skills before adding complexity.",
+        "citation": "Walker, M. P., et al. (2002). Practice with sleep makes perfect: Sleep-dependent motor skill learning. Neuron."
+      },
+      "blocks": [
+        {
+          "id": "11A",
+          "name": "Zone 1 Maintenance",
+          "duration": "2 minutes",
+          "putts": 16,
+          "targetSpeed": null,
+          "type": "random",
+          "sequence": [
+            5,
+            3,
+            7,
+            4,
+            6,
+            3,
+            5,
+            7,
+            4,
+            6,
+            5,
+            3,
+            7,
+            6,
+            4,
+            5
+          ],
+          "description": "Adaptive sequence across 3-7 MPH to maintain foundational skills \u2014 weighted toward speeds that need the most work."
+        },
+        {
+          "id": "11B",
+          "name": "Zone 2 Blocked Practice",
+          "duration": "4 minutes",
+          "putts": 32,
+          "targetSpeed": null,
+          "type": "blocked",
+          "protocol": [
+            {
+              "speed": 8,
+              "putts": 10
+            },
+            {
+              "speed": 9,
+              "putts": 10
+            },
+            {
+              "speed": 10,
+              "putts": 12
+            }
+          ],
+          "description": "Blocked practice at Zone 2 speeds. Check your Stats to see your per-speed accuracy across 8, 9, and 10 MPH."
+        },
+        {
+          "id": "11C",
+          "name": "Transition Practice",
+          "duration": "2 minutes",
+          "putts": 16,
+          "targetSpeed": null,
+          "type": "random",
+          "sequence": [
+            5,
+            9,
+            4,
+            10,
+            6,
+            8,
+            3,
+            9,
+            7,
+            10,
+            5,
+            8,
+            4,
+            9,
+            6,
+            10
+          ],
+          "description": "Adaptive cross-zone practice between Zone 1 and Zone 2 \u2014 weighted toward your weaker speeds. Large jumps challenge your calibration."
+        },
+        {
+          "id": "11D",
+          "name": "Zone 2 Assessment",
+          "duration": "1 minute",
+          "putts": 8,
+          "targetSpeed": null,
+          "type": "assessment",
+          "protocol": [
+            {
+              "speed": 7,
+              "putts": 2
+            },
+            {
+              "speed": 8,
+              "putts": 2
+            },
+            {
+              "speed": 9,
+              "putts": 2
+            },
+            {
+              "speed": 10,
+              "putts": 2
+            }
+          ],
+          "description": "Goal: 75%+ zone accuracy to confirm readiness for Zone 3."
+        }
+      ],
+      "successMetrics": [
+        {
+          "metric": "Zone 2 Accuracy",
+          "target": "60%+"
+        }
+      ],
+      "coachingNotes": null,
+      "warnings": []
+    },
+    {
+      "day": 12,
+      "phase": 2,
+      "title": "Zone 3 Gate Test and 11 MPH Introduction",
+      "duration": "10 minutes",
+      "targetPutts": 80,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "speedRange": "3-11 MPH",
+      "objective": "Pass the Zone 3 Gate Test and introduce 11 MPH \u2014 your first 'firm' speed with the expanded \u00b11.0 MPH tolerance.",
+      "science": {
+        "principle": "Qualitative shift in force production",
+        "explanation": "Zone 3 represents a qualitative shift in putting force. The tolerance expansion to \u00b11.0 MPH reflects the increased variability inherent in producing larger forces.",
+        "citation": "Schmidt, R. A., et al. (1979). Motor-output variability: A theory for the accuracy of rapid motor acts. Psychological Review."
+      },
+      "blocks": [
+        {
+          "id": "12A",
+          "name": "Warm-Up",
+          "duration": "1.5 minutes",
+          "putts": 12,
+          "targetSpeed": null,
+          "type": "warmup",
+          "sequence": [
+            7,
+            7,
+            7,
+            7,
+            8,
+            8,
+            8,
+            8,
+            9,
+            9,
+            9,
+            9
+          ],
+          "description": "Warm up across 7, 8, 9 MPH. Lightly weighted toward speeds that need attention."
+        },
+        {
+          "id": "12B",
+          "name": "ZONE 3 GATE TEST",
+          "duration": "2 minutes",
+          "putts": 12,
+          "targetSpeed": null,
+          "type": "gateTest",
+          "isOfficial": true,
+          "gateId": "gate-zone3",
+          "protocol": [
+            {
+              "speed": 8,
+              "putts": 4
+            },
+            {
+              "speed": 9,
+              "putts": 4
+            },
+            {
+              "speed": 10,
+              "putts": 4
+            }
+          ],
+          "passRequirements": {
+            "zoneAccuracy": {
+              "minimum": 8,
+              "percentage": 67
+            }
+          },
+          "onPass": "Continue to Block C",
+          "onFail": "Repeat Day 11"
+        },
+        {
+          "id": "12C",
+          "name": "11 MPH Introduction",
+          "duration": "3 minutes",
+          "putts": 24,
+          "targetSpeed": 11,
+          "type": "blocked",
+          "acceptRange": {
+            "min": 10.0,
+            "max": 12.0
+          },
+          "description": "11 MPH is your entry into Zone 3. This is a firm, committed stroke. New tolerance: \u00b11.0 MPH."
+        },
+        {
+          "id": "12D",
+          "name": "8-11 Integration",
+          "duration": "2.5 minutes",
+          "putts": 20,
+          "targetSpeed": null,
+          "type": "sequence",
+          "sequence": [
+            8,
+            11,
+            9,
+            11,
+            10,
+            11,
+            8,
+            10,
+            9,
+            11
+          ],
+          "rounds": 2,
+          "description": "Adaptive transition practice between Zone 2 and the new 11 MPH \u2014 weighted toward speeds that need the most work."
+        },
+        {
+          "id": "12E",
+          "name": "Cool-Down",
+          "duration": "1 minute",
+          "putts": 8,
+          "targetSpeed": 6,
+          "type": "recovery",
+          "description": "Adaptive cool-down across Zones 1\u20132. Speed selected from your strongest recent results \u2014 close out the gate test day on a confidence-building note.",
+          "adaptiveMode": "recovery",
+          "adaptivePool": [
+            5,
+            6,
+            7,
+            8,
+            9,
+            10
+          ]
+        }
+      ],
+      "successMetrics": [
+        {
+          "metric": "Gate Test",
+          "target": "PASS"
+        },
+        {
+          "metric": "Zone Accuracy at 11 MPH",
+          "target": "45%+"
+        }
+      ],
+      "coachingNotes": null,
+      "warnings": [
+        {
+          "type": "caution",
+          "message": "Zone 3 speeds deliver more force. If target accuracy drops below 70%, stop and return to Zone 2 practice."
+        }
+      ]
+    },
+    {
+      "day": 13,
+      "phase": 2,
+      "title": "12-13 MPH Development",
+      "duration": "9 minutes",
+      "targetPutts": 72,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13
+      ],
+      "speedRange": "3-13 MPH",
+      "objective": "Develop motor programs for 12 and 13 MPH while maintaining Zone 1-2 skills.",
+      "science": {
+        "principle": "Incremental speed building",
+        "explanation": "Adding speeds incrementally allows the motor system to use existing programs as references. Your 11 MPH program becomes the foundation for 12 and 13 MPH.",
+        "citation": "Schmidt, R. A. (1975). A schema theory of discrete motor skill learning. Psychological Review."
+      },
+      "blocks": [
+        {
+          "id": "13A",
+          "name": "Zone 1-2 Quick Review",
+          "duration": "2 minutes",
+          "putts": 16,
+          "targetSpeed": null,
+          "type": "random",
+          "sequence": [
+            4,
+            7,
+            5,
+            9,
+            6,
+            8,
+            3,
+            10,
+            5,
+            7,
+            4,
+            9,
+            6,
+            8,
+            3,
+            10
+          ],
+          "description": "Adaptive maintenance sequence \u2014 weighted toward your weaker foundational speeds."
+        },
+        {
+          "id": "13B",
+          "name": "Zone 3 Reinforcement",
+          "duration": "1.5 minutes",
+          "putts": 12,
+          "targetSpeed": 11,
+          "type": "blocked",
+          "description": "Adaptive Zone 3 reinforcement \u2014 speeds from 9\u201314 MPH selected based on your current accuracy data. Solidify your mid-range feel with reps where you need them most.",
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            9,
+            10,
+            11,
+            12,
+            13,
+            14
+          ]
+        },
+        {
+          "id": "13C",
+          "name": "12 MPH Introduction",
+          "duration": "2 minutes",
+          "putts": 16,
+          "targetSpeed": 12,
+          "type": "blocked",
+          "acceptRange": {
+            "min": 11.0,
+            "max": 13.0
+          },
+          "description": "12 MPH is only 9% faster than 11 MPH but requires noticeable adjustment."
+        },
+        {
+          "id": "13D",
+          "name": "13 MPH Introduction",
+          "duration": "2 minutes",
+          "putts": 16,
+          "targetSpeed": 13,
+          "type": "blocked",
+          "acceptRange": {
+            "min": 12.0,
+            "max": 14.0
+          },
+          "description": "13 MPH is approximately a 40-foot putt on medium greens."
+        },
+        {
+          "id": "13E",
+          "name": "Zone 3 Integration",
+          "duration": "1.5 minutes",
+          "putts": 12,
+          "targetSpeed": null,
+          "type": "sequence",
+          "sequence": [
+            11,
+            12,
+            13,
+            12,
+            11,
+            13,
+            11,
+            12,
+            13,
+            11,
+            12,
+            13
+          ],
+          "description": "Adaptive transitions within Zone 3 \u2014 weighted toward the speeds you need the most work on."
+        }
+      ],
+      "successMetrics": [
+        {
+          "metric": "Zone Accuracy at 12-13 MPH",
+          "target": "45%+"
+        }
+      ],
+      "coachingNotes": null,
+      "warnings": []
+    },
+    {
+      "day": 14,
+      "phase": 2,
+      "title": "14 MPH and Zone 3 Integration",
+      "duration": "10 minutes",
+      "targetPutts": 80,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "speedRange": "3-14 MPH",
+      "objective": "Complete Zone 3 with the introduction of 14 MPH and integrate all Zone 3 speeds.",
+      "science": {
+        "principle": "Ceiling speed mastery",
+        "explanation": "14 MPH represents the upper boundary of Zone 3 and the last speed before the tolerance expands again. Mastering this ceiling speed creates a stable platform for Zone 4.",
+        "citation": "Guadagnoli, M. A., & Lee, T. D. (2004). Challenge point framework. Journal of Motor Behavior."
+      },
+      "blocks": [
+        {
+          "id": "14A",
+          "name": "Warm-Up",
+          "duration": "2 minutes",
+          "putts": 16,
+          "targetSpeed": null,
+          "type": "sequence",
+          "sequence": [
+            5,
+            7,
+            9,
+            11,
+            13,
+            11,
+            9,
+            7,
+            5,
+            7,
+            9,
+            11,
+            13,
+            11,
+            9,
+            7
+          ],
+          "description": "Adaptive warm-up progression through learned speeds \u2014 weighted toward speeds that need attention."
+        },
+        {
+          "id": "14B",
+          "name": "14 MPH Introduction",
+          "duration": "2.5 minutes",
+          "putts": 20,
+          "targetSpeed": 14,
+          "type": "blocked",
+          "acceptRange": {
+            "min": 13.0,
+            "max": 15.0
+          },
+          "description": "14 MPH is the top of Zone 3. This is a powerful putt. Focus on committed stroke with smooth tempo."
+        },
+        {
+          "id": "14C",
+          "name": "Full Zone 3 Practice",
+          "duration": "3 minutes",
+          "putts": 24,
+          "targetSpeed": null,
+          "type": "random",
+          "sequence": [
+            11,
+            13,
+            12,
+            14,
+            11,
+            14,
+            13,
+            12,
+            14,
+            11,
+            12,
+            13,
+            14,
+            12,
+            11,
+            13,
+            14,
+            11,
+            12,
+            14,
+            13,
+            11,
+            12,
+            14
+          ],
+          "description": "Adaptive Zone 3 practice \u2014 weighted toward the Zone 3 speeds you need the most work on."
+        },
+        {
+          "id": "14D",
+          "name": "Cross-Zone Challenge",
+          "duration": "2.5 minutes",
+          "putts": 20,
+          "targetSpeed": null,
+          "type": "random",
+          "sequence": [
+            5,
+            14,
+            7,
+            12,
+            4,
+            13,
+            6,
+            11,
+            8,
+            14
+          ],
+          "rounds": 2,
+          "description": "Adaptive cross-zone jumps weighted toward your weaker speeds. Extreme contextual interference builds robust calibration."
+        }
+      ],
+      "successMetrics": [
+        {
+          "metric": "Zone 3 Accuracy (11-14 MPH)",
+          "target": "50%+"
+        }
+      ],
+      "coachingNotes": null,
+      "warnings": []
+    },
+    {
+      "day": 15,
+      "phase": 2,
+      "title": "Random Practice Introduction",
+      "duration": "9 minutes",
+      "targetPutts": 72,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "speedRange": "3-14 MPH",
+      "objective": "Shift from blocked to adaptive practice across all unlocked speeds. The app now intelligently weights your weaker speeds more heavily.",
+      "science": {
+        "principle": "Contextual interference effect",
+        "explanation": "The contextual interference effect demonstrates that varied practice, while harder during acquisition, produces superior retention and transfer. The app now strategically weights this variation toward your weakest speeds for maximum improvement.",
+        "citation": "Shea, J. B., & Morgan, R. L. (1979). Contextual interference effects. Journal of Experimental Psychology."
+      },
+      "blocks": [
+        {
+          "id": "15A",
+          "name": "Full Range Random",
+          "duration": "4 minutes",
+          "putts": 32,
+          "targetSpeed": null,
+          "type": "random",
+          "sequence": [
+            7,
+            12,
+            4,
+            9,
+            14,
+            6,
+            11,
+            3,
+            8,
+            13,
+            5,
+            10,
+            7,
+            14,
+            4,
+            11,
+            6,
+            9,
+            3,
+            12,
+            8,
+            5,
+            14,
+            10,
+            7,
+            13,
+            4,
+            11,
+            6,
+            9,
+            3,
+            12
+          ],
+          "description": "Adaptive full-range sequence across 3-14 MPH \u2014 weighted toward the speeds you need the most work on."
+        },
+        {
+          "id": "15B",
+          "name": "Extreme Jumps",
+          "duration": "2.5 minutes",
+          "putts": 20,
+          "targetSpeed": null,
+          "type": "sequence",
+          "sequence": [
+            3,
+            14,
+            4,
+            13,
+            5,
+            12,
+            6,
+            11,
+            7,
+            10
+          ],
+          "rounds": 2,
+          "description": "Maximum contrast practice \u2014 adaptive sequence weighted toward your weaker speeds at each end of the range."
+        },
+        {
+          "id": "15C",
+          "name": "Call Your Shot",
+          "duration": "2.5 minutes",
+          "putts": 20,
+          "targetSpeed": null,
+          "type": "reactive",
+          "speedRange": {
+            "min": 3,
+            "max": 14
+          },
+          "description": "The app serves you speeds weighted toward your weaknesses. React and execute each one \u2014 no planning ahead."
+        }
+      ],
+      "successMetrics": [
+        {
+          "metric": "Overall Zone Accuracy",
+          "target": "55%+"
+        }
+      ],
+      "coachingNotes": null,
+      "warnings": []
+    },
+    {
+      "day": 16,
+      "phase": 2,
+      "title": "Full Range Fluency",
+      "duration": "9 minutes",
+      "targetPutts": 72,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "speedRange": "3-14 MPH",
+      "objective": "Develop seamless transitions between any two speeds in your current range.",
+      "science": {
+        "principle": "Fluency and retrieval",
+        "explanation": "Fluency represents the ability to access any motor program quickly and accurately. This requires robust memory traces that can be retrieved under various conditions.",
+        "citation": "Schmidt, R. A., & Lee, T. D. (2011). Motor control and learning: A behavioral emphasis. Human Kinetics."
+      },
+      "blocks": [
+        {
+          "id": "16A",
+          "name": "Zone Jumping",
+          "duration": "3 minutes",
+          "putts": 24,
+          "targetSpeed": null,
+          "type": "sequence",
+          "sequence": [
+            4,
+            12,
+            8,
+            6,
+            14,
+            9,
+            3,
+            11,
+            10,
+            5,
+            13,
+            7
+          ],
+          "rounds": 2,
+          "description": "Adaptive zone-jumping sequence weighted toward your weaker speeds across all three zones."
+        },
+        {
+          "id": "16B",
+          "name": "Consecutive Challenge",
+          "duration": "3 minutes",
+          "putts": null,
+          "targetSpeed": null,
+          "type": "pressure",
+          "challengeType": "ladder",
+          "startSpeed": 3,
+          "endSpeed": 14,
+          "description": "Start at 3 MPH. Each successful in-zone putt advances +1 MPH. Each miss returns to 3. Goal: Reach 14 in one unbroken sequence."
+        },
+        {
+          "id": "16C",
+          "name": "Reverse Ladder",
+          "duration": "3 minutes",
+          "putts": 24,
+          "targetSpeed": null,
+          "type": "sequence",
+          "sequence": [
+            14,
+            13,
+            12,
+            11,
+            10,
+            9,
+            8,
+            7,
+            6,
+            5,
+            4,
+            3
+          ],
+          "rounds": 2,
+          "description": "Descending ladder weighted toward your weaker speeds. Reducing force precisely is often harder than adding it."
+        }
+      ],
+      "successMetrics": [
+        {
+          "metric": "Zone Accuracy",
+          "target": "58%+"
+        },
+        {
+          "metric": "Consecutive Challenge",
+          "target": "reached at least 10 MPH"
+        }
+      ],
+      "coachingNotes": null,
+      "warnings": []
+    },
+    {
+      "day": 17,
+      "phase": 2,
+      "title": "Advanced Pressure Protocols",
+      "duration": "9 minutes",
+      "targetPutts": 72,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "speedRange": "3-14 MPH",
+      "objective": "Increase pressure tolerance with more demanding challenges.",
+      "science": {
+        "principle": "Stress inoculation",
+        "explanation": "Progressive pressure exposure builds 'stress inoculation.' By practicing under incrementally increasing pressure, you develop coping mechanisms that prevent choking.",
+        "citation": "Beilock, S. L., & Carr, T. H. (2001). On the fragility of skilled performance. Journal of Experimental Psychology: General."
+      },
+      "blocks": [
+        {
+          "id": "17A",
+          "name": "Warm-Up",
+          "duration": "2 minutes",
+          "putts": 16,
+          "targetSpeed": null,
+          "type": "warmup",
+          "description": "Warm up across the full range. Lightly weighted toward speeds that need attention."
+        },
+        {
+          "id": "17B",
+          "name": "7 in a Row Challenge",
+          "duration": "3 minutes",
+          "putts": null,
+          "targetSpeed": 10,
+          "type": "pressure",
+          "challengeType": "consecutive",
+          "consecutiveRequired": 7,
+          "requirements": [
+            "on-target",
+            "in-zone"
+          ],
+          "description": "Hit 7 consecutive putts within zone at your optimal challenge speed \u2014 selected from 7\u201311 MPH based on your accuracy data. Significantly harder than 5 in a row.",
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            7,
+            8,
+            9,
+            10,
+            11
+          ]
+        },
+        {
+          "id": "17C",
+          "name": "Elimination Tournament",
+          "duration": "3 minutes",
+          "putts": null,
+          "targetSpeed": null,
+          "type": "pressure",
+          "challengeType": "elimination",
+          "lives": 3,
+          "description": "You have 3 'lives.' Random speeds. Each miss costs one life. Count in-zone putts before losing all lives."
+        },
+        {
+          "id": "17D",
+          "name": "Recovery",
+          "duration": "1 minute",
+          "putts": 8,
+          "targetSpeed": 6,
+          "type": "recovery",
+          "description": "Adaptive recovery practice \u2014 speed selected from 6\u201310 MPH based on your strongest recent results. Return to confident, controlled putting before tomorrow.",
+          "adaptiveMode": "recovery",
+          "adaptivePool": [
+            6,
+            7,
+            8,
+            9,
+            10
+          ]
+        }
+      ],
+      "successMetrics": [
+        {
+          "metric": "7 in a Row",
+          "target": "completed"
+        },
+        {
+          "metric": "Elimination Score",
+          "target": "15+ putts"
+        }
+      ],
+      "coachingNotes": null,
+      "warnings": []
+    },
+    {
+      "day": 18,
+      "phase": 2,
+      "title": "Zone 4 Gate Test Preparation",
+      "duration": "9 minutes",
+      "targetPutts": 72,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "speedRange": "3-14 MPH",
+      "objective": "Achieve peak Zone 3 performance before tomorrow's Gate Test for Zone 4 (15-18 MPH).",
+      "science": {
+        "principle": "Preparation for force increase",
+        "explanation": "The transition to Zone 4 represents a significant increase in force production. Thorough preparation reduces the risk of regression when new speeds are introduced.",
+        "citation": "Guadagnoli, M. A., & Lee, T. D. (2004). Challenge point framework. Journal of Motor Behavior."
+      },
+      "blocks": [
+        {
+          "id": "18A",
+          "name": "Zone 3 Mastery Drill",
+          "duration": "4 minutes",
+          "putts": 32,
+          "targetSpeed": null,
+          "type": "sequence",
+          "sequence": [
+            11,
+            11,
+            12,
+            12,
+            13,
+            13,
+            14,
+            14,
+            14,
+            13,
+            13,
+            12,
+            12,
+            11,
+            11
+          ],
+          "rounds": 2,
+          "description": "Goal: 65% zone accuracy."
+        },
+        {
+          "id": "18B",
+          "name": "Gate Test Simulation",
+          "duration": "3 minutes",
+          "putts": 24,
+          "targetSpeed": null,
+          "type": "gateTest",
+          "protocol": [
+            {
+              "speed": 10,
+              "putts": 4
+            },
+            {
+              "speed": 12,
+              "putts": 4
+            },
+            {
+              "speed": 14,
+              "putts": 4
+            }
+          ],
+          "rounds": 2,
+          "description": "To pass tomorrow: Target 85%+ (10+ of 12), Zone 70%+ (8+ of 12)."
+        },
+        {
+          "id": "18C",
+          "name": "Mental Preparation",
+          "duration": "2 minutes",
+          "putts": 16,
+          "targetSpeed": 14,
+          "type": "blocked",
+          "description": "Adaptive Zone 3\u20134 preparation \u2014 speeds from 11\u201316 MPH selected based on where you need the most work. Focus on committed, confident strokes ahead of tomorrow's gate test.",
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ]
+        }
+      ],
+      "successMetrics": [
+        {
+          "metric": "Zone 3 Accuracy",
+          "target": "65%+"
+        },
+        {
+          "metric": "Gate Simulation",
+          "target": "pass criteria met"
+        }
+      ],
+      "coachingNotes": null,
+      "warnings": []
+    },
+    {
+      "day": 19,
+      "phase": 2,
+      "title": "Zone 4 Gate Test and 15-16 MPH Introduction",
+      "duration": "10 minutes",
+      "targetPutts": 80,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      ],
+      "speedRange": "3-16 MPH",
+      "objective": "Pass the Zone 4 Gate Test and introduce 15 and 16 MPH with their new \u00b11.25 MPH tolerance.",
+      "science": {
+        "principle": "High-force production",
+        "explanation": "Zone 4 speeds (15-18 MPH) represent powerful putts rarely needed on course but essential for complete speed control. The expanded tolerance reflects the physics of high-force production.",
+        "citation": "Schmidt, R. A., et al. (1979). Motor-output variability theory. Psychological Review."
+      },
+      "blocks": [
+        {
+          "id": "19A",
+          "name": "Warm-Up",
+          "duration": "1.5 minutes",
+          "putts": 12,
+          "targetSpeed": null,
+          "type": "warmup",
+          "sequence": [
+            10,
+            10,
+            10,
+            10,
+            12,
+            12,
+            12,
+            12,
+            14,
+            14,
+            14,
+            14
+          ],
+          "description": "Warm up across 10, 12, 14 MPH. Lightly weighted toward speeds that need attention."
+        },
+        {
+          "id": "19B",
+          "name": "ZONE 4 GATE TEST",
+          "duration": "2 minutes",
+          "putts": 12,
+          "targetSpeed": null,
+          "type": "gateTest",
+          "isOfficial": true,
+          "gateId": "gate-zone4",
+          "protocol": [
+            {
+              "speed": 10,
+              "putts": 4
+            },
+            {
+              "speed": 12,
+              "putts": 4
+            },
+            {
+              "speed": 14,
+              "putts": 4
+            }
+          ],
+          "passRequirements": {
+            "zoneAccuracy": {
+              "minimum": 8,
+              "percentage": 70
+            }
+          },
+          "onPass": "Continue to Block C",
+          "onFail": "Repeat Day 18"
+        },
+        {
+          "id": "19C",
+          "name": "15 MPH Introduction",
+          "duration": "2.5 minutes",
+          "putts": 20,
+          "targetSpeed": 15,
+          "type": "blocked",
+          "acceptRange": {
+            "min": 13.75,
+            "max": 16.25
+          },
+          "description": "15 MPH enters Zone 4. New tolerance: \u00b11.25 MPH. This is a powerful stroke. Focus on staying smooth despite the force increase."
+        },
+        {
+          "id": "19D",
+          "name": "16 MPH Introduction",
+          "duration": "2.5 minutes",
+          "putts": 20,
+          "targetSpeed": 16,
+          "type": "blocked",
+          "acceptRange": {
+            "min": 14.75,
+            "max": 17.25
+          },
+          "description": "16 MPH continues Zone 4 development."
+        },
+        {
+          "id": "19E",
+          "name": "Cool-Down",
+          "duration": "1.5 minutes",
+          "putts": 12,
+          "targetSpeed": 8,
+          "type": "recovery",
+          "description": "Adaptive mid-range cool-down. Speed selected from 7\u201311 MPH based on your strongest recent results \u2014 close out the gate test day on a solid note.",
+          "adaptiveMode": "recovery",
+          "adaptivePool": [
+            7,
+            8,
+            9,
+            10,
+            11
+          ]
+        }
+      ],
+      "successMetrics": [
+        {
+          "metric": "Gate Test",
+          "target": "PASS"
+        },
+        {
+          "metric": "Zone Accuracy at 15-16 MPH",
+          "target": "40%+"
+        }
+      ],
+      "coachingNotes": null,
+      "warnings": [
+        {
+          "type": "critical",
+          "message": "Zone 4 speeds deliver significant force. If target accuracy drops below 65%, STOP immediately and return to Zone 3."
+        }
+      ]
+    },
+    {
+      "day": 20,
+      "phase": 2,
+      "title": "Phase 2 Assessment",
+      "duration": "10 minutes",
+      "targetPutts": 80,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      ],
+      "speedRange": "3-16 MPH",
+      "objective": "Complete Phase 2 with comprehensive assessment across 3-16 MPH.",
+      "science": {
+        "principle": "Testing effect for retention",
+        "explanation": "This assessment serves as both evaluation and retrieval practice. The testing effect will strengthen all speed programs being assessed.",
+        "citation": "Roediger, H. L., & Karpicke, J. D. (2006). Test-enhanced learning. Psychological Science."
+      },
+      "blocks": [
+        {
+          "id": "20A",
+          "name": "Warm-Up",
+          "duration": "2 minutes",
+          "putts": 16,
+          "targetSpeed": null,
+          "type": "warmup",
+          "description": "Warm up across the full range. Lightly weighted toward speeds that need attention."
+        },
+        {
+          "id": "20B",
+          "name": "PHASE 2 ASSESSMENT",
+          "duration": "6 minutes",
+          "putts": 48,
+          "targetSpeed": null,
+          "type": "assessment",
+          "isPhaseAssessment": true,
+          "protocol": [
+            {
+              "speed": 3,
+              "putts": 4
+            },
+            {
+              "speed": 5,
+              "putts": 4
+            },
+            {
+              "speed": 7,
+              "putts": 4
+            },
+            {
+              "speed": 9,
+              "putts": 4
+            },
+            {
+              "speed": 10,
+              "putts": 4
+            },
+            {
+              "speed": 11,
+              "putts": 4
+            },
+            {
+              "speed": 12,
+              "putts": 4
+            },
+            {
+              "speed": 13,
+              "putts": 4
+            },
+            {
+              "speed": 14,
+              "putts": 4
+            },
+            {
+              "speed": 15,
+              "putts": 4
+            },
+            {
+              "speed": 16,
+              "putts": 4
+            }
+          ],
+          "description": "4 putts at each speed. Record target and zone accuracy."
+        },
+        {
+          "id": "20C",
+          "name": "Best Speed Challenge",
+          "duration": "2 minutes",
+          "putts": 16,
+          "targetSpeed": null,
+          "type": "challenge",
+          "description": "Choose your strongest speed from 3-16 MPH \u2014 check your Stats to see which one. Hit 16 consecutive putts and go for a personal best."
+        }
+      ],
+      "successMetrics": [
+        {
+          "metric": "Zone 1-2 (3-10 MPH)",
+          "target": "70%+"
+        },
+        {
+          "metric": "Zone 3 (11-14 MPH)",
+          "target": "60%+"
+        },
+        {
+          "metric": "Zone 4 (15-16 MPH)",
+          "target": "50%+"
+        }
+      ],
+      "coachingNotes": "If you meet standards, proceed to Phase 3. If not, repeat Days 18-20 until standards are met. Check your Stats to see exactly which speeds need the most work \u2014 the app will continue to adapt your practice accordingly.",
+      "warnings": []
+    },
+    {
+      "day": 21,
+      "phase": 3,
+      "title": "17 MPH Introduction",
+      "duration": "9 minutes",
+      "targetPutts": 72,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "speedRange": "3-17 MPH",
+      "objective": "Introduce 17 MPH while maintaining accuracy at all previously learned speeds.",
+      "science": {
+        "principle": "Incremental high-force development",
+        "explanation": "17 MPH represents continued Zone 4 development. Your established 16 MPH program provides the foundation for this incremental increase.",
+        "citation": "Schmidt, R. A. (1975). Schema theory. Psychological Review."
+      },
+      "blocks": [
+        {
+          "id": "21A",
+          "name": "Zone 1-3 Maintenance",
+          "duration": "2 minutes",
+          "putts": 16,
+          "targetSpeed": null,
+          "type": "random",
+          "sequence": [
+            5,
+            8,
+            12,
+            6,
+            10,
+            14,
+            4,
+            9,
+            11,
+            7,
+            13,
+            5,
+            8,
+            12,
+            6,
+            10
+          ],
+          "description": "Adaptive review of foundational speeds \u2014 weighted toward the ones you need the most work on."
+        },
+        {
+          "id": "21B",
+          "name": "15-16 MPH Reinforcement",
+          "duration": "2 minutes",
+          "putts": 16,
+          "targetSpeed": null,
+          "type": "blocked",
+          "protocol": [
+            {
+              "speed": 15,
+              "putts": 8
+            },
+            {
+              "speed": 16,
+              "putts": 8
+            }
+          ],
+          "description": "Blocked practice at Zone 4 speeds."
+        },
+        {
+          "id": "21C",
+          "name": "17 MPH Introduction",
+          "duration": "3 minutes",
+          "putts": 24,
+          "targetSpeed": 17,
+          "type": "blocked",
+          "acceptRange": {
+            "min": 15.75,
+            "max": 18.25
+          },
+          "description": "17 MPH continues Zone 4. Focus on committed stroke with controlled finish."
+        },
+        {
+          "id": "21D",
+          "name": "15-17 Integration",
+          "duration": "2 minutes",
+          "putts": 16,
+          "targetSpeed": null,
+          "type": "sequence",
+          "sequence": [
+            15,
+            16,
+            17,
+            16,
+            15,
+            17,
+            15,
+            16,
+            17,
+            15,
+            16,
+            17,
+            16,
+            15,
+            17,
+            16
+          ],
+          "description": "Adaptive transitions within Zone 4 \u2014 weighted toward the speeds you need the most work on."
+        }
+      ],
+      "successMetrics": [
+        {
+          "metric": "Zone Accuracy at 17 MPH",
+          "target": "45%+"
+        }
+      ],
+      "coachingNotes": null,
+      "warnings": []
+    },
+    {
+      "day": 22,
+      "phase": 3,
+      "title": "18 MPH Development",
+      "duration": "9 minutes",
+      "targetPutts": 72,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "speedRange": "3-18 MPH",
+      "objective": "Complete Zone 4 with 18 MPH \u2014 the last speed before the maximum-force Zone 5.",
+      "science": {
+        "principle": "Zone boundary mastery",
+        "explanation": "18 MPH represents the upper boundary of Zone 4 and requires significant force production. Mastery here prepares you for the Zone 5 challenge.",
+        "citation": "Guadagnoli, M. A., & Lee, T. D. (2004). Challenge point framework. Journal of Motor Behavior."
+      },
+      "blocks": [
+        {
+          "id": "22A",
+          "name": "Warm-Up",
+          "duration": "2 minutes",
+          "putts": 16,
+          "targetSpeed": null,
+          "type": "sequence",
+          "sequence": [
+            8,
+            10,
+            12,
+            14,
+            16,
+            14,
+            12,
+            10,
+            8,
+            10,
+            12,
+            14,
+            16,
+            14,
+            12,
+            10
+          ],
+          "description": "Adaptive progressive warm-up \u2014 weighted toward speeds that need attention."
+        },
+        {
+          "id": "22B",
+          "name": "Zone 4 Reinforcement",
+          "duration": "1.5 minutes",
+          "putts": 12,
+          "targetSpeed": 17,
+          "type": "blocked",
+          "description": "Adaptive Zone 4 reinforcement \u2014 speeds from 15\u201318 MPH selected based on your current accuracy data. Consolidate your high-speed feel with reps at the right challenge level.",
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            15,
+            16,
+            17,
+            18
+          ]
+        },
+        {
+          "id": "22C",
+          "name": "18 MPH Introduction",
+          "duration": "3 minutes",
+          "putts": 24,
+          "targetSpeed": 18,
+          "type": "blocked",
+          "acceptRange": {
+            "min": 16.75,
+            "max": 19.25
+          },
+          "description": "18 MPH is the top of Zone 4. This is a powerful stroke requiring full commitment."
+        },
+        {
+          "id": "22D",
+          "name": "Zone 4 Full Integration",
+          "duration": "2.5 minutes",
+          "putts": 20,
+          "targetSpeed": null,
+          "type": "random",
+          "sequence": [
+            15,
+            17,
+            16,
+            18,
+            15,
+            18,
+            17,
+            16,
+            18,
+            15,
+            16,
+            17,
+            18,
+            16,
+            15,
+            17,
+            18,
+            15,
+            16,
+            18
+          ],
+          "description": "Adaptive Zone 4 practice \u2014 weighted toward the Zone 4 speeds you need the most work on."
+        }
+      ],
+      "successMetrics": [
+        {
+          "metric": "Zone 4 Accuracy (15-18 MPH)",
+          "target": "50%+"
+        }
+      ],
+      "coachingNotes": null,
+      "warnings": [
+        {
+          "type": "caution",
+          "message": "18 MPH putts deliver substantial force. Maintain focus on target accuracy above all else."
+        }
+      ]
+    },
+    {
+      "day": 23,
+      "phase": 3,
+      "title": "Zone 4 Mastery",
+      "duration": "9 minutes",
+      "targetPutts": 72,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "speedRange": "3-18 MPH",
+      "objective": "Achieve full Zone 4 fluency across 15-18 MPH.",
+      "science": {
+        "principle": "Overlearning before advancement",
+        "explanation": "Before adding Zone 5 speeds, Zone 4 must be thoroughly consolidated. This overlearning creates stable motor programs that resist interference from new learning.",
+        "citation": "Driskell, J. E., et al. (1992). Effect of overlearning on retention. Journal of Applied Psychology."
+      },
+      "blocks": [
+        {
+          "id": "23A",
+          "name": "Full Range Random",
+          "duration": "3 minutes",
+          "putts": 24,
+          "targetSpeed": null,
+          "type": "random",
+          "sequence": [
+            6,
+            15,
+            9,
+            18,
+            4,
+            12,
+            7,
+            16,
+            10,
+            14,
+            5,
+            17,
+            8,
+            13,
+            6,
+            18,
+            11,
+            15,
+            3,
+            16,
+            9,
+            17,
+            7,
+            14
+          ],
+          "description": "Adaptive full-range practice across 3-18 MPH \u2014 weighted toward the speeds you need the most work on."
+        },
+        {
+          "id": "23B",
+          "name": "Zone 4 Intensive",
+          "duration": "3 minutes",
+          "putts": 24,
+          "targetSpeed": null,
+          "type": "random",
+          "sequence": [
+            15,
+            16,
+            17,
+            18,
+            18,
+            17,
+            16,
+            15,
+            15,
+            17,
+            18,
+            16,
+            15,
+            18,
+            16,
+            17,
+            15,
+            16,
+            18,
+            17,
+            15,
+            17,
+            16,
+            18
+          ],
+          "description": "Adaptive Zone 4 intensive \u2014 extra focus on your weaker Zone 4 speeds."
+        },
+        {
+          "id": "23C",
+          "name": "Pressure Test",
+          "duration": "3 minutes",
+          "putts": null,
+          "targetSpeed": 16,
+          "type": "pressure",
+          "challengeType": "consecutive",
+          "consecutiveRequired": 5,
+          "requirements": [
+            "on-target",
+            "in-zone"
+          ],
+          "description": "High-speed consecutive challenge \u2014 speed selected from 13\u201317 MPH based on your optimal challenge point. Pressure calibrated to your current ability level.",
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            13,
+            14,
+            15,
+            16,
+            17
+          ]
+        }
+      ],
+      "successMetrics": [
+        {
+          "metric": "Zone 4 Accuracy",
+          "target": "55%+"
+        },
+        {
+          "metric": "Pressure Test",
+          "target": "completed"
+        }
+      ],
+      "coachingNotes": null,
+      "warnings": []
+    },
+    {
+      "day": 24,
+      "phase": 3,
+      "title": "Zone 5 Gate Test Preparation",
+      "duration": "9 minutes",
+      "targetPutts": 72,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ],
+      "speedRange": "3-18 MPH",
+      "objective": "Prepare for the Zone 5 Gate Test \u2014 the final gate before maximum speeds.",
+      "science": {
+        "principle": "Final gate preparation",
+        "explanation": "Zone 5 (19-20 MPH) represents the practical maximum for putting speed. The gate test ensures you have the control necessary to practice safely at these forces.",
+        "citation": "Guadagnoli, M. A., & Lee, T. D. (2004). Challenge point framework. Journal of Motor Behavior."
+      },
+      "blocks": [
+        {
+          "id": "24A",
+          "name": "Zone 4 Peak Performance",
+          "duration": "4 minutes",
+          "putts": 32,
+          "targetSpeed": null,
+          "type": "sequence",
+          "sequence": [
+            15,
+            15,
+            16,
+            16,
+            17,
+            17,
+            18,
+            18,
+            18,
+            17,
+            17,
+            16,
+            16,
+            15,
+            15,
+            18
+          ],
+          "rounds": 2,
+          "description": "Goal: 60% zone accuracy."
+        },
+        {
+          "id": "24B",
+          "name": "Gate Test Simulation",
+          "duration": "3 minutes",
+          "putts": 24,
+          "targetSpeed": null,
+          "type": "gateTest",
+          "protocol": [
+            {
+              "speed": 15,
+              "putts": 3
+            },
+            {
+              "speed": 16,
+              "putts": 3
+            },
+            {
+              "speed": 17,
+              "putts": 3
+            },
+            {
+              "speed": 18,
+              "putts": 3
+            }
+          ],
+          "rounds": 2,
+          "description": "To pass tomorrow: Target 85%+ (10+ of 12), Zone 60%+ (7+ of 12)."
+        },
+        {
+          "id": "24C",
+          "name": "Mental Preparation",
+          "duration": "2 minutes",
+          "putts": 16,
+          "targetSpeed": 18,
+          "type": "blocked",
+          "description": "Adaptive Zone 5 preparation \u2014 speeds from 16\u201320 MPH selected based on where you need the most work. Visualize success at maximum speeds. Commit to safety protocols.",
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            16,
+            17,
+            18,
+            19,
+            20
+          ]
+        }
+      ],
+      "successMetrics": [
+        {
+          "metric": "Zone 4 Accuracy",
+          "target": "60%+"
+        }
+      ],
+      "coachingNotes": null,
+      "warnings": []
+    },
+    {
+      "day": 25,
+      "phase": 3,
+      "title": "Zone 5 Gate Test and 19 MPH Introduction",
+      "duration": "10 minutes",
+      "targetPutts": 80,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19
+      ],
+      "speedRange": "3-19 MPH",
+      "objective": "Pass the Zone 5 Gate Test and carefully introduce 19 MPH with maximum caution.",
+      "science": {
+        "principle": "Maximum force tolerance",
+        "explanation": "Zone 5 speeds use the \u00b11.5 MPH tolerance, the widest in the program. This reflects the substantial variability in maximum-force production.",
+        "citation": "Schmidt, R. A., et al. (1979). Motor-output variability theory. Psychological Review."
+      },
+      "blocks": [
+        {
+          "id": "25A",
+          "name": "Warm-Up",
+          "duration": "1.5 minutes",
+          "putts": 12,
+          "targetSpeed": null,
+          "type": "warmup",
+          "sequence": [
+            14,
+            14,
+            14,
+            14,
+            16,
+            16,
+            16,
+            16,
+            18,
+            18,
+            18,
+            18
+          ],
+          "description": "Warm up across 14, 16, 18 MPH. Lightly weighted toward speeds that need attention."
+        },
+        {
+          "id": "25B",
+          "name": "ZONE 5 GATE TEST",
+          "duration": "2 minutes",
+          "putts": 12,
+          "targetSpeed": null,
+          "type": "gateTest",
+          "isOfficial": true,
+          "gateId": "gate-zone5",
+          "protocol": [
+            {
+              "speed": 15,
+              "putts": 3
+            },
+            {
+              "speed": 16,
+              "putts": 3
+            },
+            {
+              "speed": 17,
+              "putts": 3
+            },
+            {
+              "speed": 18,
+              "putts": 3
+            }
+          ],
+          "passRequirements": {
+            "zoneAccuracy": {
+              "minimum": 7,
+              "percentage": 60
+            }
+          },
+          "onPass": "Continue to Block C",
+          "onFail": "Repeat Day 24"
+        },
+        {
+          "id": "25C",
+          "name": "19 MPH CAREFUL Introduction",
+          "duration": "3 minutes",
+          "putts": 20,
+          "targetSpeed": 19,
+          "type": "blocked",
+          "acceptRange": {
+            "min": 17.5,
+            "max": 20.5
+          },
+          "description": "19 MPH enters Zone 5. New tolerance: \u00b11.5 MPH. Start with 5 putts at 18.5 MPH to bridge the gap. Then attempt 19 MPH. STOP if 3 consecutive misses.",
+          "emergencyProtocol": {
+            "trigger": "3 consecutive misses",
+            "action": "Reduce to 16 MPH immediately"
+          }
+        },
+        {
+          "id": "25D",
+          "name": "17-19 Integration",
+          "duration": "2.5 minutes",
+          "putts": 20,
+          "targetSpeed": null,
+          "type": "sequence",
+          "sequence": [
+            17,
+            18,
+            19,
+            18,
+            17,
+            19,
+            17,
+            18,
+            19,
+            17
+          ],
+          "rounds": 2,
+          "description": "Gradual transitions only."
+        },
+        {
+          "id": "25E",
+          "name": "Cool-Down",
+          "duration": "1 minute",
+          "putts": 8,
+          "targetSpeed": 10,
+          "type": "recovery",
+          "description": "Adaptive cool-down at upper mid-range speeds. Selected from 8\u201312 MPH based on your strongest recent results.",
+          "adaptiveMode": "recovery",
+          "adaptivePool": [
+            8,
+            9,
+            10,
+            11,
+            12
+          ]
+        }
+      ],
+      "successMetrics": [
+        {
+          "metric": "Gate Test",
+          "target": "PASS"
+        },
+        {
+          "metric": "Zone Accuracy at 19 MPH",
+          "target": "40%+"
+        }
+      ],
+      "coachingNotes": null,
+      "warnings": [
+        {
+          "type": "critical",
+          "message": "MAXIMUM CAUTION: 19 MPH delivers extreme force. Emergency Protocol: Any 3 consecutive misses = reduce to 16 MPH immediately."
+        }
+      ]
+    },
+    {
+      "day": 26,
+      "phase": 3,
+      "title": "20 MPH Introduction",
+      "duration": "10 minutes",
+      "targetPutts": 80,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20
+      ],
+      "speedRange": "3-20 MPH",
+      "objective": "Introduce the program maximum speed of 20 MPH with extreme caution.",
+      "science": {
+        "principle": "Maximum speed capability",
+        "explanation": "20 MPH represents the practical ceiling for putting speed. Few on-course situations require this force, but having the capability ensures complete speed control.",
+        "citation": "Schmidt, R. A., & Lee, T. D. (2011). Motor control and learning. Human Kinetics."
+      },
+      "blocks": [
+        {
+          "id": "26A",
+          "name": "Full Range Review",
+          "duration": "2 minutes",
+          "putts": 16,
+          "targetSpeed": null,
+          "type": "random",
+          "sequence": [
+            5,
+            10,
+            15,
+            8,
+            13,
+            18,
+            6,
+            11,
+            16,
+            9,
+            14,
+            19,
+            7,
+            12,
+            17,
+            10
+          ],
+          "description": "Adaptive review across all speeds \u2014 weighted toward the ones you need the most work on."
+        },
+        {
+          "id": "26B",
+          "name": "Zone 5 Reinforcement",
+          "duration": "2 minutes",
+          "putts": 16,
+          "targetSpeed": 19,
+          "type": "blocked",
+          "description": "Adaptive Zone 5 reinforcement \u2014 speeds from 17\u201320 MPH selected based on your current accuracy data. Solidify your maximum speed feel in the final push week.",
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            17,
+            18,
+            19,
+            20
+          ]
+        },
+        {
+          "id": "26C",
+          "name": "20 MPH EXTREME CAUTION Introduction",
+          "duration": "3 minutes",
+          "putts": 20,
+          "targetSpeed": 20,
+          "type": "blocked",
+          "acceptRange": {
+            "min": 18.5,
+            "max": 21.5
+          },
+          "maxAttempts": 15,
+          "description": "20 MPH is the program maximum. Start with 5 putts at 19.5 MPH. Then attempt 20 MPH. STOP IMMEDIATELY if control deteriorates.",
+          "safetyChecklist": [
+            "Pre-check: Device secure?",
+            "Entry requirement: 70% target at 19 MPH achieved",
+            "Maximum attempts: 15 putts at 20 MPH today",
+            "Emergency stop: 3 consecutive misses"
+          ],
+          "emergencyProtocol": {
+            "trigger": "3 consecutive misses OR target accuracy below 60%",
+            "action": "Stop immediately. Do not attempt again today."
+          }
+        },
+        {
+          "id": "26D",
+          "name": "18-20 Integration",
+          "duration": "2 minutes",
+          "putts": 16,
+          "targetSpeed": null,
+          "type": "sequence",
+          "sequence": [
+            18,
+            19,
+            20,
+            19,
+            18
+          ],
+          "rounds": 3,
+          "description": "Careful transitions only."
+        },
+        {
+          "id": "26E",
+          "name": "Cool-Down",
+          "duration": "1 minute",
+          "putts": 8,
+          "targetSpeed": 8,
+          "type": "recovery",
+          "description": "Adaptive cool-down at mid-range speeds. Selected from 8\u201312 MPH based on your strongest results \u2014 finish the final push week on a confident, controlled note.",
+          "adaptiveMode": "recovery",
+          "adaptivePool": [
+            8,
+            9,
+            10,
+            11,
+            12
+          ]
+        }
+      ],
+      "successMetrics": [
+        {
+          "metric": "19 MPH Entry Requirement",
+          "target": "met (70%+ target)"
+        },
+        {
+          "metric": "Zone Accuracy at 20 MPH",
+          "target": "35%+",
+          "note": "acceptable for introduction"
+        }
+      ],
+      "coachingNotes": null,
+      "warnings": [
+        {
+          "type": "extreme",
+          "message": "EXTREME CAUTION PROTOCOL: 20 MPH is the maximum program speed. If target accuracy falls below 60%, STOP and do not attempt again today."
+        }
+      ]
+    },
+    {
+      "day": 27,
+      "phase": 3,
+      "title": "Full Range Random Practice",
+      "duration": "9 minutes",
+      "targetPutts": 72,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20
+      ],
+      "speedRange": "3-20 MPH",
+      "objective": "Develop fluency across the complete 3-20 MPH range with adaptive practice weighted toward your weaknesses.",
+      "science": {
+        "principle": "Complete range fluency",
+        "explanation": "Having unlocked all speeds, the focus shifts to building robust, flexible motor control. Adaptive practice across the full range \u2014 weighted toward your weaknesses \u2014 creates the most transferable skill.",
+        "citation": "Shea, J. B., & Morgan, R. L. (1979). Contextual interference effects. Journal of Experimental Psychology."
+      },
+      "blocks": [
+        {
+          "id": "27A",
+          "name": "Complete Range Random",
+          "duration": "4 minutes",
+          "putts": 32,
+          "targetSpeed": null,
+          "type": "random",
+          "sequence": [
+            7,
+            15,
+            4,
+            19,
+            11,
+            6,
+            17,
+            9,
+            3,
+            20,
+            13,
+            8,
+            16,
+            5,
+            12,
+            18,
+            10,
+            14,
+            7,
+            19,
+            4,
+            16,
+            11,
+            20,
+            6,
+            13,
+            9,
+            17,
+            3,
+            15,
+            8,
+            12
+          ],
+          "description": "Adaptive practice across all 18 speeds \u2014 weighted toward the ones you need the most work on."
+        },
+        {
+          "id": "27B",
+          "name": "Extreme Contrast",
+          "duration": "2.5 minutes",
+          "putts": 20,
+          "targetSpeed": null,
+          "type": "sequence",
+          "sequence": [
+            3,
+            20,
+            5,
+            18,
+            7,
+            16,
+            9,
+            14,
+            11,
+            12
+          ],
+          "rounds": 2,
+          "description": "Maximum contrast jumps weighted toward your weaker speeds. Tests your calibration limits."
+        },
+        {
+          "id": "27C",
+          "name": "Zone Sweeps",
+          "duration": "2.5 minutes",
+          "putts": 20,
+          "targetSpeed": null,
+          "type": "sequence",
+          "sequence": [
+            5,
+            9,
+            12,
+            16,
+            19,
+            17,
+            13,
+            10,
+            6
+          ],
+          "rounds": 2,
+          "description": "Adaptive zone sweep pattern weighted toward your weaker speeds across all five zones."
+        }
+      ],
+      "successMetrics": [
+        {
+          "metric": "Overall Zone Accuracy",
+          "target": "50%+"
+        }
+      ],
+      "coachingNotes": null,
+      "warnings": []
+    },
+    {
+      "day": 28,
+      "phase": 3,
+      "title": "Competition Preparation",
+      "duration": "9 minutes",
+      "targetPutts": 72,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20
+      ],
+      "speedRange": "3-20 MPH",
+      "objective": "Prepare for tomorrow's competition simulation with advanced pressure protocols.",
+      "science": {
+        "principle": "Competition readiness",
+        "explanation": "Competition simulation combines all learned skills under pressure conditions that approximate actual performance demands.",
+        "citation": "Beilock, S. L., & Carr, T. H. (2001). On the fragility of skilled performance. Journal of Experimental Psychology: General."
+      },
+      "blocks": [
+        {
+          "id": "28A",
+          "name": "Warm-Up",
+          "duration": "2 minutes",
+          "putts": 16,
+          "targetSpeed": null,
+          "type": "warmup",
+          "description": "Warm up at self-selected speeds, building confidence. Lightly weighted toward speeds that need attention."
+        },
+        {
+          "id": "28B",
+          "name": "Perfect 10 Challenge",
+          "duration": "4 minutes",
+          "putts": null,
+          "targetSpeed": null,
+          "type": "pressure",
+          "challengeType": "consecutive",
+          "consecutiveRequired": 10,
+          "requirements": [
+            "on-target",
+            "in-zone"
+          ],
+          "allowSpeedChange": true,
+          "description": "Hit 10 consecutive putts at any speed that are both on-target AND in-zone. You may change speeds, but each must succeed."
+        },
+        {
+          "id": "28C",
+          "name": "Combine Mode Preview",
+          "duration": "3 minutes",
+          "putts": null,
+          "targetSpeed": null,
+          "type": "combine",
+          "description": "Switch device to Combine Mode. Complete one full session as practice for tomorrow. Record your score."
+        }
+      ],
+      "successMetrics": [
+        {
+          "metric": "Perfect 10",
+          "target": "completed"
+        },
+        {
+          "metric": "Combine Mode Score",
+          "target": "recorded"
+        }
+      ],
+      "coachingNotes": null,
+      "warnings": []
+    },
+    {
+      "day": 29,
+      "phase": 3,
+      "title": "Competition Simulation",
+      "duration": "10 minutes",
+      "targetPutts": 80,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20
+      ],
+      "speedRange": "3-20 MPH",
+      "objective": "Demonstrate competition-ready performance in multiple Combine Mode sessions.",
+      "science": {
+        "principle": "Ultimate skill transfer test",
+        "explanation": "Competition represents the ultimate test of skill transfer. Multiple sessions under pressure conditions validate your 29 days of training.",
+        "citation": "Masters, R. S. W. (1992). Knowledge, knerves and know-how. British Journal of Psychology."
+      },
+      "blocks": [
+        {
+          "id": "29A",
+          "name": "Warm-Up",
+          "duration": "2 minutes",
+          "putts": 16,
+          "targetSpeed": null,
+          "type": "sequence",
+          "sequence": [
+            5,
+            8,
+            11,
+            14,
+            17,
+            14,
+            11,
+            8,
+            5,
+            8,
+            11,
+            14,
+            17,
+            14,
+            11,
+            8
+          ],
+          "description": "Adaptive progressive warm-up \u2014 weighted toward speeds that need attention."
+        },
+        {
+          "id": "29B",
+          "name": "Competition Session 1",
+          "duration": "3 minutes",
+          "putts": null,
+          "targetSpeed": null,
+          "type": "combine",
+          "description": "Combine Mode. Complete full session. Record score."
+        },
+        {
+          "id": "29C",
+          "name": "Brief Reset",
+          "duration": "1 minute",
+          "putts": 8,
+          "targetSpeed": null,
+          "type": "recovery",
+          "description": "Free practice at comfortable speed."
+        },
+        {
+          "id": "29D",
+          "name": "Competition Session 2",
+          "duration": "3 minutes",
+          "putts": null,
+          "targetSpeed": null,
+          "type": "combine",
+          "description": "Combine Mode. Compare to Session 1."
+        },
+        {
+          "id": "29E",
+          "name": "Competition Session 3",
+          "duration": "1 minute",
+          "putts": null,
+          "targetSpeed": null,
+          "type": "combine",
+          "description": "If time permits, begin third session. Tests sustained performance."
+        }
+      ],
+      "successMetrics": [
+        {
+          "metric": "Combine Sessions",
+          "target": "2+ completed"
+        },
+        {
+          "metric": "Performance Trend",
+          "target": "improvement across sessions"
+        }
+      ],
+      "coachingNotes": null,
+      "warnings": []
+    },
+    {
+      "day": 30,
+      "phase": 3,
+      "title": "Final Assessment",
+      "duration": "10 minutes",
+      "targetPutts": 72,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20
+      ],
+      "speedRange": "3-20 MPH",
+      "objective": "Complete the program with a comprehensive final assessment across all 18 speeds.",
+      "science": {
+        "principle": "Comprehensive evaluation",
+        "explanation": "This final assessment measures the cumulative effect of 30 days of deliberate practice. The testing effect from this assessment will further strengthen all motor programs.",
+        "citation": "Roediger, H. L., & Karpicke, J. D. (2006). Test-enhanced learning. Psychological Science."
+      },
+      "blocks": [
+        {
+          "id": "30A",
+          "name": "Warm-Up",
+          "duration": "2 minutes",
+          "putts": 16,
+          "targetSpeed": null,
+          "type": "warmup",
+          "description": "Final warm-up to peak readiness. Lightly weighted toward speeds that need attention."
+        },
+        {
+          "id": "30B",
+          "name": "FINAL ASSESSMENT",
+          "duration": "6 minutes",
+          "putts": 72,
+          "targetSpeed": null,
+          "type": "assessment",
+          "isFinalAssessment": true,
+          "protocol": [
+            {
+              "speed": 3,
+              "putts": 4
+            },
+            {
+              "speed": 4,
+              "putts": 4
+            },
+            {
+              "speed": 5,
+              "putts": 4
+            },
+            {
+              "speed": 6,
+              "putts": 4
+            },
+            {
+              "speed": 7,
+              "putts": 4
+            },
+            {
+              "speed": 8,
+              "putts": 4
+            },
+            {
+              "speed": 9,
+              "putts": 4
+            },
+            {
+              "speed": 10,
+              "putts": 4
+            },
+            {
+              "speed": 11,
+              "putts": 4
+            },
+            {
+              "speed": 12,
+              "putts": 4
+            },
+            {
+              "speed": 13,
+              "putts": 4
+            },
+            {
+              "speed": 14,
+              "putts": 4
+            },
+            {
+              "speed": 15,
+              "putts": 4
+            },
+            {
+              "speed": 16,
+              "putts": 4
+            },
+            {
+              "speed": 17,
+              "putts": 4
+            },
+            {
+              "speed": 18,
+              "putts": 4
+            },
+            {
+              "speed": 19,
+              "putts": 4
+            },
+            {
+              "speed": 20,
+              "putts": 4
+            }
+          ],
+          "description": "4 putts at each speed from 3-20 MPH (72 total). Record target and zone accuracy at each speed."
+        },
+        {
+          "id": "30C",
+          "name": "Victory Lap",
+          "duration": "2 minutes",
+          "putts": 16,
+          "targetSpeed": null,
+          "type": "celebration",
+          "description": "Choose your three favorite speeds. Hit 5 putts at each, plus 1 final putt at 10 MPH \u2014 the middle of your range."
+        }
+      ],
+      "successMetrics": [
+        {
+          "metric": "Zone 1 (3-7 MPH)",
+          "target": "70%+ zone accuracy"
+        },
+        {
+          "metric": "Zone 2 (8-10 MPH)",
+          "target": "65%+ zone accuracy"
+        },
+        {
+          "metric": "Zone 3 (11-14 MPH)",
+          "target": "60%+ zone accuracy"
+        },
+        {
+          "metric": "Zone 4 (15-18 MPH)",
+          "target": "55%+ zone accuracy"
+        },
+        {
+          "metric": "Zone 5 (19-20 MPH)",
+          "target": "50%+ zone accuracy"
+        }
+      ],
+      "coachingNotes": "CONGRATULATIONS! You have completed the 30-Day Precision Putting Training Program. You now command speed control across the full 3-20 MPH range. Check your Stats to see how far you've come \u2014 your speed ladder tells the full story of your progress.",
+      "warnings": []
+    }
+  ],
+  "scientificFoundation": [
+    {
+      "id": 1,
+      "principle": "Specificity of Practice",
+      "explanation": "Skills are learned best when practice conditions closely match performance conditions. The Speed Machine provides practice at exact speeds that transfer directly to on-course putting.",
+      "application": "Every putt targets a specific MPH corresponding to real putting distances.",
+      "citation": {
+        "authors": "Schmidt, R. A., & Lee, T. D.",
+        "year": 2011,
+        "title": "Motor control and learning: A behavioral emphasis",
+        "edition": "5th ed.",
+        "publisher": "Human Kinetics"
+      }
+    },
+    {
+      "id": 2,
+      "principle": "Blocked vs. Random Practice",
+      "explanation": "Blocked practice builds initial competence quickly. Random practice produces better retention and transfer.",
+      "application": "Phase 1 uses blocked practice; Phases 2-3 introduce adaptive practice weighted toward the user's weakest speeds.",
+      "citation": {
+        "authors": "Shea, J. B., & Morgan, R. L.",
+        "year": 1979,
+        "title": "Contextual interference effects on the acquisition, retention, and transfer of a motor skill",
+        "journal": "Journal of Experimental Psychology: Human Learning and Memory",
+        "volume": "5(2)",
+        "pages": "179-187"
+      }
+    },
+    {
+      "id": 3,
+      "principle": "Contextual Interference Effect",
+      "explanation": "High contextual interference during practice leads to superior long-term retention and transfer.",
+      "application": "Zone jumping drills create high interference by requiring rapid switches between different speeds, with adaptive weighting to emphasize the user's weakest areas.",
+      "citation": {
+        "authors": "Magill, R. A., & Hall, K. G.",
+        "year": 1990,
+        "title": "A review of the contextual interference effect in motor skill acquisition",
+        "journal": "Human Movement Science",
+        "volume": "9(3-5)",
+        "pages": "241-289"
+      }
+    },
+    {
+      "id": 4,
+      "principle": "Feedback and Knowledge of Results",
+      "explanation": "Immediate, precise feedback accelerates motor learning by allowing comparison of intended and actual outcomes.",
+      "application": "The Speed Machine provides instant MPH feedback after every putt.",
+      "citation": {
+        "authors": "Salmoni, A. W., Schmidt, R. A., & Walter, C. B.",
+        "year": 1984,
+        "title": "Knowledge of results and motor learning: A review and critical reappraisal",
+        "journal": "Psychological Bulletin",
+        "volume": "95(3)",
+        "pages": "355-386"
+      }
+    },
+    {
+      "id": 5,
+      "principle": "Progressive Overload (Challenge Point)",
+      "explanation": "Skills develop optimally when challenge increases incrementally, matched to learner skill level.",
+      "application": "Gate Test system ensures new speeds are introduced only after demonstrated competence.",
+      "citation": {
+        "authors": "Guadagnoli, M. A., & Lee, T. D.",
+        "year": 2004,
+        "title": "Challenge point: A framework for conceptualizing the effects of various practice conditions in motor learning",
+        "journal": "Journal of Motor Behavior",
+        "volume": "36(2)",
+        "pages": "212-224"
+      }
+    },
+    {
+      "id": 6,
+      "principle": "Pressure and Performance",
+      "explanation": "Skills learned under some pressure transfer better to high-pressure situations. Explicit monitoring can cause 'choking.'",
+      "application": "Pressure drills introduced early. Focus on speed numbers reduces explicit monitoring.",
+      "citation": {
+        "authors": "Baumeister, R. F.",
+        "year": 1984,
+        "title": "Choking under pressure: Self-consciousness and paradoxical effects of incentives on skillful performance",
+        "journal": "Journal of Personality and Social Psychology",
+        "volume": "46(3)",
+        "pages": "610-620"
+      }
+    },
+    {
+      "id": 7,
+      "principle": "Memory Consolidation",
+      "explanation": "Motor skills are consolidated during rest periods, particularly sleep. Spaced practice enhances retention.",
+      "application": "30-day structure with daily sessions allows consolidation between practices.",
+      "citation": {
+        "authors": "Walker, M. P., Brakefield, T., Morgan, A., Hobson, J. A., & Stickgold, R.",
+        "year": 2002,
+        "title": "Practice with sleep makes perfect: Sleep-dependent motor skill learning",
+        "journal": "Neuron",
+        "volume": "35(1)",
+        "pages": "205-211"
+      }
+    },
+    {
+      "id": 8,
+      "principle": "Testing Effect",
+      "explanation": "Retrieval practice (testing) strengthens memory more than additional study.",
+      "application": "Regular Gate Tests and assessments serve as retrieval practice.",
+      "citation": {
+        "authors": "Roediger, H. L., & Karpicke, J. D.",
+        "year": 2006,
+        "title": "Test-enhanced learning: Taking memory tests improves long-term retention",
+        "journal": "Psychological Science",
+        "volume": "17(3)",
+        "pages": "249-255"
+      }
+    },
+    {
+      "id": 9,
+      "principle": "Force Production Variability",
+      "explanation": "Motor variability increases with force magnitude, following Weber's Law.",
+      "application": "Tolerance zones expand from \u00b10.5 MPH to \u00b11.5 MPH at higher speeds.",
+      "citation": {
+        "authors": "Schmidt, R. A., Zelaznik, H., Hawkins, B., Frank, J. S., & Quinn Jr, J. T.",
+        "year": 1979,
+        "title": "Motor-output variability: A theory for the accuracy of rapid motor acts",
+        "journal": "Psychological Review",
+        "volume": "86(5)",
+        "pages": "415-451"
+      }
+    },
+    {
+      "id": 10,
+      "principle": "Skill Automaticity",
+      "explanation": "With sufficient practice, skills become automatic and more robust under pressure.",
+      "application": "High volume (~2,000+ putts) drives skills toward automaticity.",
+      "citation": {
+        "authors": "Fitts, P. M., & Posner, M. I.",
+        "year": 1967,
+        "title": "Human performance",
+        "publisher": "Brooks/Cole"
+      }
+    },
+    {
+      "id": 11,
+      "principle": "Overlearning",
+      "explanation": "Continued practice after achieving proficiency increases retention and resistance to forgetting.",
+      "application": "Program continues practicing established speeds even after mastery.",
+      "citation": {
+        "authors": "Driskell, J. E., Willis, R. P., & Copper, C.",
+        "year": 1992,
+        "title": "Effect of overlearning on retention",
+        "journal": "Journal of Applied Psychology",
+        "volume": "77(5)",
+        "pages": "615-622"
+      }
+    },
+    {
+      "id": 12,
+      "principle": "Implicit vs. Explicit Learning",
+      "explanation": "Skills learned implicitly are more robust under pressure than explicitly learned skills.",
+      "application": "Focus on single number (MPH) rather than mechanical checkpoints promotes implicit learning.",
+      "citation": {
+        "authors": "Masters, R. S. W.",
+        "year": 1992,
+        "title": "Knowledge, knerves and know-how: The role of explicit versus implicit knowledge in the breakdown of a complex motor skill under pressure",
+        "journal": "British Journal of Psychology",
+        "volume": "83(3)",
+        "pages": "343-358"
+      }
+    }
+  ],
+  "supplementaryMaterials": {
+    "videos": [
+      {
+        "id": 1,
+        "title": "Program Introduction Video",
+        "duration": "3-5 minutes",
+        "topics": [
+          "30-day structure overview",
+          "Speed zone system explanation",
+          "Device setup demonstration",
+          "Feedback loop example"
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Device Setup and Safety Video",
+        "duration": "2-3 minutes",
+        "topics": [
+          "Proper positioning",
+          "Correct ball placement (16 inches)",
+          "High-speed miss consequences"
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Stroke Technique for Speed Control",
+        "duration": "5-7 minutes",
+        "topics": [
+          "Stroke length adjustments",
+          "Consistent tempo",
+          "Common errors and corrections",
+          "5 vs 10 vs 15 MPH comparison"
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Gate Test Demonstrations",
+        "duration": "2-3 minutes each",
+        "topics": [
+          "Exact test protocols",
+          "Pass/fail criteria",
+          "Passing attempt example",
+          "Failing attempt analysis"
+        ]
+      },
+      {
+        "id": 5,
+        "title": "On-Course Application Video",
+        "duration": "5-7 minutes",
+        "topics": [
+          "Green condition to MPH translation",
+          "Pre-putt routine with speed numbers",
+          "Mental process during execution",
+          "Real putting green examples"
+        ]
+      }
+    ],
+    "graphics": [
+      {
+        "id": 1,
+        "title": "Speed Zone Reference Card",
+        "description": "Wallet-sized card with all five zones, tolerances, and distance equivalents"
+      },
+      {
+        "id": 2,
+        "title": "Progress Tracking Sheet",
+        "description": "Printable daily sheet for recording date, zone accuracy, and notes"
+      },
+      {
+        "id": 3,
+        "title": "Gate Test Checklist",
+        "description": "Printable checklist for each Gate Test with required putts, pass criteria, and results space"
+      },
+      {
+        "id": 4,
+        "title": "Speed-to-Distance Conversion Chart",
+        "description": "Comprehensive chart showing MPH 3-20 with distances at stimp 9, 10, 11, 12, 13"
+      },
+      {
+        "id": 5,
+        "title": "Program Overview Infographic",
+        "description": "Visual summary of 30-day timeline, three phases, speed unlocking, and milestones"
+      }
+    ]
+  }
+}

@@ -1,0 +1,565 @@
+//
+//  TrainingViewModel.swift
+//  SpeedMachine
+//
+//  Created by Claude for Jarit Golf
+//
+
+import Foundation
+import Combine
+import UIKit
+
+class TrainingViewModel: ObservableObject {
+    @Published var selectedDay: TrainingDay?
+    @Published var selectedBlock: TrainingBlock?
+    @Published var currentSession: SessionProgress?
+    @Published var isSessionActive = false
+    @Published var blockCompletionPending = false
+    @Published var blockJustCompleted = false
+    @Published var nextBlockForTransition: TrainingBlock? = nil
+    @Published var shouldNavigateHome = false
+    @Published var gateTestResult: GateTestResult?
+    @Published var showGateTestFailedAlert = false
+    @Published var dayCompleteStats: DayCompleteStats? = nil
+    /// Context label shown in the session header when a block uses adaptive interleaved selection.
+    /// e.g. "Your optimal challenge · Zone 2" — nil for non-adaptive blocks.
+    @Published var adaptiveBlockContext: String? = nil
+
+    private let dataService = DataService.shared
+    private let statsService = StatsService.shared
+    private let adaptiveEngine = AdaptiveSpeedEngine.shared
+    private let programLoader = TrainingProgramLoader.shared
+    private var cancellables = Set<AnyCancellable>()
+    private var sessionStartTime: Date?
+    /// Tracks when the first block of a day session began — not reset between blocks.
+    private var daySessionStartTime: Date?
+
+    var currentDay: Int {
+        return Int(dataService.userProgress.currentDay)
+    }
+
+    var currentPhase: Int {
+        return Int(dataService.userProgress.currentPhase)
+    }
+
+    var unlockedZones: [Int] {
+        return (dataService.userProgress.unlockedZones ?? []).map { Int($0) }
+    }
+
+    var passedGateTests: Set<String> {
+        return dataService.getPassedGateTests()
+    }
+
+    func isDayUnlocked(_ dayNumber: Int) -> Bool {
+        // Day 1 is always unlocked
+        if dayNumber == 1 { return true }
+
+        // Current day is unlocked
+        if dayNumber == currentDay { return true }
+
+        // Any completed day is unlocked
+        if dataService.isDayCompleted(dayNumber) { return true }
+
+        // Check if previous day is completed
+        let previousDayCompleted = dataService.isDayCompleted(dayNumber - 1)
+
+        // Also check if there's a gate test required before this day
+        // Gate test days: 5, 9, 12, 19, 25, 30
+        // Gate test on day X must be passed to proceed past that day
+        if let gateTest = programLoader.getGateTest(forDay: dayNumber - 1) {
+            // Previous day was a gate test - must have passed it
+            if !passedGateTests.contains(gateTest.gateId) {
+                return false
+            }
+        }
+
+        return previousDayCompleted
+    }
+
+    func isDayCompleted(_ dayNumber: Int) -> Bool {
+        return dataService.isDayCompleted(dayNumber)
+    }
+
+    func isGateTestDay(_ dayNumber: Int) -> Bool {
+        return programLoader.isGateTestDay(dayNumber)
+    }
+
+    func getGateTestForDay(_ dayNumber: Int) -> GateTest? {
+        return programLoader.getGateTest(forDay: dayNumber)
+    }
+
+    func getDayStatus(_ dayNumber: Int) -> DayStatus {
+        if isDayCompleted(dayNumber) {
+            return .completed
+        } else if dayNumber == currentDay {
+            return .current
+        } else if isDayUnlocked(dayNumber) {
+            return .available
+        } else {
+            return .locked
+        }
+    }
+
+    func startBlock(_ block: TrainingBlock, for day: TrainingDay) {
+        selectedDay = day
+        selectedBlock = block
+
+        let session = SessionProgress(block: block, dayNumber: day.day)
+
+        // Smart interleaved blocks: data-driven speed selection + context label for header
+        if block.adaptiveMode != nil,
+           let result = adaptiveEngine.generateSmartInterleavedResult(for: block, day: day) {
+            session.adaptiveSequence = result.sequence
+            adaptiveBlockContext = result.context
+        } else {
+            // Standard adaptive weighting for random/exploration/warmup/etc. blocks
+            adaptiveBlockContext = nil
+            if let adaptiveSeq = adaptiveEngine.generateAdaptiveSequence(for: block, day: day) {
+                session.adaptiveSequence = adaptiveSeq
+            }
+        }
+
+        currentSession = session
+        isSessionActive = true
+        gateTestResult = nil
+        sessionStartTime = Date()
+        // Only record the day-level start time on the first block — preserve it through auto-advances.
+        if daySessionStartTime == nil {
+            daySessionStartTime = Date()
+        }
+        UIApplication.shared.isIdleTimerDisabled = true
+    }
+
+    func recordPutt(_ speed: Float) {
+        guard let session = currentSession, let block = selectedBlock, let day = selectedDay else { return }
+
+        // Get the target speed (may differ based on block type)
+        let targetSpeed: Int
+        if session.blockSessionType == .eliminationLadder {
+            targetSpeed = session.getCurrentLadderSpeed()
+        } else if session.blockSessionType == .warmup {
+            targetSpeed = session.currentTargetSpeed  // Will be random
+        } else {
+            targetSpeed = session.currentTargetSpeed
+        }
+
+        // Calculate tolerance and check if in zone.
+        // Round to 1 decimal place before comparing so the zone check matches
+        // what is displayed on screen (%.1f), preventing floating-point edge
+        // cases where the display shows e.g. "6.5" but the raw BLE float is
+        // 6.5000001 and would otherwise narrowly fail the boundary check.
+        let roundedSpeed = (speed * 10).rounded() / 10
+        let tolerance: Float
+        let isInZone: Bool
+        if let acceptRange = block.acceptRange {
+            tolerance = (acceptRange.max - acceptRange.min) / 2
+            isInZone = roundedSpeed >= acceptRange.min && roundedSpeed <= acceptRange.max
+        } else {
+            let t = programLoader.getToleranceForSpeed(targetSpeed)
+            tolerance = t
+            isInZone = abs(roundedSpeed - Float(targetSpeed)) <= t
+        }
+
+        // Standard putt recording FIRST
+        session.recordPutt(actualSpeed: speed)
+
+        // Apply block-specific logic AFTER putt is recorded
+        switch session.blockSessionType {
+        case .eliminationLadder:
+            handleLadderPutt(session: session, isInZone: isInZone)
+        case .makeInRow:
+            handleMakeInRowPutt(session: session, isInZone: isInZone)
+        case .warmup, .standard, .recovery:
+            // No special handling needed
+            break
+        }
+
+        // Save to Core Data
+        if let sessionData = getOrCreateSessionData(for: block, day: day.day) {
+            dataService.recordPutt(
+                session: sessionData,
+                targetSpeed: Float(targetSpeed),
+                actualSpeed: speed,
+                tolerance: tolerance,
+                isOnTarget: isInZone
+            )
+
+            dataService.updateSession(
+                sessionData,
+                completedPutts: session.currentPutt,
+                onTargetPutts: session.inZonePutts,
+                isComplete: session.isComplete || session.isLadderComplete
+            )
+        }
+
+        // Update lifetime stats (independent of training program)
+        statsService.recordPutt(
+            targetSpeed: targetSpeed,
+            actualSpeed: speed,
+            tolerance: tolerance
+        )
+
+        // Check if block is complete — 2-second delay so the final putt result
+        // is visible on screen before the block advances or transitions.
+        // blockJustCompleted drives the "✓ BLOCK COMPLETE" banner overlay.
+        if session.isComplete || session.isLadderComplete {
+            blockJustCompleted = true
+            Task {
+                try? await Task.sleep(for: .seconds(3))
+                await MainActor.run { completeBlock() }
+            }
+        }
+    }
+
+    // MARK: - Block-Specific Putt Handlers
+
+    private func handleLadderPutt(session: SessionProgress, isInZone: Bool) {
+        if isInZone {
+            let topRungIndex = session.ladderSpeeds.count - 1  // index 4 = speed 7
+
+            if session.currentRung >= topRungIndex {
+                // ✅ Top rung hit in zone — ladder is now truly complete.
+                // BUG FIX: previously advanceRung() silently returned false here,
+                // but isLadderComplete was already true (set when currentRung reached 4
+                // after the *previous* rung), so the top rung was never actually required.
+                session.markLadderComplete()
+                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+            } else {
+                // Advance to the next rung
+                let advanced = session.advanceRung()
+                if advanced {
+                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                }
+            }
+        } else {
+            // Miss logic: lower 60% of rungs reset to start, upper 40% drop one.
+            // Threshold scales with ladder length so both 5-rung and 12-rung ladders behave proportionally.
+            let resetThreshold = session.ladderSpeeds.count * 3 / 5 - 1
+            if session.currentRung <= resetThreshold {
+                session.resetRung()
+                UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
+            } else {
+                let dropped = session.dropRung()
+                if dropped {
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                }
+            }
+        }
+    }
+
+    private func handleMakeInRowPutt(session: SessionProgress, isInZone: Bool) {
+        if isInZone {
+            session.recordConsecutiveSuccess()
+            let impact = UIImpactFeedbackGenerator(style: .medium)
+            impact.impactOccurred()
+        } else {
+            session.resetConsecutiveCount()
+            let impact = UIImpactFeedbackGenerator(style: .light)
+            impact.impactOccurred()
+        }
+    }
+
+    private var activeSessionData: SessionData?
+
+    private func getOrCreateSessionData(for block: TrainingBlock, day: Int) -> SessionData? {
+        if let existing = activeSessionData {
+            return existing
+        }
+
+        let targetPutts = currentSession?.totalPutts ?? block.putts ?? 0
+        let sessionData = dataService.createSession(
+            dayNumber: day,
+            blockId: block.blockId,
+            targetPutts: targetPutts
+        )
+        activeSessionData = sessionData
+        return sessionData
+    }
+
+    func completeBlock() {
+        guard let day = selectedDay, let block = selectedBlock, let session = currentSession else { return }
+
+        // Banner has served its purpose — hide it now.
+        blockJustCompleted = false
+
+        // Check if this is a gate test block with pass criteria
+        if block.type == .gateTest && block.passRequirements != nil {
+            evaluateGateTest()
+            return
+        }
+
+        // Check if all blocks in the day are complete
+        let blockIds = day.blocks.map { $0.blockId }
+        let completedBlockCount = dataService.getCompletedBlockCount(
+            dayNumber: day.day,
+            blockIds: blockIds
+        )
+
+        blockCompletionPending = true
+
+        // Find the next block in this day
+        if let currentBlockIndex = day.blocks.firstIndex(where: { $0.blockId == block.blockId }) {
+            if currentBlockIndex < day.blocks.count - 1 {
+                // There's a next block in this day, auto-advance to it
+                let nextBlock = day.blocks[currentBlockIndex + 1]
+                nextBlockForTransition = nextBlock  // drives the transition screen
+
+                // Reset session and start the next block after transition screen
+                Task {
+                    try? await Task.sleep(for: .seconds(4))
+                    await MainActor.run {
+                        self.blockCompletionPending = false
+                        self.nextBlockForTransition = nil
+                        self.currentSession = nil
+                        self.selectedBlock = nil
+                        self.activeSessionData = nil
+                        self.startBlock(nextBlock, for: day)
+                    }
+                }
+                return
+            }
+        }
+
+        // Last block of the day — save progress then show DayCompleteView
+        if completedBlockCount >= day.blocks.count && !dataService.isDayCompleted(day.day) {
+            dataService.markDayComplete(
+                dayNumber: day.day,
+                accuracy: session.zoneAccuracy,
+                totalPutts: session.currentPutt,
+                onTargetPutts: session.inZonePutts
+            )
+
+            // Advance to next day
+            if day.day < 30 {
+                dataService.updateProgress(currentDay: day.day + 1, phase: day.phase)
+            }
+        }
+
+        // Compute day stats and hand off to DayCompleteView (user taps Done to go home).
+        dayCompleteStats = computeDayCompleteStats(day: day)
+    }
+
+    /// Builds the summary stat block shown on DayCompleteView.
+    private func computeDayCompleteStats(day: TrainingDay) -> DayCompleteStats {
+        // 1. Fetch all sessions for this day
+        let sessions = dataService.getSessionsForDay(day.day)
+        let sessionIds = sessions.compactMap { $0.id }
+
+        // 2. Total putts and zone accuracy from session records
+        let totalPutts = sessions.reduce(0) { $0 + Int($1.completedPutts) }
+        let totalInZone = sessions.reduce(0) { $0 + Int($1.onTargetPutts) }
+        let overallAccuracy: Float = totalPutts > 0 ? Float(totalInZone) / Float(totalPutts) : 0
+
+        // 3. Practice time: prior sessions today (DailySnapshot) + current session elapsed
+        let priorSeconds = dataService.getTodayPracticeSeconds()
+        let currentElapsed = daySessionStartTime.map { Date().timeIntervalSince($0) } ?? 0
+        let practiceSeconds = priorSeconds + currentElapsed
+
+        // 4. Strongest / weakest individual speed from putt records
+        var (strongestZone, weakestZone, strongestAcc, weakestAcc) = computeSpeedStrengths(sessionIds: sessionIds)
+
+        // 5. Best block (highest accuracy among completed blocks with ≥3 putts)
+        let bestBlock: String? = {
+            guard sessions.count > 1 else { return nil }
+            let withPutts = sessions.filter { $0.completedPutts >= 3 }
+            guard let best = withPutts.max(by: {
+                let accA = $0.completedPutts > 0 ? Float($0.onTargetPutts) / Float($0.completedPutts) : 0
+                let accB = $1.completedPutts > 0 ? Float($1.onTargetPutts) / Float($1.completedPutts) : 0
+                return accA < accB
+            }),
+            let blockId = best.blockId,
+            let matchedBlock = day.blocks.first(where: { $0.blockId == blockId }),
+            let idx = day.blocks.firstIndex(where: { $0.blockId == blockId })
+            else { return nil }
+            return "Block \(idx + 1): \(matchedBlock.name)"
+        }()
+
+        return DayCompleteStats(
+            dayNumber: day.day,
+            totalPutts: totalPutts,
+            overallAccuracy: overallAccuracy,
+            practiceSeconds: practiceSeconds,
+            strongestSpeed: strongestZone,
+            strongestAccuracy: strongestAcc,
+            weakestSpeed: weakestZone,
+            weakestAccuracy: weakestAcc,
+            bestBlock: bestBlock
+        )
+    }
+
+    /// Computes per-speed accuracy from putt records for a set of session IDs.
+    /// Returns the individual MPH value with the best and worst accuracy today.
+    private func computeSpeedStrengths(sessionIds: [UUID]) -> (strongest: Int?, weakest: Int?, strongestAcc: Float, weakestAcc: Float) {
+        let putts = dataService.getPuttsForSessionIds(sessionIds)
+        guard !putts.isEmpty else { return (nil, nil, 0, 0) }
+
+        // Accumulate (total, inZone) per individual speed (MPH)
+        var speedTotals: [Int: Int] = [:]
+        var speedInZone: [Int: Int] = [:]
+
+        for putt in putts {
+            let speed = Int(putt.targetSpeed.rounded())
+            speedTotals[speed, default: 0] += 1
+            if putt.isOnTarget { speedInZone[speed, default: 0] += 1 }
+        }
+
+        // Build accuracy map for speeds with at least 3 putts
+        var speedAccuracy: [Int: Float] = [:]
+        for (speed, total) in speedTotals where total >= 3 {
+            let inZone = speedInZone[speed, default: 0]
+            speedAccuracy[speed] = Float(inZone) / Float(total)
+        }
+
+        guard !speedAccuracy.isEmpty else { return (nil, nil, 0, 0) }
+
+        let bestEntry  = speedAccuracy.max(by: { $0.value < $1.value })!
+        let worstEntry = speedAccuracy.min(by: { $0.value < $1.value })!
+
+        // Only show weakest if it's a different speed from strongest
+        let weakestSpeed = (worstEntry.key != bestEntry.key) ? worstEntry.key : nil
+        let weakestAcc   = (worstEntry.key != bestEntry.key) ? worstEntry.value : 0
+
+        return (bestEntry.key, weakestSpeed, bestEntry.value, weakestAcc)
+    }
+
+    func evaluateGateTest() {
+        guard let block = selectedBlock,
+              let session = currentSession,
+              let gateId = block.gateId,
+              let requirements = block.passRequirements else { return }
+
+        let zoneAccuracyMet = session.inZonePutts >= requirements.zoneAccuracy.minimum
+
+        let passed = zoneAccuracyMet
+
+        gateTestResult = GateTestResult(
+            gateId: gateId,
+            passed: passed,
+            zoneAccuracyRequired: requirements.zoneAccuracy.minimum,
+            zoneAccuracyAchieved: session.inZonePutts,
+            totalPutts: session.currentPutt
+        )
+
+        if passed {
+            dataService.recordGateTestPassed(gateId: gateId)
+
+            // Complete the block and potentially the day
+            if let day = selectedDay {
+                let blockIds = day.blocks.map { $0.blockId }
+                let completedBlockCount = dataService.getCompletedBlockCount(
+                    dayNumber: day.day,
+                    blockIds: blockIds
+                )
+
+                if completedBlockCount >= day.blocks.count - 1 { // -1 because current block isn't recorded yet
+                    dataService.markDayComplete(
+                        dayNumber: day.day,
+                        accuracy: session.zoneAccuracy,
+                        totalPutts: session.currentPutt,
+                        onTargetPutts: session.inZonePutts
+                    )
+
+                    if day.day < 30 {
+                        dataService.updateProgress(currentDay: day.day + 1, phase: day.phase)
+                    }
+                }
+            }
+        } else {
+            // Reset the session's isComplete flag in Core Data so the gate test
+            // block does NOT appear as completed in BlockSelectionView. Without
+            // this, blocks that follow the gate test would become unlocked even
+            // though the test was failed. Resetting here keeps them locked and
+            // forces the user to retry the gate test before proceeding.
+            if let sessionData = activeSessionData {
+                dataService.updateSession(
+                    sessionData,
+                    completedPutts: session.currentPutt,
+                    onTargetPutts: session.inZonePutts,
+                    isComplete: false
+                )
+            }
+            showGateTestFailedAlert = true
+        }
+    }
+
+    func endSession() {
+        // Track practice time using day-level start so the full multi-block
+        // session duration is recorded, not just the last block.
+        if let startTime = daySessionStartTime {
+            let elapsed = Date().timeIntervalSince(startTime)
+            statsService.addPracticeTime(seconds: elapsed)
+        } else if let startTime = sessionStartTime {
+            let elapsed = Date().timeIntervalSince(startTime)
+            statsService.addPracticeTime(seconds: elapsed)
+        }
+
+        isSessionActive = false
+        blockCompletionPending = false
+        blockJustCompleted = false
+        dayCompleteStats = nil
+        adaptiveBlockContext = nil
+        nextBlockForTransition = nil
+        activeSessionData = nil
+        currentSession = nil
+        selectedBlock = nil
+        selectedDay = nil
+        gateTestResult = nil
+        sessionStartTime = nil
+        daySessionStartTime = nil
+        UIApplication.shared.isIdleTimerDisabled = false
+    }
+
+    func getAllDays() -> [TrainingDay] {
+        return programLoader.program?.days ?? []
+    }
+
+    func getDay(_ number: Int) -> TrainingDay? {
+        return programLoader.getDay(number)
+    }
+
+    func getPhase(_ number: Int) -> Phase? {
+        return programLoader.getPhase(number)
+    }
+
+    func getSpeedZone(_ number: Int) -> SpeedZoneInfo? {
+        return programLoader.getSpeedZone(number)
+    }
+}
+
+enum DayStatus {
+    case locked
+    case available
+    case current
+    case completed
+}
+
+struct GateTestResult {
+    let gateId: String
+    let passed: Bool
+    let zoneAccuracyRequired: Int
+    let zoneAccuracyAchieved: Int
+    let totalPutts: Int
+
+    var zoneAccuracyPercentage: Float {
+        guard totalPutts > 0 else { return 0 }
+        return Float(zoneAccuracyAchieved) / Float(totalPutts) * 100
+    }
+}
+
+// MARK: - Day Complete Stats
+
+struct DayCompleteStats {
+    let dayNumber: Int
+    let totalPutts: Int
+    let overallAccuracy: Float      // 0.0–1.0
+    let practiceSeconds: Double
+    let strongestSpeed: Int?        // MPH value with best accuracy today
+    let strongestAccuracy: Float    // 0.0–1.0
+    let weakestSpeed: Int?          // MPH value with worst accuracy today
+    let weakestAccuracy: Float      // 0.0–1.0
+    let bestBlock: String?          // e.g. "Block 2: Speed Builder" (nil for single-block days)
+
+    var practiceMinutes: Int { Int(practiceSeconds / 60) }
+    var practiceSecondsRemainder: Int { Int(practiceSeconds.truncatingRemainder(dividingBy: 60)) }
+    var accuracyPercent: Int { Int(overallAccuracy * 100) }
+}

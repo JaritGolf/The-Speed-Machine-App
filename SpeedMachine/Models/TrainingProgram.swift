@@ -243,7 +243,7 @@ enum BlockSessionType: String, Codable {
     case standard           // Standard: fixed speed, target putts
     case warmup             // Warm-up: random speeds, fixed putt count
     case makeInRow          // Make N in a row: fixed speed, requires N consecutive hits
-    case eliminationLadder  // Ladder: speeds 3→7, specific advancement rules
+    case eliminationLadder  // Ladder: speeds from block.startSpeed→endSpeed
     case recovery           // Recovery: fixed speed, fixed putt count
 
     init(from blockType: BlockType, challengeType: String? = nil) {
@@ -302,16 +302,31 @@ struct Citation: Codable {
 
 // MARK: - Training Program Loader
 
-class TrainingProgramLoader {
+class TrainingProgramLoader: ObservableObject {
     static let shared = TrainingProgramLoader()
 
-    private(set) var program: TrainingProgram?
+    @Published private(set) var program: TrainingProgram?
 
     private init() {
-        loadProgram()
+        loadFromBundle()
+        Task {
+            await NetworkService.shared.fetchProgramIfNeeded()
+        }
     }
 
-    private func loadProgram() {
+    @MainActor func useRemoteProgram(_ data: Data) {
+        do {
+            let decoder = JSONDecoder()
+            let remote = try decoder.decode(TrainingProgram.self, from: data)
+            self.program = remote
+            let t16b = remote.tracks.first(where: { $0.number == 16 })?.blocks.first(where: { $0.id == "16A" })
+            print("🔄 Program updated from remote: \(remote.tracks.count) tracks | block16A threshold: \(t16b?.blockPassThreshold as Any)")
+        } catch {
+            print("🔄 Failed to decode remote training program: \(error)")
+        }
+    }
+
+    private func loadFromBundle() {
         guard let url = Bundle.main.url(forResource: "speed-machine-training-program", withExtension: "json") else {
             print("Error: Training program JSON file not found")
             return
@@ -321,7 +336,8 @@ class TrainingProgramLoader {
             let data = try Data(contentsOf: url)
             let decoder = JSONDecoder()
             program = try decoder.decode(TrainingProgram.self, from: data)
-            print("Training program loaded successfully with \(program?.tracks.count ?? 0) tracks")
+            print("Training program loaded from bundle: \(program?.tracks.count ?? 0) tracks")
+            if let loaded = program { validateProgram(loaded) }
         } catch let DecodingError.dataCorrupted(context) {
             print("Data corrupted: \(context.debugDescription)")
             print("Coding path: \(context.codingPath)")
@@ -375,6 +391,39 @@ class TrainingProgramLoader {
 
     func getBlocksForTrack(_ trackNumber: Int) -> [TrainingBlock] {
         return getTrack(trackNumber)?.blocks ?? []
+    }
+
+    func validateProgram(_ program: TrainingProgram) {
+        for track in program.tracks {
+            let t = track.number
+            for block in track.blocks {
+                let b = block.blockId
+                if block.type == .pressure {
+                    if block.challengeType == "ladder" {
+                        if block.startSpeed == nil || block.endSpeed == nil {
+                            print("⚠️ [TrainingProgram] Track \(t) Block \(b): pressure/ladder missing startSpeed or endSpeed")
+                        } else if let s = block.startSpeed, let e = block.endSpeed, e <= s {
+                            print("⚠️ [TrainingProgram] Track \(t) Block \(b): pressure/ladder endSpeed (\(e)) must be > startSpeed (\(s))")
+                        }
+                    } else if block.challengeType == "consecutive" && block.consecutiveRequired == nil {
+                        print("⚠️ [TrainingProgram] Track \(t) Block \(b): pressure/consecutive missing consecutiveRequired")
+                    } else if block.challengeType == "elimination" && block.lives == nil {
+                        print("⚠️ [TrainingProgram] Track \(t) Block \(b): pressure/elimination missing lives")
+                    }
+                }
+                if block.type == .gateTest {
+                    if block.protocol_?.isEmpty ?? true {
+                        print("⚠️ [TrainingProgram] Track \(t) Block \(b): gateTest has empty or missing protocol")
+                    }
+                    if block.isOfficial == true && block.passRequirements == nil {
+                        print("⚠️ [TrainingProgram] Track \(t) Block \(b): official gateTest missing passRequirements")
+                    }
+                }
+                if let ar = block.acceptRange, ar.min >= ar.max {
+                    print("⚠️ [TrainingProgram] Track \(t) Block \(b): acceptRange.min (\(ar.min)) must be < acceptRange.max (\(ar.max))")
+                }
+            }
+        }
     }
 }
 
@@ -474,20 +523,21 @@ class SessionProgress: ObservableObject {
         self.blockSessionType = BlockSessionType(from: block.type, challengeType: block.challengeType)
         self.requiredConsecutive = block.consecutiveRequired ?? 0
 
-        // Initialize ladder if this is an elimination ladder block
+        // Initialize ladder speeds from admin-configured range
         if self.blockSessionType == .eliminationLadder {
-            self.ladderSpeeds = [3, 4, 5, 6, 7]
-            self.currentRung = 0  // Start at speed 3
-
+            let start = block.startSpeed ?? 3
+            let end = block.endSpeed.map { max($0, start + 1) } ?? max(start + 1, 7)
+            self.ladderSpeeds = Array(start...end)
+            self.currentRung = 0
         }
     }
 
     // MARK: - Ladder Methods
 
-    /// Advance to the next rung (up to rung 4, which is speed 7)
+    /// Advance to the next rung up to the top rung.
     func advanceRung() -> Bool {
         guard blockSessionType == .eliminationLadder else { return false }
-        guard currentRung < 4 else { return false }  // Can't go past rung 4
+        guard currentRung < ladderSpeeds.count - 1 else { return false }
 
         currentRung += 1
         return true
@@ -551,10 +601,18 @@ class SessionProgress: ObservableObject {
         } else {
             targetSpeed = currentTargetSpeed
         }
-        let tolerance = TrainingProgramLoader.shared.getToleranceForSpeed(targetSpeed)
         let difference = abs(actualSpeed - Float(targetSpeed))
+        let tolerance: Float
+        let isInZone: Bool
+        if let acceptRange = block.acceptRange {
+            tolerance = (acceptRange.max - acceptRange.min) / 2
+            isInZone = actualSpeed >= acceptRange.min && actualSpeed <= acceptRange.max
+        } else {
+            let t = TrainingProgramLoader.shared.getToleranceForSpeed(targetSpeed)
+            tolerance = t
+            isInZone = difference <= t
+        }
         let isOnTarget = actualSpeed >= 0 && actualSpeed <= 30 // Valid reading
-        let isInZone = difference <= tolerance
 
         let result = PuttResult(
             puttNumber: currentPutt + 1,

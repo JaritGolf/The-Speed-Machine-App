@@ -1,0 +1,759 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		028E53DE49D7446381730FFF /* SpeedMachineApp/Views/Progress/ProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22870230B1624289B2E4FA10 /* SpeedMachineApp/Views/Progress/ProgressView.swift */; };
+		16E88B1F781944879A8B6F81 /* SpeedMachineApp/CoreData/SpeedMachine.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = CF11042BF9314F2CA4BAE047 /* SpeedMachineApp/CoreData/SpeedMachine.xcdatamodeld */; };
+		1AA530A70736444B9815725B /* SpeedMachineApp/Views/Training/DaySelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AECCD983CA34AC2BE870B26 /* SpeedMachineApp/Views/Training/DaySelectionView.swift */; };
+		1BF0B9C6AFA84A1689C3069E /* SpeedMachineApp/Utilities/Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2EFB9A8D0344676BEB887B6 /* SpeedMachineApp/Utilities/Constants.swift */; };
+		25D0776D95EE4190BF30C534 /* SpeedMachineApp/Services/DataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F74AA334AC0F48468876FBDA /* SpeedMachineApp/Services/DataService.swift */; };
+		275A8BD1B8CA4F5193E7C958 /* SpeedMachineApp/App/SpeedMachineApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 071BBFACD7884C12B36C32FD /* SpeedMachineApp/App/SpeedMachineApp.swift */; };
+		28F1FAB0561144BAAB44B9A1 /* SpeedMachineApp/Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 66774EC850924E7A920ACBEE /* SpeedMachineApp/Assets.xcassets */; };
+		2BDAB5660EA149F3995B8BC8 /* SpeedMachineApp/ViewModels/TrainingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5418D15028454857A3198565 /* SpeedMachineApp/ViewModels/TrainingViewModel.swift */; };
+		5F041FB8CC4B4FC493AA02C3 /* SpeedMachineApp/LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 26BA0F09FE6A4A71B35BF459 /* SpeedMachineApp/LaunchScreen.storyboard */; };
+		6B7A9056CD4F4B11B6D5B6E7 /* SpeedMachineApp/ViewModels/CombineViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 106B4047EF15452884D9FE11 /* SpeedMachineApp/ViewModels/CombineViewModel.swift */; };
+		7F2847ED10AA41D599BA4294 /* SpeedMachineApp/Resources/speed-machine-training-program.json in Resources */ = {isa = PBXBuildFile; fileRef = 3F0A32902026445D8F8A3EF8 /* SpeedMachineApp/Resources/speed-machine-training-program.json */; };
+		92DD61EF19344B158FE23D94 /* SpeedMachineApp/Views/Home/HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2F960F9B95C40AF9B558EE4 /* SpeedMachineApp/Views/Home/HomeView.swift */; };
+		999A20FCD2FA4733A5146CAD /* SpeedMachineApp/Utilities/Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 642BD2C09A824189AF3F5CD3 /* SpeedMachineApp/Utilities/Extensions.swift */; };
+		9EAD22D24BFC4D5B80D49728 /* SpeedMachineApp/Views/Settings/SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 477651E647ED4163A1277C35 /* SpeedMachineApp/Views/Settings/SettingsView.swift */; };
+		A1D4F501B2C34E8A9F123457 /* SpeedMachineApp/Utilities/AdaptiveLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1D4F500B2C34E8A9F123456 /* SpeedMachineApp/Utilities/AdaptiveLayout.swift */; };
+		A9D1E0A56AC64533AF78C41F /* SpeedMachineApp/Views/Connection/ConnectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F3446E8DE244A0B9A30410D /* SpeedMachineApp/Views/Connection/ConnectionView.swift */; };
+		B5AACD522D9545F199EDB3C1 /* SpeedMachineApp/Models/CombineGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 361930AC414E4DEC9CC80D39 /* SpeedMachineApp/Models/CombineGame.swift */; };
+		C79DC2A656004EB8A3D7EE6E /* SpeedMachineApp/Models/TrainingProgram.swift in Sources */ = {isa = PBXBuildFile; fileRef = 656F5BF67DF843788F5EC24F /* SpeedMachineApp/Models/TrainingProgram.swift */; };
+		CCC1E3775A2A42A6AAF2D2FF /* SpeedMachineApp/Views/Training/TrainingSessionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB0FA231D858463B8B697D17 /* SpeedMachineApp/Views/Training/TrainingSessionView.swift */; };
+		DC44730D4E2A47999A6FB972 /* SpeedMachineApp/Services/BluetoothService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EBF5222F81D445895D3C27E /* SpeedMachineApp/Services/BluetoothService.swift */; };
+		E60590CD75DB4806AFCEC463 /* SpeedMachineApp/Views/Combine/CombineModeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D7D703D7A09404AAD863588 /* SpeedMachineApp/Views/Combine/CombineModeView.swift */; };
+		67888C4481B44EFCBEDCEF86 /* SpeedMachineApp/Views/Training/SportLive/SportTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 062C2B7D40004197A7A7C650 /* SpeedMachineApp/Views/Training/SportLive/SportTokens.swift */; };
+		3A7ADC01E8014832A1D3EDC1 /* SpeedMachineApp/Views/Training/SportLive/SportAnimations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17ADA6B74D914313A8E926D4 /* SpeedMachineApp/Views/Training/SportLive/SportAnimations.swift */; };
+		5C78A9941E6C41CC8EEC8602 /* SpeedMachineApp/Views/Training/SportLive/SportRecHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = B82C6259B0734B0C9CA63EE5 /* SpeedMachineApp/Views/Training/SportLive/SportRecHeader.swift */; };
+		CB4D3EA16ED648188667BE05 /* SpeedMachineApp/Views/Training/SportLive/SportPassStrip.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BD074049C5A46C28790FFD0 /* SpeedMachineApp/Views/Training/SportLive/SportPassStrip.swift */; };
+		4C10E0CCE3DA4488A235CA74 /* SpeedMachineApp/Views/Training/SportLive/SportLadder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D0BB5A6D0484C238EB9EEEC /* SpeedMachineApp/Views/Training/SportLive/SportLadder.swift */; };
+		F2A9C5BC892F4CFEB83D7679 /* SpeedMachineApp/Views/Training/SportLive/SportHeroCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB84FD5E1D974258A8A46F92 /* SpeedMachineApp/Views/Training/SportLive/SportHeroCard.swift */; };
+		DE26BBEDD19D4B3BA73F27D2 /* SpeedMachineApp/Views/Training/SportLive/SportEndButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C85736F0AA480896B92799 /* SpeedMachineApp/Views/Training/SportLive/SportEndButton.swift */; };
+		AB9902C0907C45C5B0DE5C85 /* SpeedMachineApp/Views/Training/SportLive/SportLiveContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FE6FA830D7743D192E4753E /* SpeedMachineApp/Views/Training/SportLive/SportLiveContainer.swift */; };
+		B1C3D4E52F26C60100FC9201 /* SpeedMachineApp/Resources/Fonts/Oswald-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 03A96DE02C564C52B8CFB621 /* SpeedMachineApp/Resources/Fonts/Oswald-Regular.ttf */; };
+		B2C3D4E52F26C60100FC9202 /* SpeedMachineApp/Resources/Fonts/Oswald-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 796F96BE31E94C7A8EB612FE /* SpeedMachineApp/Resources/Fonts/Oswald-SemiBold.ttf */; };
+		B3C3D4E52F26C60100FC9203 /* SpeedMachineApp/Resources/Fonts/Oswald-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 19711EFBEE754B999EE4E8CF /* SpeedMachineApp/Resources/Fonts/Oswald-Bold.ttf */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		AAF330302F26C60300FC9201 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AAF3301A2F26C60100FC9201 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AAF330212F26C60100FC9201;
+			remoteInfo = SpeedMachineApp;
+		};
+		AAF3303A2F26C60300FC9201 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AAF3301A2F26C60100FC9201 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AAF330212F26C60100FC9201;
+			remoteInfo = SpeedMachineApp;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		071BBFACD7884C12B36C32FD /* SpeedMachineApp/App/SpeedMachineApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedMachineApp/App/SpeedMachineApp.swift; sourceTree = "<group>"; };
+		0AECCD983CA34AC2BE870B26 /* SpeedMachineApp/Views/Training/DaySelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedMachineApp/Views/Training/DaySelectionView.swift; sourceTree = "<group>"; };
+		0F3446E8DE244A0B9A30410D /* SpeedMachineApp/Views/Connection/ConnectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedMachineApp/Views/Connection/ConnectionView.swift; sourceTree = "<group>"; };
+		106B4047EF15452884D9FE11 /* SpeedMachineApp/ViewModels/CombineViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedMachineApp/ViewModels/CombineViewModel.swift; sourceTree = "<group>"; };
+		1D7D703D7A09404AAD863588 /* SpeedMachineApp/Views/Combine/CombineModeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedMachineApp/Views/Combine/CombineModeView.swift; sourceTree = "<group>"; };
+		22870230B1624289B2E4FA10 /* SpeedMachineApp/Views/Progress/ProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedMachineApp/Views/Progress/ProgressView.swift; sourceTree = "<group>"; };
+		26BA0F09FE6A4A71B35BF459 /* SpeedMachineApp/LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = SpeedMachineApp/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		361930AC414E4DEC9CC80D39 /* SpeedMachineApp/Models/CombineGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedMachineApp/Models/CombineGame.swift; sourceTree = "<group>"; };
+		3F0A32902026445D8F8A3EF8 /* SpeedMachineApp/Resources/speed-machine-training-program.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "SpeedMachineApp/Resources/speed-machine-training-program.json"; sourceTree = "<group>"; };
+		477651E647ED4163A1277C35 /* SpeedMachineApp/Views/Settings/SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedMachineApp/Views/Settings/SettingsView.swift; sourceTree = "<group>"; };
+		5418D15028454857A3198565 /* SpeedMachineApp/ViewModels/TrainingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedMachineApp/ViewModels/TrainingViewModel.swift; sourceTree = "<group>"; };
+		642BD2C09A824189AF3F5CD3 /* SpeedMachineApp/Utilities/Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedMachineApp/Utilities/Extensions.swift; sourceTree = "<group>"; };
+		656F5BF67DF843788F5EC24F /* SpeedMachineApp/Models/TrainingProgram.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedMachineApp/Models/TrainingProgram.swift; sourceTree = "<group>"; };
+		66774EC850924E7A920ACBEE /* SpeedMachineApp/Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = SpeedMachineApp/Assets.xcassets; sourceTree = "<group>"; };
+		8EBF5222F81D445895D3C27E /* SpeedMachineApp/Services/BluetoothService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedMachineApp/Services/BluetoothService.swift; sourceTree = "<group>"; };
+		A1D4F500B2C34E8A9F123456 /* SpeedMachineApp/Utilities/AdaptiveLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedMachineApp/Utilities/AdaptiveLayout.swift; sourceTree = "<group>"; };
+		AAF330222F26C60100FC9201 /* SpeedMachineApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SpeedMachineApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AAF3302F2F26C60300FC9201 /* SpeedMachineAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SpeedMachineAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		AAF330392F26C60300FC9201 /* SpeedMachineAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SpeedMachineAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B2EFB9A8D0344676BEB887B6 /* SpeedMachineApp/Utilities/Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedMachineApp/Utilities/Constants.swift; sourceTree = "<group>"; };
+		CF11042BF9314F2CA4BAE047 /* SpeedMachineApp/CoreData/SpeedMachine.xcdatamodeld */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodeld; path = SpeedMachineApp/CoreData/SpeedMachine.xcdatamodeld; sourceTree = "<group>"; };
+		DB0FA231D858463B8B697D17 /* SpeedMachineApp/Views/Training/TrainingSessionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedMachineApp/Views/Training/TrainingSessionView.swift; sourceTree = "<group>"; };
+		E2F960F9B95C40AF9B558EE4 /* SpeedMachineApp/Views/Home/HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedMachineApp/Views/Home/HomeView.swift; sourceTree = "<group>"; };
+		F74AA334AC0F48468876FBDA /* SpeedMachineApp/Services/DataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedMachineApp/Services/DataService.swift; sourceTree = "<group>"; };
+		062C2B7D40004197A7A7C650 /* SpeedMachineApp/Views/Training/SportLive/SportTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedMachineApp/Views/Training/SportLive/SportTokens.swift; sourceTree = "<group>"; };
+		17ADA6B74D914313A8E926D4 /* SpeedMachineApp/Views/Training/SportLive/SportAnimations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedMachineApp/Views/Training/SportLive/SportAnimations.swift; sourceTree = "<group>"; };
+		B82C6259B0734B0C9CA63EE5 /* SpeedMachineApp/Views/Training/SportLive/SportRecHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedMachineApp/Views/Training/SportLive/SportRecHeader.swift; sourceTree = "<group>"; };
+		2BD074049C5A46C28790FFD0 /* SpeedMachineApp/Views/Training/SportLive/SportPassStrip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedMachineApp/Views/Training/SportLive/SportPassStrip.swift; sourceTree = "<group>"; };
+		6D0BB5A6D0484C238EB9EEEC /* SpeedMachineApp/Views/Training/SportLive/SportLadder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedMachineApp/Views/Training/SportLive/SportLadder.swift; sourceTree = "<group>"; };
+		DB84FD5E1D974258A8A46F92 /* SpeedMachineApp/Views/Training/SportLive/SportHeroCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedMachineApp/Views/Training/SportLive/SportHeroCard.swift; sourceTree = "<group>"; };
+		A1C85736F0AA480896B92799 /* SpeedMachineApp/Views/Training/SportLive/SportEndButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedMachineApp/Views/Training/SportLive/SportEndButton.swift; sourceTree = "<group>"; };
+		1FE6FA830D7743D192E4753E /* SpeedMachineApp/Views/Training/SportLive/SportLiveContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedMachineApp/Views/Training/SportLive/SportLiveContainer.swift; sourceTree = "<group>"; };
+		03A96DE02C564C52B8CFB621 /* SpeedMachineApp/Resources/Fonts/Oswald-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SpeedMachineApp/Resources/Fonts/Oswald-Regular.ttf"; sourceTree = "<group>"; };
+		796F96BE31E94C7A8EB612FE /* SpeedMachineApp/Resources/Fonts/Oswald-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SpeedMachineApp/Resources/Fonts/Oswald-SemiBold.ttf"; sourceTree = "<group>"; };
+		19711EFBEE754B999EE4E8CF /* SpeedMachineApp/Resources/Fonts/Oswald-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SpeedMachineApp/Resources/Fonts/Oswald-Bold.ttf"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		AA309B602F87097700E3BA93 /* Exceptions for "SpeedMachineApp" folder in "SpeedMachineApp" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Services/AdaptiveSpeedEngine.swift,
+				Services/DataService.swift,
+				Services/MasteryService.swift,
+				Services/NetworkService.swift,
+				Services/RecoveryDayGenerator.swift,
+				Services/StatsService.swift,
+				Utilities/AdaptiveLayout.swift,
+				Views/Home/SkillReassessmentView.swift,
+				Views/Stats/CombineStatsView.swift,
+				Views/Stats/SessionHistoryView.swift,
+				Views/Stats/SpeedDetailView.swift,
+				Views/Stats/StatsView.swift,
+				Views/Stats/TrendsView.swift,
+				Views/Training/DaySelectionView.swift,
+				Views/Training/LadderSessionView.swift,
+				Views/Training/MakeInRowSessionView.swift,
+				Views/Training/SkillCheckResultView.swift,
+				Views/Training/TrainingSessionView.swift,
+				Views/Training/SportLive/SportTokens.swift,
+				Views/Training/SportLive/SportAnimations.swift,
+				Views/Training/SportLive/SportRecHeader.swift,
+				Views/Training/SportLive/SportPassStrip.swift,
+				Views/Training/SportLive/SportLadder.swift,
+				Views/Training/SportLive/SportHeroCard.swift,
+				Views/Training/SportLive/SportEndButton.swift,
+				Views/Training/SportLive/SportLiveContainer.swift,
+			);
+			target = AAF330212F26C60100FC9201 /* SpeedMachineApp */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		AAF330242F26C60100FC9201 /* SpeedMachineApp */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				AA309B602F87097700E3BA93 /* Exceptions for "SpeedMachineApp" folder in "SpeedMachineApp" target */,
+			);
+			path = SpeedMachineApp;
+			sourceTree = "<group>";
+		};
+		AAF330322F26C60300FC9201 /* SpeedMachineAppTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = SpeedMachineAppTests;
+			sourceTree = "<group>";
+		};
+		AAF3303C2F26C60300FC9201 /* SpeedMachineAppUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = SpeedMachineAppUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		AAF3301F2F26C60100FC9201 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AAF3302C2F26C60300FC9201 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AAF330362F26C60300FC9201 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		AA65DFCC2F26E74000ED1515 /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				071BBFACD7884C12B36C32FD /* SpeedMachineApp/App/SpeedMachineApp.swift */,
+				361930AC414E4DEC9CC80D39 /* SpeedMachineApp/Models/CombineGame.swift */,
+				656F5BF67DF843788F5EC24F /* SpeedMachineApp/Models/TrainingProgram.swift */,
+				8EBF5222F81D445895D3C27E /* SpeedMachineApp/Services/BluetoothService.swift */,
+				F74AA334AC0F48468876FBDA /* SpeedMachineApp/Services/DataService.swift */,
+				B2EFB9A8D0344676BEB887B6 /* SpeedMachineApp/Utilities/Constants.swift */,
+				A1D4F500B2C34E8A9F123456 /* SpeedMachineApp/Utilities/AdaptiveLayout.swift */,
+				642BD2C09A824189AF3F5CD3 /* SpeedMachineApp/Utilities/Extensions.swift */,
+				106B4047EF15452884D9FE11 /* SpeedMachineApp/ViewModels/CombineViewModel.swift */,
+				5418D15028454857A3198565 /* SpeedMachineApp/ViewModels/TrainingViewModel.swift */,
+				0F3446E8DE244A0B9A30410D /* SpeedMachineApp/Views/Connection/ConnectionView.swift */,
+				E2F960F9B95C40AF9B558EE4 /* SpeedMachineApp/Views/Home/HomeView.swift */,
+				22870230B1624289B2E4FA10 /* SpeedMachineApp/Views/Progress/ProgressView.swift */,
+				0AECCD983CA34AC2BE870B26 /* SpeedMachineApp/Views/Training/DaySelectionView.swift */,
+				DB0FA231D858463B8B697D17 /* SpeedMachineApp/Views/Training/TrainingSessionView.swift */,
+				1D7D703D7A09404AAD863588 /* SpeedMachineApp/Views/Combine/CombineModeView.swift */,
+				477651E647ED4163A1277C35 /* SpeedMachineApp/Views/Settings/SettingsView.swift */,
+				062C2B7D40004197A7A7C650 /* SpeedMachineApp/Views/Training/SportLive/SportTokens.swift */,
+				17ADA6B74D914313A8E926D4 /* SpeedMachineApp/Views/Training/SportLive/SportAnimations.swift */,
+				B82C6259B0734B0C9CA63EE5 /* SpeedMachineApp/Views/Training/SportLive/SportRecHeader.swift */,
+				2BD074049C5A46C28790FFD0 /* SpeedMachineApp/Views/Training/SportLive/SportPassStrip.swift */,
+				6D0BB5A6D0484C238EB9EEEC /* SpeedMachineApp/Views/Training/SportLive/SportLadder.swift */,
+				DB84FD5E1D974258A8A46F92 /* SpeedMachineApp/Views/Training/SportLive/SportHeroCard.swift */,
+				A1C85736F0AA480896B92799 /* SpeedMachineApp/Views/Training/SportLive/SportEndButton.swift */,
+				1FE6FA830D7743D192E4753E /* SpeedMachineApp/Views/Training/SportLive/SportLiveContainer.swift */,
+				03A96DE02C564C52B8CFB621 /* SpeedMachineApp/Resources/Fonts/Oswald-Regular.ttf */,
+				796F96BE31E94C7A8EB612FE /* SpeedMachineApp/Resources/Fonts/Oswald-SemiBold.ttf */,
+				19711EFBEE754B999EE4E8CF /* SpeedMachineApp/Resources/Fonts/Oswald-Bold.ttf */,
+				66774EC850924E7A920ACBEE /* SpeedMachineApp/Assets.xcassets */,
+				3F0A32902026445D8F8A3EF8 /* SpeedMachineApp/Resources/speed-machine-training-program.json */,
+				CF11042BF9314F2CA4BAE047 /* SpeedMachineApp/CoreData/SpeedMachine.xcdatamodeld */,
+				26BA0F09FE6A4A71B35BF459 /* SpeedMachineApp/LaunchScreen.storyboard */,
+			);
+			name = "Recovered References";
+			sourceTree = "<group>";
+		};
+		AAF330192F26C60100FC9201 = {
+			isa = PBXGroup;
+			children = (
+				AAF330242F26C60100FC9201 /* SpeedMachineApp */,
+				AAF330322F26C60300FC9201 /* SpeedMachineAppTests */,
+				AAF3303C2F26C60300FC9201 /* SpeedMachineAppUITests */,
+				AAF330232F26C60100FC9201 /* Products */,
+				AA65DFCC2F26E74000ED1515 /* Recovered References */,
+			);
+			sourceTree = "<group>";
+		};
+		AAF330232F26C60100FC9201 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				AAF330222F26C60100FC9201 /* SpeedMachineApp.app */,
+				AAF3302F2F26C60300FC9201 /* SpeedMachineAppTests.xctest */,
+				AAF330392F26C60300FC9201 /* SpeedMachineAppUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		AAF330212F26C60100FC9201 /* SpeedMachineApp */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AAF330432F26C60300FC9201 /* Build configuration list for PBXNativeTarget "SpeedMachineApp" */;
+			buildPhases = (
+				AAF3301E2F26C60100FC9201 /* Sources */,
+				AAF3301F2F26C60100FC9201 /* Frameworks */,
+				AAF330202F26C60100FC9201 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SpeedMachineApp;
+			packageProductDependencies = (
+			);
+			productName = SpeedMachineApp;
+			productReference = AAF330222F26C60100FC9201 /* SpeedMachineApp.app */;
+			productType = "com.apple.product-type.application";
+		};
+		AAF3302E2F26C60300FC9201 /* SpeedMachineAppTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AAF330462F26C60300FC9201 /* Build configuration list for PBXNativeTarget "SpeedMachineAppTests" */;
+			buildPhases = (
+				AAF3302B2F26C60300FC9201 /* Sources */,
+				AAF3302C2F26C60300FC9201 /* Frameworks */,
+				AAF3302D2F26C60300FC9201 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				AAF330312F26C60300FC9201 /* PBXTargetDependency */,
+			);
+			name = SpeedMachineAppTests;
+			packageProductDependencies = (
+			);
+			productName = SpeedMachineAppTests;
+			productReference = AAF3302F2F26C60300FC9201 /* SpeedMachineAppTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		AAF330382F26C60300FC9201 /* SpeedMachineAppUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AAF330492F26C60300FC9201 /* Build configuration list for PBXNativeTarget "SpeedMachineAppUITests" */;
+			buildPhases = (
+				AAF330352F26C60300FC9201 /* Sources */,
+				AAF330362F26C60300FC9201 /* Frameworks */,
+				AAF330372F26C60300FC9201 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				AAF3303B2F26C60300FC9201 /* PBXTargetDependency */,
+			);
+			name = SpeedMachineAppUITests;
+			packageProductDependencies = (
+			);
+			productName = SpeedMachineAppUITests;
+			productReference = AAF330392F26C60300FC9201 /* SpeedMachineAppUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		AAF3301A2F26C60100FC9201 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2610;
+				LastUpgradeCheck = 2610;
+				TargetAttributes = {
+					AAF330212F26C60100FC9201 = {
+						CreatedOnToolsVersion = 26.1;
+					};
+					AAF3302E2F26C60300FC9201 = {
+						CreatedOnToolsVersion = 26.1;
+						TestTargetID = AAF330212F26C60100FC9201;
+					};
+					AAF330382F26C60300FC9201 = {
+						CreatedOnToolsVersion = 26.1;
+						TestTargetID = AAF330212F26C60100FC9201;
+					};
+				};
+			};
+			buildConfigurationList = AAF3301D2F26C60100FC9201 /* Build configuration list for PBXProject "SpeedMachineApp" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = AAF330192F26C60100FC9201;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = AAF330232F26C60100FC9201 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				AAF330212F26C60100FC9201 /* SpeedMachineApp */,
+				AAF3302E2F26C60300FC9201 /* SpeedMachineAppTests */,
+				AAF330382F26C60300FC9201 /* SpeedMachineAppUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		AAF330202F26C60100FC9201 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				28F1FAB0561144BAAB44B9A1 /* SpeedMachineApp/Assets.xcassets in Resources */,
+				7F2847ED10AA41D599BA4294 /* SpeedMachineApp/Resources/speed-machine-training-program.json in Resources */,
+				5F041FB8CC4B4FC493AA02C3 /* SpeedMachineApp/LaunchScreen.storyboard in Resources */,
+				B1C3D4E52F26C60100FC9201 /* SpeedMachineApp/Resources/Fonts/Oswald-Regular.ttf in Resources */,
+				B2C3D4E52F26C60100FC9202 /* SpeedMachineApp/Resources/Fonts/Oswald-SemiBold.ttf in Resources */,
+				B3C3D4E52F26C60100FC9203 /* SpeedMachineApp/Resources/Fonts/Oswald-Bold.ttf in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AAF3302D2F26C60300FC9201 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AAF330372F26C60300FC9201 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		AAF3301E2F26C60100FC9201 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				275A8BD1B8CA4F5193E7C958 /* SpeedMachineApp/App/SpeedMachineApp.swift in Sources */,
+				B5AACD522D9545F199EDB3C1 /* SpeedMachineApp/Models/CombineGame.swift in Sources */,
+				C79DC2A656004EB8A3D7EE6E /* SpeedMachineApp/Models/TrainingProgram.swift in Sources */,
+				DC44730D4E2A47999A6FB972 /* SpeedMachineApp/Services/BluetoothService.swift in Sources */,
+				25D0776D95EE4190BF30C534 /* SpeedMachineApp/Services/DataService.swift in Sources */,
+				A1D4F501B2C34E8A9F123457 /* SpeedMachineApp/Utilities/AdaptiveLayout.swift in Sources */,
+				1BF0B9C6AFA84A1689C3069E /* SpeedMachineApp/Utilities/Constants.swift in Sources */,
+				999A20FCD2FA4733A5146CAD /* SpeedMachineApp/Utilities/Extensions.swift in Sources */,
+				6B7A9056CD4F4B11B6D5B6E7 /* SpeedMachineApp/ViewModels/CombineViewModel.swift in Sources */,
+				2BDAB5660EA149F3995B8BC8 /* SpeedMachineApp/ViewModels/TrainingViewModel.swift in Sources */,
+				A9D1E0A56AC64533AF78C41F /* SpeedMachineApp/Views/Connection/ConnectionView.swift in Sources */,
+				92DD61EF19344B158FE23D94 /* SpeedMachineApp/Views/Home/HomeView.swift in Sources */,
+				028E53DE49D7446381730FFF /* SpeedMachineApp/Views/Progress/ProgressView.swift in Sources */,
+				1AA530A70736444B9815725B /* SpeedMachineApp/Views/Training/DaySelectionView.swift in Sources */,
+				CCC1E3775A2A42A6AAF2D2FF /* SpeedMachineApp/Views/Training/TrainingSessionView.swift in Sources */,
+				E60590CD75DB4806AFCEC463 /* SpeedMachineApp/Views/Combine/CombineModeView.swift in Sources */,
+				9EAD22D24BFC4D5B80D49728 /* SpeedMachineApp/Views/Settings/SettingsView.swift in Sources */,
+				16E88B1F781944879A8B6F81 /* SpeedMachineApp/CoreData/SpeedMachine.xcdatamodeld in Sources */,
+				67888C4481B44EFCBEDCEF86 /* SpeedMachineApp/Views/Training/SportLive/SportTokens.swift in Sources */,
+				3A7ADC01E8014832A1D3EDC1 /* SpeedMachineApp/Views/Training/SportLive/SportAnimations.swift in Sources */,
+				5C78A9941E6C41CC8EEC8602 /* SpeedMachineApp/Views/Training/SportLive/SportRecHeader.swift in Sources */,
+				CB4D3EA16ED648188667BE05 /* SpeedMachineApp/Views/Training/SportLive/SportPassStrip.swift in Sources */,
+				4C10E0CCE3DA4488A235CA74 /* SpeedMachineApp/Views/Training/SportLive/SportLadder.swift in Sources */,
+				F2A9C5BC892F4CFEB83D7679 /* SpeedMachineApp/Views/Training/SportLive/SportHeroCard.swift in Sources */,
+				DE26BBEDD19D4B3BA73F27D2 /* SpeedMachineApp/Views/Training/SportLive/SportEndButton.swift in Sources */,
+				AB9902C0907C45C5B0DE5C85 /* SpeedMachineApp/Views/Training/SportLive/SportLiveContainer.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AAF3302B2F26C60300FC9201 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AAF330352F26C60300FC9201 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		AAF330312F26C60300FC9201 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AAF330212F26C60100FC9201 /* SpeedMachineApp */;
+			targetProxy = AAF330302F26C60300FC9201 /* PBXContainerItemProxy */;
+		};
+		AAF3303B2F26C60300FC9201 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AAF330212F26C60100FC9201 /* SpeedMachineApp */;
+			targetProxy = AAF3303A2F26C60300FC9201 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		AAF330412F26C60300FC9201 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = R7DC8TVD5S;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		AAF330422F26C60300FC9201 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = R7DC8TVD5S;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		AAF330442F26C60300FC9201 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = R7DC8TVD5S;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = SpeedMachineApp/Info.plist;
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Speed Machine needs Bluetooth to connect to your putting device";
+				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "Speed Machine uses Bluetooth to receive speed data";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = NO;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0.1;
+				PRODUCT_BUNDLE_IDENTIFIER = "Jarit-Golf.SpeedMachineApp";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		AAF330452F26C60300FC9201 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = R7DC8TVD5S;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = SpeedMachineApp/Info.plist;
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Speed Machine needs Bluetooth to connect to your putting device";
+				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "Speed Machine uses Bluetooth to receive speed data";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = NO;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0.1;
+				PRODUCT_BUNDLE_IDENTIFIER = "Jarit-Golf.SpeedMachineApp";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		AAF330472F26C60300FC9201 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = R7DC8TVD5S;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "Jarit-Golf.SpeedMachineAppTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SpeedMachineApp.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/SpeedMachineApp";
+			};
+			name = Debug;
+		};
+		AAF330482F26C60300FC9201 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = R7DC8TVD5S;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.1;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "Jarit-Golf.SpeedMachineAppTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SpeedMachineApp.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/SpeedMachineApp";
+			};
+			name = Release;
+		};
+		AAF3304A2F26C60300FC9201 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = R7DC8TVD5S;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "Jarit-Golf.SpeedMachineAppUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = SpeedMachineApp;
+			};
+			name = Debug;
+		};
+		AAF3304B2F26C60300FC9201 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = R7DC8TVD5S;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "Jarit-Golf.SpeedMachineAppUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = SpeedMachineApp;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		AAF3301D2F26C60100FC9201 /* Build configuration list for PBXProject "SpeedMachineApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AAF330412F26C60300FC9201 /* Debug */,
+				AAF330422F26C60300FC9201 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AAF330432F26C60300FC9201 /* Build configuration list for PBXNativeTarget "SpeedMachineApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AAF330442F26C60300FC9201 /* Debug */,
+				AAF330452F26C60300FC9201 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AAF330462F26C60300FC9201 /* Build configuration list for PBXNativeTarget "SpeedMachineAppTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AAF330472F26C60300FC9201 /* Debug */,
+				AAF330482F26C60300FC9201 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AAF330492F26C60300FC9201 /* Build configuration list for PBXNativeTarget "SpeedMachineAppUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AAF3304A2F26C60300FC9201 /* Debug */,
+				AAF3304B2F26C60300FC9201 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = AAF3301A2F26C60100FC9201 /* Project object */;
+}

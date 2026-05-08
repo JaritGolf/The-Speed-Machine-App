@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Speed Machine — Live View v2 (B variations)</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  html, body {
+    margin: 0; padding: 0;
+    background: #f0eee9;
+    font-family: -apple-system, "SF Pro Text", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="ios-frame.jsx"></script>
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="session-data.jsx"></script>
+<script type="text/babel" src="sport-shared.jsx"></script>
+<script type="text/babel" src="variant-b3-ladder.jsx"></script>
+<script type="text/babel" src="variant-b1-tach.jsx"></script>
+
+<script type="text/babel">
+const TWEAKS_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "target": 10,
+  "tolerance": 0.6,
+  "totalPutts": 24,
+  "passThreshold": 12,
+  "puttsTaken": 10,
+  "lastPuttMph": 10,
+  "puttIsReady": false,
+  "darkMode": false
+}/*EDITMODE-END*/;
+
+function buildSession(t) {
+  const { target, tolerance, totalPutts, passThreshold, puttsTaken } = t;
+  const seedHistory = [
+    13.1, 12.5, 13.8, 12.9, 13.4, 14.2, 13.0, 12.7,
+    13.5, 13.2, 11.8, 13.6, 13.0, 12.4, 13.3, 13.1,
+    14.0, 12.8, 13.4, 13.7, 13.2, 12.6, 13.3, 13.5,
+  ];
+  const offset = target - 13;
+  const history = seedHistory
+    .slice(0, Math.max(0, Math.min(totalPutts, puttsTaken)))
+    .map(mph => ({ mph: +(mph + offset).toFixed(1) }));
+  return {
+    day: 16, block: 1, drillName: 'Zone Jumping',
+    target, tolerance, totalPutts, passThreshold,
+    history,
+    lastPutt: t.puttIsReady ? null : t.lastPuttMph,
+  };
+}
+
+const VARIANTS = [
+  { id: 'tach',     label: 'B1 · Tach',     component: VariantSportTach },
+];
+
+function App() {
+  const [t, setTweak] = useTweaks(TWEAKS_DEFAULTS);
+  const session = buildSession(t);
+
+  return (
+    <React.Fragment>
+      <DesignCanvas>
+        <DCSection
+          id="b-variants"
+          title="Sport — Live View"
+          subtitle="Dark sport DNA · edge-flash on each putt · End Session button. Use Tweaks (top right) to adjust the simulated putt."
+        >
+          {VARIANTS.map(v => (
+            <DCArtboard
+              key={v.id}
+              id={v.id}
+              label={v.label}
+              width={402}
+              height={874}
+            >
+              <IOSDevice width={402} height={874} dark={t.darkMode}>
+                <v.component session={session} dark={t.darkMode} />
+              </IOSDevice>
+            </DCArtboard>
+          ))}
+        </DCSection>
+      </DesignCanvas>
+
+      <TweaksPanel title="Tweaks">
+        <TweakSection label="Session">
+          <TweakSlider label="Target MPH" value={t.target}
+            min={8} max={20} step={0.5} unit=" mph"
+            onChange={v => setTweak('target', v)} />
+          <TweakSlider label="Tolerance ±" value={t.tolerance}
+            min={0.2} max={2.0} step={0.1} unit=" mph"
+            onChange={v => setTweak('tolerance', v)} />
+          <TweakSlider label="Total putts" value={t.totalPutts}
+            min={6} max={48} step={1}
+            onChange={v => setTweak('totalPutts', v)} />
+          <TweakSlider label="Pass threshold" value={t.passThreshold}
+            min={1} max={t.totalPutts} step={1}
+            onChange={v => setTweak('passThreshold', v)} />
+        </TweakSection>
+
+        <TweakSection label="Live putt simulator">
+          <TweakSlider label="Putts taken" value={t.puttsTaken}
+            min={0} max={t.totalPutts} step={1}
+            onChange={v => setTweak('puttsTaken', v)} />
+          <TweakToggle label="Awaiting next putt"
+            value={t.puttIsReady}
+            onChange={v => setTweak('puttIsReady', v)} />
+          <TweakSlider label="Last putt MPH" value={t.lastPuttMph}
+            min={Math.max(6, t.target - 4)} max={t.target + 4} step={0.1} unit=" mph"
+            onChange={v => setTweak('lastPuttMph', v)} />
+          <TweakButton label="Snap to target (in zone)"
+            onClick={() => setTweak('lastPuttMph', t.target)} />
+          <TweakButton label="Snap just outside zone (miss)"
+            onClick={() => setTweak('lastPuttMph', +(t.target + t.tolerance + 0.4).toFixed(1))} />
+        </TweakSection>
+
+        <TweakSection label="Display">
+          <TweakToggle label="Dark mode" value={t.darkMode}
+            onChange={v => setTweak('darkMode', v)} />
+        </TweakSection>
+      </TweaksPanel>
+    </React.Fragment>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
