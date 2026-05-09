@@ -4,14 +4,24 @@ import SwiftUI
 // Shows ±2.5 MPH range around target; last-putt indicator slides up/down.
 
 struct SportLadder: View {
+    @Environment(\.colorScheme) var colorScheme
+
     let targetSpeed: Int
     let lastPutt: PuttResult?
     let tokens: SportTokens
+    let tolerance: Float = 0.5
+
+    @State private var showTriangle = false
+    @State private var triangleTask: Task<Void, Never>?
 
     private let rangeHalf: Float = 2.5
 
     private var minSpeed: Float { Float(targetSpeed) - rangeHalf }
     private var maxSpeed: Float { Float(targetSpeed) + rangeHalf }
+
+    private var lineColor: Color {
+        colorScheme == .dark ? .white : .black
+    }
 
     // Fraction along the ladder (0 = bottom/min, 1 = top/max)
     private func fraction(for speed: Float) -> CGFloat {
@@ -24,14 +34,14 @@ struct SportLadder: View {
             let cx = geo.size.width / 2
 
             ZStack(alignment: .topLeading) {
-                // Track spine
+                // Track spine (thicker, color-aware)
                 Capsule()
-                    .fill(tokens.subtle)
-                    .frame(width: 3, height: h)
+                    .fill(lineColor)
+                    .frame(width: 5, height: h)
                     .position(x: cx, y: h / 2)
 
-                // Tolerance band (±0.5 MPH of target = 0.5/2.5 = 20% of range each side)
-                let bandFrac = CGFloat(0.5 / (rangeHalf * 2))
+                // Tolerance band (dynamic based on tolerance parameter)
+                let bandFrac = CGFloat(tolerance / (rangeHalf * 2))
                 let bandH = max(6, h * bandFrac * 2)
                 let bandY = h * (1 - fraction(for: Float(targetSpeed))) - bandH / 2
 
@@ -51,8 +61,8 @@ struct SportLadder: View {
                     .frame(width: 18, height: 2)
                     .position(x: cx, y: h * (1 - fraction(for: Float(targetSpeed))))
 
-                // Last-putt indicator
-                if let putt = lastPutt {
+                // Last-putt indicator (triangle pointing up, 3-second fade)
+                if let putt = lastPutt, showTriangle {
                     let frac = min(max(fraction(for: putt.actualSpeed), 0), 1)
                     let dotY = h * (1 - frac)
                     let isExact = abs(putt.difference) < 0.15
@@ -63,30 +73,48 @@ struct SportLadder: View {
                                 .font(.system(size: fs(11)))
                                 .foregroundColor(.yellow)
                         } else {
-                            Image(systemName: "arrowtriangle.right.fill")
-                                .font(.system(size: fs(9)))
+                            Image(systemName: "arrowtriangle.up.fill")
+                                .font(.system(size: fs(10)))
                                 .foregroundColor(putt.isInZone ? tokens.zone : tokens.miss)
                         }
                     }
-                    .position(x: cx + 12, y: dotY)
+                    .position(x: cx, y: dotY - 14)
                     .sportPopIn(trigger: putt.puttNumber)
+                    .transition(.opacity)
                 }
 
-                // Speed labels on the right edge
+                // Speed labels on the left edge (larger, bolder)
                 VStack {
                     Text(String(format: "%.0f", maxSpeed))
-                        .font(.oswald(fs(8), weight: .regular))
+                        .font(.oswald(fs(12), weight: .semibold))
                         .foregroundColor(tokens.sub)
                     Spacer()
                     Text("\(targetSpeed)")
-                        .font(.oswald(fs(9), weight: .semibold))
+                        .font(.oswald(fs(14), weight: .bold))
                         .foregroundColor(tokens.zone)
                     Spacer()
                     Text(String(format: "%.0f", minSpeed))
-                        .font(.oswald(fs(8), weight: .regular))
+                        .font(.oswald(fs(12), weight: .semibold))
                         .foregroundColor(tokens.sub)
                 }
-                .frame(width: geo.size.width, alignment: .trailing)
+                .frame(width: geo.size.width, alignment: .leading)
+                .padding(.leading, 4)
+            }
+            .onChange(of: lastPutt?.puttNumber) { _ in
+                triangleTask?.cancel()
+                showTriangle = true
+
+                triangleTask = Task {
+                    try? await Task.sleep(nanoseconds: 3_000_000_000)
+                    await MainActor.run {
+                        withAnimation(.easeOut(duration: 0.3)) {
+                            showTriangle = false
+                        }
+                    }
+                }
+            }
+            .onDisappear {
+                triangleTask?.cancel()
             }
         }
     }

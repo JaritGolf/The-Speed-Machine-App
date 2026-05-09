@@ -69,7 +69,8 @@ struct SportHeroCard: View {
                     SportLadder(
                         targetSpeed: session.currentTargetSpeed,
                         lastPutt: lastPutt,
-                        tokens: tokens
+                        tokens: tokens,
+                        tolerance: 0.5
                     )
                     .frame(width: isIPad ? 56 : 44)
                     .padding(.leading, 12)
