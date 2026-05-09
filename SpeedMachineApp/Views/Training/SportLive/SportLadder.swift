@@ -11,8 +11,7 @@ struct SportLadder: View {
     let tokens: SportTokens
     let tolerance: Float = 0.5
 
-    @State private var showTriangle = false
-    @State private var triangleTask: Task<Void, Never>?
+    @State private var triangleVisibleUntil: Date?
 
     private let rangeHalf: Float = 2.5
 
@@ -32,6 +31,7 @@ struct SportLadder: View {
         GeometryReader { geo in
             let h = geo.size.height
             let cx = geo.size.width / 2
+            let shouldShowTriangle = triangleVisibleUntil.map { Date() < $0 } ?? false
 
             ZStack(alignment: .topLeading) {
                 // Track spine (thicker, color-aware)
@@ -61,26 +61,27 @@ struct SportLadder: View {
                     .frame(width: 18, height: 2)
                     .position(x: cx, y: h * (1 - fraction(for: Float(targetSpeed))))
 
-                // Last-putt indicator (triangle pointing up, 3-second fade)
-                if let putt = lastPutt, showTriangle {
+                // Last-putt indicator (triangle pointing up, shows for 3 seconds after putt)
+                if let putt = lastPutt {
                     let frac = min(max(fraction(for: putt.actualSpeed), 0), 1)
                     let dotY = h * (1 - frac)
                     let isExact = abs(putt.difference) < 0.15
 
                     Group {
-                        if isExact {
-                            Image(systemName: "star.fill")
-                                .font(.system(size: fs(11)))
-                                .foregroundColor(.yellow)
-                        } else {
-                            Image(systemName: "arrowtriangle.up.fill")
-                                .font(.system(size: fs(10)))
-                                .foregroundColor(putt.isInZone ? tokens.zone : tokens.miss)
+                        if shouldShowTriangle {
+                            if isExact {
+                                Image(systemName: "star.fill")
+                                    .font(.system(size: fs(11)))
+                                    .foregroundColor(.yellow)
+                            } else {
+                                Image(systemName: "arrowtriangle.up.fill")
+                                    .font(.system(size: fs(10)))
+                                    .foregroundColor(putt.isInZone ? tokens.zone : tokens.miss)
+                            }
                         }
                     }
                     .position(x: cx, y: dotY - 14)
                     .sportPopIn(trigger: putt.puttNumber)
-                    .transition(.opacity)
                 }
 
                 // Speed labels on the left edge (larger, bolder)
@@ -101,20 +102,12 @@ struct SportLadder: View {
                 .padding(.leading, 4)
             }
             .onChange(of: lastPutt?.puttNumber) { _ in
-                triangleTask?.cancel()
-                showTriangle = true
-
-                triangleTask = Task {
-                    try? await Task.sleep(nanoseconds: 3_000_000_000)
-                    await MainActor.run {
-                        withAnimation(.easeOut(duration: 0.3)) {
-                            showTriangle = false
-                        }
-                    }
-                }
+                triangleVisibleUntil = Date().addingTimeInterval(3)
             }
-            .onDisappear {
-                triangleTask?.cancel()
+            .onReceive(Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()) { _ in
+                if let deadline = triangleVisibleUntil, Date() > deadline {
+                    triangleVisibleUntil = nil
+                }
             }
         }
     }
