@@ -57,13 +57,11 @@ struct SportHeroCard: View {
         chipVisible = false
         capturedPutt = putt
 
-        withAnimation(.spring(response: 0.25, dampingFraction: 0.75)) {
-            phase = .showing
-        }
+        phase = .showing
 
         animTask = Task {
-            // 2-second display window
-            try? await Task.sleep(nanoseconds: 2_000_000_000)
+            // 3-second display window
+            try? await Task.sleep(nanoseconds: 3_000_000_000)
             guard !Task.isCancelled else { return }
 
             // Begin glide
@@ -110,7 +108,7 @@ struct SportHeroCard: View {
                     SportLadder(
                         targetSpeed: session.currentTargetSpeed,
                         tolerance: tolerance,
-                        lastPutt: phase == .idle ? nil : capturedPutt,
+                        lastPutt: phase == .settled ? nil : capturedPutt,
                         tokens: tokens,
                         pxHeight: ladderH
                     )
@@ -187,7 +185,6 @@ struct SportHeroCard: View {
                     .tracking(4)
             }
             .opacity(phase == .showing ? 0 : 1)
-            .animation(.easeInOut(duration: 0.3), value: phase)
 
             // ── PUTT SPEED (shown in .showing; number glides on .settled) ──
             if let p = capturedPutt, phase == .showing {
@@ -243,7 +240,7 @@ private struct HeroReadout: View {
 
             // PUTT SPEED label + glided number
             VStack(alignment: .leading, spacing: 2) {
-                Text("PUTT SPEED")
+                Text("LAST PUTT SPEED")
                     .font(.system(size: fs(13), weight: .heavy))
                     .foregroundColor(isSettled ? tokens.sub : tokens.subtle)
                     .tracking(2)

@@ -608,57 +608,45 @@ struct BlockTransitionView: View {
             VStack(spacing: 0) {
                 Spacer()
 
-                // Checkmark in zone color
-                Image(systemName: "checkmark.circle.fill")
-                    .font(.system(size: fs(80), weight: .bold))
-                    .foregroundColor(tokens.zone)
-                    .padding(.bottom, 20)
-
+                // BLOCK COMPLETE — 72pt, readable at 6 feet
                 Text("BLOCK COMPLETE")
-                    .font(.oswald(fs(56)))
+                    .font(.oswald(fs(72)))
                     .foregroundColor(tokens.fg)
                     .tracking(2)
                     .multilineTextAlignment(.center)
-                    .minimumScaleFactor(0.5)
+                    .minimumScaleFactor(0.75)
+                    .lineLimit(1)
+                    .padding(.horizontal, 24)
+
+                Spacer().frame(height: 48)
+
+                // "MOVING TO" label — 52pt
+                Text("MOVING TO")
+                    .font(.oswald(fs(52), weight: .semibold))
+                    .foregroundColor(tokens.sub)
+                    .tracking(3)
+                    .minimumScaleFactor(0.75)
                     .lineLimit(1)
 
-                Rectangle()
-                    .fill(tokens.subtle)
-                    .frame(height: 1)
-                    .padding(.horizontal, 40)
-                    .padding(.vertical, 28)
+                Spacer().frame(height: 20)
 
-                Text("NEXT BLOCK")
-                    .font(.oswald(fs(20), weight: .semibold))
+                // Track & block number — 52pt
+                Text("Track \(track.number)  ·  Block \(nextBlockNumber)")
+                    .font(.oswald(fs(52)))
                     .foregroundColor(tokens.sub)
-                    .tracking(4)
-                    .padding(.bottom, 8)
-
-                Text("Track \(track.number) · Block \(nextBlockNumber)")
-                    .font(.oswald(fs(34)))
-                    .foregroundColor(tokens.sub)
-                    .minimumScaleFactor(0.6)
+                    .minimumScaleFactor(0.75)
                     .lineLimit(1)
 
+                Spacer().frame(height: 16)
+
+                // Block name — 56pt bold
                 Text(nextBlock.name.uppercased())
-                    .font(.oswald(fs(44)))
+                    .font(.oswald(fs(56)))
                     .foregroundColor(tokens.fg)
                     .multilineTextAlignment(.center)
-                    .minimumScaleFactor(0.5)
+                    .minimumScaleFactor(0.75)
                     .lineLimit(2)
-                    .padding(.horizontal, 32)
-                    .padding(.top, 6)
-
-                if let desc = nextBlock.description {
-                    Text(desc)
-                        .font(.oswald(fs(16)))
-                        .foregroundColor(tokens.sub.opacity(0.7))
-                        .multilineTextAlignment(.center)
-                        .minimumScaleFactor(0.7)
-                        .lineLimit(3)
-                        .padding(.horizontal, 40)
-                        .padding(.top, 8)
-                }
+                    .padding(.horizontal, 24)
 
                 Spacer()
             }

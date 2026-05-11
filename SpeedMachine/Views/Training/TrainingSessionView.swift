@@ -484,43 +484,44 @@ struct BlockTransitionView: View {
             VStack(spacing: 0) {
                 Spacer()
 
+                // BLOCK COMPLETE — 72pt, readable at 6 feet
                 Text("BLOCK COMPLETE")
-                    .font(.oswald(fs(56), weight: .bold))
+                    .font(.oswald(fs(72), weight: .bold))
                     .foregroundColor(.white)
+                    .tracking(2)
+                    .minimumScaleFactor(0.75)
+                    .lineLimit(1)
+                    .padding(.horizontal, 24)
+
+                Spacer().frame(height: 48)
+
+                // "MOVING TO" label — 52pt
+                Text("MOVING TO")
+                    .font(.oswald(fs(52), weight: .semibold))
+                    .foregroundColor(Color(hex: "22C55E"))
                     .tracking(3)
-                    .minimumScaleFactor(0.5)
+                    .minimumScaleFactor(0.75)
                     .lineLimit(1)
 
-                Rectangle()
-                    .fill(Color.white.opacity(0.15))
-                    .frame(height: 1)
-                    .padding(.horizontal, 40)
-                    .padding(.vertical, 28)
+                Spacer().frame(height: 20)
 
+                // Track & block number — 52pt
                 Text("TRACK \(day.day)  ·  BLOCK \(nextBlockNumber)")
-                    .font(.oswald(fs(18), weight: .semibold))
+                    .font(.oswald(fs(52)))
                     .foregroundColor(Color(hex: "22C55E"))
-                    .tracking(2)
+                    .minimumScaleFactor(0.75)
+                    .lineLimit(1)
 
+                Spacer().frame(height: 16)
+
+                // Block name — 56pt bold
                 Text(nextBlock.name.uppercased())
-                    .font(.oswald(fs(32), weight: .bold))
+                    .font(.oswald(fs(56), weight: .bold))
                     .foregroundColor(.white)
                     .multilineTextAlignment(.center)
-                    .minimumScaleFactor(0.5)
+                    .minimumScaleFactor(0.75)
                     .lineLimit(2)
-                    .padding(.horizontal, 32)
-                    .padding(.top, 6)
-
-                if let desc = nextBlock.description {
-                    Text(desc)
-                        .font(.oswald(fs(16)))
-                        .foregroundColor(Color.white.opacity(0.55))
-                        .multilineTextAlignment(.center)
-                        .minimumScaleFactor(0.7)
-                        .lineLimit(3)
-                        .padding(.horizontal, 40)
-                        .padding(.top, 8)
-                }
+                    .padding(.horizontal, 24)
 
                 Spacer()
             }
