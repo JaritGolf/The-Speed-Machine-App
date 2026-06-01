@@ -15,11 +15,11 @@ class CombineGame: ObservableObject {
     @Published var isComplete: Bool = false
 
     let targets: [Int] = [
-        6, 10, 14, 18,     // Shot 1-4: One from each zone (low to high)
-        3, 7, 11, 15, 19,  // Shot 5-9: Full spectrum
-        6, 10, 14, 18,     // Shot 10-13: Repeat zones
-        8, 12, 16, 20,     // Shot 14-17: Different speeds
-        10                  // Shot 18: Medium finish
+        5,  8, 11, 14,     // Shot 1-4: One anchor speed from each zone (low to high)
+        3,  6,  9, 12, 15, // Shot 5-9: Full spectrum endpoints
+        5,  8, 11, 14,     // Shot 10-13: Zone anchors again (contextual interference)
+        4,  7, 10, 13,     // Shot 14-17: Off-anchor speeds
+        8                  // Shot 18: Moderate finish
     ]
 
     func recordShot(actualSpeed: Float) {

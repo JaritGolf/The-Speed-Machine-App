@@ -1,201 +1,194 @@
+//
+//  SportHeroCard.swift
+//  SpeedMachine
+//
+//  Chromeless live target (mockup `.live-target` + `.last-putt`):
+//    centered giant target number + "MPH | TARGET" row, then a hairline-topped
+//    LAST PUTT section (speed + delta). No card, no ladder, no hit-rate.
+//
+//  Putt animation (preserved): on a new putt the actual speed is shown giant in
+//  zone/miss colour for 3 s (.showing), then the number glides via
+//  matchedGeometryEffect down into the LAST PUTT readout (.settled).
+//
+
 import SwiftUI
 
-// MARK: - Standard Hero Card
+// MARK: - Display phase
+
+private enum HeroPuttPhase: Equatable {
+    case idle
+    case showing
+    case settled
+}
+
+// MARK: - Hero (chromeless target + last putt)
 
 struct SportHeroCard: View {
     @ObservedObject var session: SessionProgress
     let tokens: SportTokens
+    let tolerance: Float
 
-    private var lastPutt: PuttResult? { session.puttRecords.last }
+    @Namespace private var heroNS
+    @State private var phase: HeroPuttPhase = .idle
+    @State private var capturedPutt: PuttResult? = nil
+    @State private var chipVisible = false
+    @State private var animTask: Task<Void, Never>? = nil
 
-    private var hitRate: Int {
-        session.currentPutt > 0 ? Int(session.zoneAccuracy * 100) : 0
-    }
+    // MARK: Animation trigger
 
-    private var speedText: String {
-        guard let p = lastPutt else { return "—" }
-        return p.actualSpeed.toSpeedString()
-    }
+    private func onNewPutt(_ putt: PuttResult) {
+        animTask?.cancel()
+        chipVisible = false
+        capturedPutt = putt
+        phase = .showing
 
-    private var speedFontSize: CGFloat {
-        guard let p = lastPutt else { return fs(160) }
-        return p.actualSpeed >= 10 ? fs(130) : fs(160)
-    }
-
-    private var speedColor: Color {
-        guard let p = lastPutt else { return tokens.sub }
-        return p.isInZone ? tokens.zone : tokens.miss
-    }
-
-    private var tintColor: Color {
-        guard let p = lastPutt else { return .clear }
-        return p.isInZone ? tokens.zone : tokens.miss
-    }
-
-    var body: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 24)
-                .fill(tokens.surface)
-
-            // Colored border that pulses with zone/miss
-            RoundedRectangle(cornerRadius: 24)
-                .stroke(lastPutt != nil ? speedColor.opacity(0.55) : tokens.subtle, lineWidth: 2)
-
-            // Tint overlay that fades out after each putt
-            SportTintFade(color: tintColor, trigger: session.puttRecords.count)
-                .clipShape(RoundedRectangle(cornerRadius: 24))
-
-            VStack(spacing: 0) {
-                // Top area: HIT RATE corner stat
-                HStack {
-                    Spacer()
-                    VStack(alignment: .trailing, spacing: 0) {
-                        Text("HIT RATE")
-                            .font(.oswald(fs(10), weight: .semibold))
-                            .foregroundColor(tokens.sub)
-                            .tracking(1)
-                        Text("\(hitRate)%")
-                            .font(.oswald(fs(22)))
-                            .foregroundColor(hitRate >= 60 ? tokens.zone : tokens.sub)
-                            .monospacedDigit()
-                    }
-                    .padding(.top, 12)
-                    .padding(.trailing, 14)
+        animTask = Task {
+            try? await Task.sleep(nanoseconds: 3_000_000_000)
+            guard !Task.isCancelled else { return }
+            await MainActor.run {
+                withAnimation(.spring(response: 0.55, dampingFraction: 0.82)) {
+                    phase = .settled
                 }
-                .frame(height: isIPad ? 64 : 50)
-
-                // Middle: ladder + giant speed
-                HStack(spacing: 0) {
-                    SportLadder(
-                        targetSpeed: session.currentTargetSpeed,
-                        lastPutt: lastPutt,
-                        tokens: tokens,
-                        tolerance: 0.5
-                    )
-                    .frame(width: isIPad ? 56 : 44)
-                    .padding(.leading, 12)
-
-                    VStack(spacing: 2) {
-                        Spacer()
-                        Text(speedText)
-                            .font(.oswald(speedFontSize))
-                            .foregroundColor(speedColor)
-                            .minimumScaleFactor(0.2)
-                            .lineLimit(1)
-                            .monospacedDigit()
-                            .sportPopIn(trigger: session.puttRecords.count)
-                        Text("MPH")
-                            .font(.oswald(fs(22), weight: .semibold))
-                            .foregroundColor(tokens.sub)
-                        Spacer()
-                    }
-                    .frame(maxWidth: .infinity)
+            }
+            try? await Task.sleep(nanoseconds: 620_000_000)
+            guard !Task.isCancelled else { return }
+            await MainActor.run {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                    chipVisible = true
                 }
-
-                // Bottom: live readout strip
-                SportLiveReadout(
-                    targetSpeed: session.currentTargetSpeed,
-                    lastPutt: lastPutt,
-                    tokens: tokens
-                )
-                .frame(height: isIPad ? 44 : 36)
             }
         }
     }
-}
 
-// MARK: - Exploration Hero (no target, no ladder)
-
-struct SportExplorationHero: View {
-    @ObservedObject var session: SessionProgress
-    let tokens: SportTokens
-
-    private var lastPutt: PuttResult? { session.puttRecords.last }
-
-    private var speedText: String {
-        guard let p = lastPutt else { return "—" }
-        return p.actualSpeed.toSpeedString()
-    }
-
-    private var speedFontSize: CGFloat {
-        guard let p = lastPutt else { return fs(160) }
-        return p.actualSpeed >= 10 ? fs(130) : fs(160)
-    }
+    // MARK: Body
 
     var body: some View {
+        VStack(spacing: 0) {
+            Spacer(minLength: 0)
+            centerNumber
+                .frame(maxWidth: .infinity)
+            Spacer(minLength: 0)
+            lastPuttSection
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(tokens.bg)
+        .onChange(of: session.puttRecords.count) { _, count in
+            guard count > 0, let p = session.puttRecords.last else { return }
+            onNewPutt(p)
+        }
+    }
+
+    // MARK: - Centre number
+
+    @ViewBuilder
+    private var centerNumber: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 24)
-                .fill(tokens.surface)
-            RoundedRectangle(cornerRadius: 24)
-                .stroke(tokens.subtle, lineWidth: 1)
-
-            VStack(spacing: 0) {
-                Text("YOUR SPEED")
-                    .font(.oswald(fs(14), weight: .semibold))
-                    .foregroundColor(tokens.sub)
-                    .tracking(2)
-                    .padding(.top, 16)
-
-                Spacer()
-
-                Text(speedText)
-                    .font(.oswald(speedFontSize))
-                    .foregroundColor(tokens.zone)
-                    .minimumScaleFactor(0.2)
+            // TARGET (idle + settled)
+            let tStr = "\(session.currentTargetSpeed)"
+            let tFont: CGFloat = tStr.count >= 2 ? fs(150) : fs(200)
+            VStack(spacing: fs(8)) {
+                Text(tStr)
+                    .font(.inter(tFont))
+                    .foregroundColor(tokens.fg)
                     .lineLimit(1)
+                    .minimumScaleFactor(0.3)
                     .monospacedDigit()
-                    .sportPopIn(trigger: session.puttRecords.count)
+                unitRow(label: "TARGET", unitColor: tokens.fg)
+            }
+            .opacity(phase == .showing ? 0 : 1)
 
-                Text("MPH")
-                    .font(.oswald(fs(22), weight: .semibold))
-                    .foregroundColor(tokens.sub)
-
-                Spacer()
+            // PUTT (showing; number glides to readout on settle)
+            if let p = capturedPutt, phase == .showing {
+                let pStr = String(format: "%.1f", p.actualSpeed)
+                let pFont: CGFloat = pStr.count >= 4 ? fs(170) : fs(200)
+                let col: Color = p.isInZone ? tokens.zone : tokens.miss
+                VStack(spacing: fs(8)) {
+                    Text(pStr)
+                        .font(.inter(pFont))
+                        .foregroundColor(col)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.3)
+                        .monospacedDigit()
+                        .matchedGeometryEffect(id: "puttValue", in: heroNS)
+                    Text("MPH")
+                        .font(.inter(fs(24), weight: .heavy))
+                        .foregroundColor(tokens.sub)
+                        .tracking(fs(24) * 0.06)
+                }
+                .sportPopIn(trigger: session.puttRecords.count)
             }
         }
     }
-}
 
-// MARK: - Live Readout Strip (bottom of hero card)
-
-struct SportLiveReadout: View {
-    let targetSpeed: Int
-    let lastPutt: PuttResult?
-    let tokens: SportTokens
-
-    private var deltaText: String {
-        guard let p = lastPutt else { return "" }
-        let d = p.actualSpeed - Float(targetSpeed)
-        if abs(d) < 0.05 { return "PERFECT" }
-        return d > 0 ? "+\(String(format: "%.1f", d))" : "\(String(format: "%.1f", d))"
+    // "MPH | TARGET" row (mockup .unit-row)
+    @ViewBuilder
+    private func unitRow(label: String, unitColor: Color) -> some View {
+        HStack(spacing: 14) {
+            Text("MPH")
+                .font(.inter(fs(24), weight: .heavy))
+                .foregroundColor(unitColor)
+                .tracking(fs(24) * 0.06)
+            Rectangle()
+                .fill(tokens.subtle)
+                .frame(width: 1, height: fs(20))
+            Text(label)
+                .font(.inter(fs(24), weight: .heavy))
+                .foregroundColor(tokens.sub)
+                .tracking(fs(24) * 0.22)
+        }
     }
 
-    private var deltaColor: Color {
-        guard let p = lastPutt else { return tokens.sub }
+    // MARK: - Last putt section (mockup .last-putt)
+
+    private var resultColor: Color {
+        guard let p = capturedPutt else { return tokens.sub }
         return p.isInZone ? tokens.zone : tokens.miss
     }
 
-    var body: some View {
-        HStack {
-            Text("TARGET")
-                .font(.oswald(fs(10), weight: .semibold))
+    private var deltaString: String {
+        guard let p = capturedPutt else { return "" }
+        let d = p.actualSpeed - Float(p.targetSpeed)
+        let sign = d > 0 ? "+" : ""
+        return String(format: "%@%.1f", sign, d)
+    }
+
+    @ViewBuilder
+    private var lastPuttSection: some View {
+        VStack(spacing: fs(8)) {
+            Text("LAST PUTT")
+                .font(.inter(fs(20), weight: .heavy))
                 .foregroundColor(tokens.sub)
-                .tracking(1.5)
-            Text("\(targetSpeed) MPH")
-                .font(.oswald(fs(13)))
-                .foregroundColor(tokens.fg)
-            Spacer()
-            if lastPutt != nil {
-                Text(deltaText)
-                    .font(.oswald(fs(11), weight: .semibold))
-                    .foregroundColor(deltaColor)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 3)
-                    .background(deltaColor.opacity(0.15))
-                    .cornerRadius(6)
+                .tracking(fs(20) * 0.22)
+
+            HStack(alignment: .firstTextBaseline, spacing: 14) {
+                if let p = capturedPutt, phase == .settled || phase == .idle {
+                    Text(String(format: "%.1f", p.actualSpeed))
+                        .font(.inter(fs(64)))
+                        .foregroundColor(resultColor)
+                        .monospacedDigit()
+                        .matchedGeometryEffect(id: "puttValue", in: heroNS)
+                    Text("MPH")
+                        .font(.inter(fs(22), weight: .heavy))
+                        .foregroundColor(tokens.sub)
+                        .tracking(fs(22) * 0.04)
+                    if chipVisible || phase == .idle {
+                        Text(deltaString)
+                            .font(.inter(fs(48)))
+                            .foregroundColor(resultColor)
+                            .monospacedDigit()
+                    }
+                } else if capturedPutt == nil {
+                    Text("—")
+                        .font(.inter(fs(64)))
+                        .foregroundColor(tokens.subtle)
+                }
             }
+            .frame(minHeight: fs(64))
         }
-        .padding(.horizontal, 14)
-        .background(tokens.subtle)
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 24)
+        .padding(.top, 16)
+        .padding(.bottom, 14)
+        .overlay(Rectangle().fill(tokens.hairline).frame(height: 1), alignment: .top)
     }
 }

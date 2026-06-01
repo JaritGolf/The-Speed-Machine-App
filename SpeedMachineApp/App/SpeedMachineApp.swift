@@ -45,9 +45,19 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
 }
 
 struct ContentView: View {
+    @AppStorage("hasSeenWelcome") private var hasSeenWelcome = false
+
     var body: some View {
-        HomeView()
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(AppColors.backgroundAlt.ignoresSafeArea())
+        Group {
+            if hasSeenWelcome {
+                HomeView()
+            } else {
+                WelcomeView {
+                    withAnimation(.easeInOut(duration: 0.3)) { hasSeenWelcome = true }
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(AppColors.backgroundAlt.ignoresSafeArea())
     }
 }

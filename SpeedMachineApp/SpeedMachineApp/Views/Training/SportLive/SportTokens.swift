@@ -51,7 +51,7 @@ struct SportTokens {
 
     static func make(dark: Bool) -> SportTokens {
         SportTokens(
-            bg:       dark ? Color(hex: "08090C") : Color(hex: "FAFAF7"),
+            bg:       dark ? Color(hex: "08090C") : Color(hex: "FFFFFF"),
             surface:  dark ? Color(hex: "13151A") : Color(hex: "FFFFFF"),
             fg:       dark ? Color.white           : Color(hex: "08090C"),
             sub:      dark ? Color.white.opacity(0.50) : Color.black.opacity(0.50),
@@ -65,15 +65,18 @@ struct SportTokens {
     }
 }
 
-// MARK: - Oswald font helper
+// MARK: - Inter font helper
 
 extension Font {
-    static func oswald(_ size: CGFloat, weight: Font.Weight = .bold) -> Font {
+    static func inter(_ size: CGFloat, weight: Font.Weight = .black) -> Font {
         let name: String
         switch weight {
-        case .bold:     name = "Oswald-Bold"
-        case .semibold: name = "Oswald-SemiBold"
-        default:        name = "Oswald-Regular"
+        case .black:    name = "Inter-Black"
+        case .heavy:    name = "Inter-ExtraBold"
+        case .bold:     name = "Inter-Bold"
+        case .semibold: name = "Inter-SemiBold"
+        case .medium:   name = "Inter-Medium"
+        default:        name = "Inter-Regular"
         }
         return .custom(name, size: size)
     }

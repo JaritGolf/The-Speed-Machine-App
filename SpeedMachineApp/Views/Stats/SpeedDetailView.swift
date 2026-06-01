@@ -2,7 +2,7 @@
 //  SpeedDetailView.swift
 //  SpeedMachine
 //
-//  Created by Claude for Jarit Golf
+//  Whoop minimal per-speed detail (mockup 16).
 //
 
 import SwiftUI
@@ -11,257 +11,114 @@ struct SpeedDetailView: View {
     let profile: SpeedProfileData
     @Environment(\.dismiss) var dismiss
 
-    private var zone: SpeedZone {
-        SpeedZone.getZone(for: Int(profile.targetSpeed))
-    }
+    private var zone: SpeedZone { SpeedZone.getZone(for: Int(profile.targetSpeed)) }
+    private var hasData: Bool { profile.totalPutts > 0 }
+    private var accColor: Color { statAccuracyColor(profile.accuracy) }
 
-    var body: some View {
-        NavigationView {
-            ZStack {
-                AppColors.backgroundAlt.ignoresSafeArea()
-
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 20) {
-                        // Hero speed + accuracy
-                        SpeedHeroCard(profile: profile, zone: zone)
-
-                        // Detailed Metrics
-                        DetailedMetricsCard(profile: profile)
-
-                        // Tendency indicator
-                        TendencyCard(profile: profile)
-
-                        // Streak info
-                        StreakCard(profile: profile)
-                    }
-                    .padding()
-                }
-            }
-            .navigationTitle("\(profile.targetSpeed) MPH")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") { dismiss() }
-                }
-            }
-        }
-        .navigationViewStyle(.stack)
-    }
-}
-
-// MARK: - Speed Hero Card
-
-struct SpeedHeroCard: View {
-    let profile: SpeedProfileData
-    let zone: SpeedZone
-
-    private var accuracyColor: Color {
-        let acc = profile.accuracy
-        if acc >= 80 { return AppColors.accentGreen }
-        if acc >= 65 { return AppColors.accentBright }
-        if acc >= 50 { return .yellow }
-        if acc >= 35 { return .orange }
-        return AppColors.error
-    }
-
-    var body: some View {
-        VStack(spacing: 16) {
-            // Big accuracy number
-            Text(profile.totalPutts > 0 ? String(format: "%.0f%%", profile.accuracy) : "—")
-                .font(.system(size: 72, weight: .black, design: .rounded))
-                .foregroundColor(profile.totalPutts > 0 ? accuracyColor : AppColors.textMuted)
-
-            Text("Accuracy")
-                .font(.title3)
-                .fontWeight(.medium)
-                .foregroundColor(AppColors.textMuted)
-
-            // Zone badge
-            HStack(spacing: 6) {
-                Text(zone.name)
-                    .font(.caption)
-                    .fontWeight(.semibold)
-
-                Text("•")
-
-                Text("\(zone.speedRange.lowerBound)–\(zone.speedRange.upperBound) MPH")
-                    .font(.caption)
-            }
-            .foregroundColor(AppColors.textMuted)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
-            .background(AppColors.backgroundAlt)
-            .cornerRadius(20)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(24)
-        .background(Color.white)
-        .cornerRadius(12)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(AppColors.border, lineWidth: 1)
-        )
-    }
-}
-
-// MARK: - Detailed Metrics
-
-struct DetailedMetricsCard: View {
-    let profile: SpeedProfileData
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Performance")
-                .font(.headline)
-                .foregroundColor(AppColors.primaryBlack)
-
-            VStack(spacing: 12) {
-                DetailRow(
-                    label: "Total Putts",
-                    value: "\(profile.totalPutts)"
-                )
-                DetailRow(
-                    label: "On Target",
-                    value: "\(profile.onTargetPutts)"
-                )
-                DetailRow(
-                    label: "Average Deviation",
-                    value: profile.totalPutts > 0 ?
-                        String(format: "%.2f MPH", profile.averageDeviation) : "—"
-                )
-                DetailRow(
-                    label: "Consistency (Std Dev)",
-                    value: profile.totalPutts > 1 ?
-                        String(format: "%.2f MPH", profile.standardDeviation) : "—"
-                )
-                DetailRow(
-                    label: "Average Actual Speed",
-                    value: profile.totalPutts > 0 ?
-                        String(format: "%.1f MPH", profile.averageActualSpeed) : "—"
-                )
-
-                if let lastPracticed = profile.lastPracticedAt {
-                    DetailRow(
-                        label: "Last Practiced",
-                        value: lastPracticed.toDisplayString()
-                    )
-                }
-            }
-        }
-        .padding()
-        .background(Color.white)
-        .cornerRadius(12)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(AppColors.border, lineWidth: 1)
-        )
-    }
-}
-
-struct DetailRow: View {
-    let label: String
-    let value: String
-
-    var body: some View {
-        HStack {
-            Text(label)
-                .font(.subheadline)
-                .foregroundColor(AppColors.textMuted)
-            Spacer()
-            Text(value)
-                .font(.subheadline)
-                .fontWeight(.medium)
-                .foregroundColor(AppColors.primaryBlack)
-        }
-    }
-}
-
-// MARK: - Tendency Card
-
-struct TendencyCard: View {
-    let profile: SpeedProfileData
-
-    private var iconName: String {
-        let signed = profile.averageSignedDeviation
-        if abs(signed) < 0.1 { return "equal.circle.fill" }
-        return signed > 0 ? "arrow.up.circle.fill" : "arrow.down.circle.fill"
-    }
-
+    private var signed: Double { profile.averageSignedDeviation }
     private var tendencyColor: Color {
-        let signed = profile.averageSignedDeviation
         if abs(signed) < 0.1 { return AppColors.accentGreen }
-        if abs(signed) < 0.3 { return .orange }
-        return AppColors.error
+        return signed > 0 ? AppColors.error : AppColors.bleBlue
+    }
+    private var tendencyArrow: String { abs(signed) < 0.1 ? "→" : (signed > 0 ? "↑" : "↓") }
+    private var tendencyLabel: String {
+        if abs(signed) < 0.1 { return "On Target" }
+        return signed > 0 ? "Trending Fast" : "Trending Slow"
     }
 
     var body: some View {
-        guard profile.totalPutts > 0 else { return AnyView(EmptyView()) }
+        ZStack(alignment: .top) {
+            Color.white.ignoresSafeArea()
 
-        return AnyView(
-            HStack(spacing: 14) {
-                Image(systemName: iconName)
-                    .font(.title2)
-                    .foregroundColor(tendencyColor)
+            VStack(spacing: 0) {
+                StatsHeader(title: "\(profile.targetSpeed) MPH") { dismiss() }
 
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Miss Tendency")
-                        .font(.headline)
-                        .foregroundColor(AppColors.primaryBlack)
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 0) {
+                        // Accuracy hero
+                        VStack(spacing: 10) {
+                            HStack(alignment: .firstTextBaseline, spacing: 0) {
+                                Text(hasData ? "\(Int(profile.accuracy))" : "—")
+                                    .font(.custom("Inter-Black", size: 80))
+                                    .foregroundColor(hasData ? accColor : AppColors.textSubdued)
+                                if hasData {
+                                    Text("%")
+                                        .font(.custom("Inter-Black", size: 40))
+                                        .foregroundColor(hasData ? accColor : AppColors.textSubdued)
+                                }
+                            }
+                            Text("ACCURACY")
+                                .font(.custom("Inter-Bold", size: 13))
+                                .kerning(2.4)
+                                .foregroundColor(AppColors.textSubdued)
+                            Text("\(zone.name.uppercased()) · \(zone.speedRange.lowerBound)–\(zone.speedRange.upperBound) MPH")
+                                .font(.custom("Inter-Bold", size: 12))
+                                .kerning(1.0)
+                                .foregroundColor(AppColors.textMuted)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 26)
+                        .overlay(Rectangle().fill(AppColors.border).frame(height: 1), alignment: .bottom)
 
-                    Text(profile.tendencyDescription)
-                        .font(.subheadline)
-                        .foregroundColor(AppColors.textMuted)
+                        // KPI 3-up
+                        HStack(alignment: .top, spacing: 24) {
+                            KpiCell(value: "\(profile.totalPutts)", unit: "", label: "PUTTS")
+                            KpiCell(value: hasData ? String(format: "%+.2f", signed) : "—", unit: "", label: "AVG MISS")
+                            KpiCell(value: profile.totalPutts > 1 ? String(format: "%.2f", profile.standardDeviation) : "—", unit: "", label: "STD DEV")
+                        }
+                        .padding(.horizontal, 32)
+                        .padding(.vertical, 22)
+
+                        // Tendency
+                        if hasData {
+                            HStack(spacing: 16) {
+                                Text(tendencyArrow)
+                                    .font(.system(size: 28, weight: .bold))
+                                    .foregroundColor(tendencyColor)
+                                VStack(alignment: .leading, spacing: 3) {
+                                    Text(tendencyLabel)
+                                        .font(.custom("Inter-Bold", size: 15))
+                                        .foregroundColor(tendencyColor)
+                                    Text(String(format: "Averaging %+.2f MPH vs target", signed))
+                                        .font(.custom("Inter-SemiBold", size: 12))
+                                        .foregroundColor(AppColors.textSubdued)
+                                }
+                                Spacer()
+                            }
+                            .padding(.horizontal, 32)
+                            .padding(.vertical, 18)
+                            .overlay(Rectangle().fill(AppColors.border).frame(height: 1), alignment: .top)
+                        }
+
+                        // Streaks
+                        HStack(spacing: 0) {
+                            VStack(spacing: 8) {
+                                Text("\(profile.currentStreak)")
+                                    .font(.custom("Inter-Black", size: 40))
+                                    .foregroundColor(.black)
+                                Text("CURRENT STREAK")
+                                    .font(.custom("Inter-Bold", size: 11))
+                                    .kerning(2.0)
+                                    .foregroundColor(AppColors.textSubdued)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .overlay(Rectangle().fill(AppColors.border).frame(width: 1), alignment: .trailing)
+                            VStack(spacing: 8) {
+                                Text("\(profile.bestStreak)")
+                                    .font(.custom("Inter-Black", size: 40))
+                                    .foregroundColor(AppColors.accentGreen)
+                                Text("BEST STREAK")
+                                    .font(.custom("Inter-Bold", size: 11))
+                                    .kerning(2.0)
+                                    .foregroundColor(AppColors.textSubdued)
+                            }
+                            .frame(maxWidth: .infinity)
+                        }
+                        .padding(.vertical, 20)
+                        .overlay(Rectangle().fill(AppColors.border).frame(height: 1), alignment: .top)
+                    }
                 }
-
-                Spacer()
             }
-            .padding()
-            .background(Color.white)
-            .cornerRadius(12)
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(AppColors.border, lineWidth: 1)
-            )
-        )
-    }
-}
-
-// MARK: - Streak Card
-
-struct StreakCard: View {
-    let profile: SpeedProfileData
-
-    var body: some View {
-        HStack(spacing: 20) {
-            VStack(spacing: 4) {
-                Text("\(profile.currentStreak)")
-                    .font(.system(.title, design: .rounded).weight(.bold))
-                    .foregroundColor(AppColors.primaryBlack)
-                Text("Current Streak")
-                    .font(.caption)
-                    .foregroundColor(AppColors.textMuted)
-            }
-            .frame(maxWidth: .infinity)
-
-            Divider()
-                .frame(height: 40)
-
-            VStack(spacing: 4) {
-                Text("\(profile.bestStreak)")
-                    .font(.system(.title, design: .rounded).weight(.bold))
-                    .foregroundColor(AppColors.accentGreen)
-                Text("Best Streak")
-                    .font(.caption)
-                    .foregroundColor(AppColors.textMuted)
-            }
-            .frame(maxWidth: .infinity)
         }
-        .padding()
-        .background(Color.white)
-        .cornerRadius(12)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(AppColors.border, lineWidth: 1)
-        )
     }
 }

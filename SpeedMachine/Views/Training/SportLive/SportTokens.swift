@@ -46,27 +46,30 @@ struct SportTokens {
             )
         } else {
             return SportTokens(
-                bg:      Color(hex: "F5F7FA"),
+                bg:      Color(hex: "FFFFFF"),
                 surface: .white,
-                fg:      Color(hex: "08090C"),
-                sub:     Color(hex: "08090C").opacity(0.50),
-                subtle:  Color(hex: "08090C").opacity(0.10),
-                zone:    Color(hex: "16A34A"),
+                fg:      Color(hex: "000000"),
+                sub:     Color.black.opacity(0.50),
+                subtle:  Color.black.opacity(0.08),
+                zone:    Color(hex: "22C55E"),
                 miss:    Color(hex: "DC2626")
             )
         }
     }
 }
 
-// MARK: - Oswald Font
+// MARK: - Inter Font
 
 extension Font {
-    static func oswald(_ size: CGFloat, weight: Font.Weight = .bold) -> Font {
+    static func inter(_ size: CGFloat, weight: Font.Weight = .black) -> Font {
         let name: String
         switch weight {
-        case .semibold: name = "Oswald-SemiBold"
-        case .regular:  name = "Oswald-Regular"
-        default:        name = "Oswald-Bold"
+        case .black:    name = "Inter-Black"
+        case .heavy:    name = "Inter-ExtraBold"
+        case .bold:     name = "Inter-Bold"
+        case .semibold: name = "Inter-SemiBold"
+        case .medium:   name = "Inter-Medium"
+        default:        name = "Inter-Regular"
         }
         return .custom(name, size: size)
     }

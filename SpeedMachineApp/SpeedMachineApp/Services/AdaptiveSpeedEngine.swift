@@ -60,14 +60,14 @@ class AdaptiveSpeedEngine {
 
     /// Determines if a block should be adapted and at what intensity
     func adaptationLevel(for block: TrainingBlock) -> AdaptationLevel {
-        // Smart interleaved blocks take priority — checked before all other guards
-        if block.adaptiveMode != nil {
-            return .smartInterleaved
-        }
-
-        // Gate tests, assessments — never touch
+        // Gate tests, assessments — never touch, even if they carry adaptiveMode
         if protectedTypes.contains(block.type) {
             return .none
+        }
+
+        // Smart interleaved blocks take priority over all remaining guards
+        if block.adaptiveMode != nil {
+            return .smartInterleaved
         }
 
         // Fixed-speed blocks (single targetSpeed, no sequence) — never touch
@@ -309,8 +309,8 @@ class AdaptiveSpeedEngine {
         let targetZone = SpeedZone.getZone(for: target.speed)
         let context = target.accuracy < 60.0 ? "Targeting your weak zone" : "Your optimal challenge"
 
-        // Consecutive-challenge blocks need one consistent speed for the make-in-row mechanic
-        let isConsecutive = block.challengeType == "consecutive"
+        // Single-speed blocks: consecutive and make-in-row both require one consistent speed
+        let isConsecutive = block.challengeType == "consecutive" || block.challengeType == "make-in-row"
         if isConsecutive {
             let seq = Array(repeating: target.speed, count: length)
             return AdaptiveInterleavedResult(sequence: seq, context: context)
@@ -331,8 +331,9 @@ class AdaptiveSpeedEngine {
                 context: "\(context) · \(targetZone.name)"
             )
         } else {
-            // No strong anchor available — deliver target speed solo
-            let seq = Array(repeating: target.speed, count: length)
+            // No speed > 80% yet — distribute across all pool speeds weighted by weakness
+            // so every speed gets reps and 3mph (weakest at 52%) isn't starved entirely.
+            let seq = generateWeightedSequence(pool: pool, length: length, weightFunction: weight(for:))
             return AdaptiveInterleavedResult(
                 sequence: seq,
                 context: "\(context) · \(targetZone.name)"

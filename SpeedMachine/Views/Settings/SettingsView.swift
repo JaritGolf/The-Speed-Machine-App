@@ -9,237 +9,457 @@ import SwiftUI
 
 struct SettingsView: View {
     @Environment(\.dismiss) var dismiss
+    @EnvironmentObject var bluetoothService: BluetoothService
     @EnvironmentObject var statsService: StatsService
     @AppStorage("audioFeedbackEnabled") private var audioFeedbackEnabled = true
     @AppStorage("hapticFeedbackEnabled") private var hapticFeedbackEnabled = true
-    @AppStorage("liveViewTheme") private var liveViewThemeRaw: String = LiveViewTheme.dark.rawValue
-    @State private var showResetStatsAlert = false
-    @State private var showResetStatsConfirm = false
+    @AppStorage("liveViewTheme") private var liveViewThemeRaw: String = LiveViewTheme.light.rawValue
+    @State private var showResetConfirm = false
+    @State private var showBluetooth = false
 
-    private var liveViewThemeBinding: Binding<LiveViewTheme> {
+    private var liveViewTheme: Binding<LiveViewTheme> {
         Binding(
-            get: { LiveViewTheme(rawValue: liveViewThemeRaw) ?? .dark },
+            get: { LiveViewTheme(rawValue: liveViewThemeRaw) ?? .light },
             set: { liveViewThemeRaw = $0.rawValue }
         )
     }
 
     var body: some View {
-        NavigationView {
-            ZStack {
-                AppColors.backgroundAlt.ignoresSafeArea()
+        ZStack(alignment: .top) {
+            Color.white.ignoresSafeArea()
 
-                List {
-                    // Feedback Settings
-                    Section {
-                        Toggle("Audio Feedback", isOn: $audioFeedbackEnabled)
-                        Toggle("Haptic Feedback", isOn: $hapticFeedbackEnabled)
-                    } header: {
-                        Text("Feedback")
-                    } footer: {
-                        Text("Enable audio and haptic feedback for putts and achievements")
+            VStack(spacing: 0) {
+                // Top bar
+                HStack {
+                    Button { dismiss() } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(.black)
                     }
+                    Spacer()
+                    Text("SETTINGS")
+                        .font(.custom("Inter-Bold", size: 13))
+                        .kerning(2.5)
+                        .foregroundColor(.black)
+                    Spacer()
+                    Color.clear.frame(width: 28, height: 28)
+                }
+                .padding(.horizontal, 22)
+                .padding(.top, 12)
+                .padding(.bottom, 12)
 
-                    // Live View Theme
-                    Section {
-                        Picker("Theme", selection: liveViewThemeBinding) {
-                            ForEach(LiveViewTheme.allCases, id: \.self) { theme in
-                                Text(theme.rawValue.capitalized).tag(theme)
-                            }
-                        }
-                        .pickerStyle(.segmented)
-                    } header: {
-                        Text("Live View")
-                    } footer: {
-                        Text("Controls the color theme during active training sessions. System follows your device's appearance setting.")
-                    }
+                Divider().overlay(AppColors.border)
 
-                    // Bluetooth Settings
-                    Section {
-                        NavigationLink {
-                            BluetoothSettingsView()
-                        } label: {
-                            Label("Bluetooth", systemImage: "antenna.radiowaves.left.and.right")
-                        }
-                    } header: {
-                        Text("Device")
-                    }
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 0) {
+                        // FEEDBACK section
+                        settingsHeader("FEEDBACK")
 
-                    // Data Management
-                    Section {
-                        Button(role: .destructive) {
-                            showResetStatsAlert = true
-                        } label: {
-                            Label("Reset Stats", systemImage: "arrow.counterclockwise")
-                                .foregroundColor(AppColors.error)
-                        }
-                    } header: {
-                        Text("Data")
-                    } footer: {
-                        Text("This resets your speed profiles and trend data. Training program progress is not affected.")
-                    }
+                        settingsToggleRow(
+                            label: "AUDIO FEEDBACK",
+                            binding: $audioFeedbackEnabled
+                        )
+                        Divider().overlay(AppColors.border).padding(.leading, 22)
 
-                    // App Info
-                    Section {
+                        settingsToggleRow(
+                            label: "HAPTIC FEEDBACK",
+                            binding: $hapticFeedbackEnabled
+                        )
+
+                        settingsFooter("Enable audio and haptic cues during training sessions.")
+
+                        Divider().overlay(AppColors.border)
+
+                        // LIVE VIEW section
+                        settingsHeader("LIVE VIEW")
+
                         HStack {
-                            Text("Version")
+                            Text("THEME")
+                                .font(.custom("Inter-SemiBold", size: 13))
+                                .foregroundColor(.black)
+                            Spacer()
+                            Picker("Theme", selection: liveViewTheme) {
+                                ForEach(LiveViewTheme.allCases) { theme in
+                                    Text(theme.displayName).tag(theme)
+                                }
+                            }
+                            .pickerStyle(.segmented)
+                            .frame(width: 160)
+                        }
+                        .padding(.horizontal, 22)
+                        .padding(.vertical, 14)
+
+                        settingsFooter("Dark is recommended for the 5–6 ft viewing distance during training.")
+
+                        Divider().overlay(AppColors.border)
+
+                        // DEVICE section
+                        settingsHeader("DEVICE")
+
+                        Button {
+                            showBluetooth = true
+                        } label: {
+                            HStack(spacing: 10) {
+                                Circle()
+                                    .fill(bluetoothService.isConnected ? AppColors.accentGreen : AppColors.textSubdued)
+                                    .frame(width: 8, height: 8)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("BLUETOOTH")
+                                        .font(.custom("Inter-SemiBold", size: 13))
+                                        .foregroundColor(.black)
+                                    Text(bluetoothService.isConnected
+                                         ? "CONNECTED\(bluetoothService.batteryLevel > 0 ? " · \(bluetoothService.batteryLevel)%" : "")"
+                                         : "NOT CONNECTED")
+                                        .font(.custom("Inter-Bold", size: 10))
+                                        .kerning(1.0)
+                                        .foregroundColor(bluetoothService.isConnected ? AppColors.accentGreen : AppColors.textSubdued)
+                                }
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .font(.system(size: 12, weight: .semibold))
+                                    .foregroundColor(AppColors.textSubdued)
+                            }
+                            .padding(.horizontal, 22)
+                            .padding(.vertical, 14)
+                        }
+
+                        Divider().overlay(AppColors.border)
+
+                        // DATA section
+                        settingsHeader("DATA")
+
+                        Button {
+                            showResetConfirm = true
+                        } label: {
+                            HStack {
+                                Text("RESET STATS")
+                                    .font(.custom("Inter-SemiBold", size: 13))
+                                    .foregroundColor(AppColors.error)
+                                Spacer()
+                            }
+                            .padding(.horizontal, 22)
+                            .padding(.vertical, 14)
+                        }
+
+                        settingsFooter("Resets speed profiles and trend data. Training program progress is not affected.")
+
+                        Divider().overlay(AppColors.border)
+
+                        // ABOUT section
+                        settingsHeader("ABOUT")
+
+                        HStack {
+                            Text("VERSION")
+                                .font(.custom("Inter-SemiBold", size: 13))
+                                .foregroundColor(.black)
                             Spacer()
                             Text("1.0.0")
+                                .font(.custom("Inter-Regular", size: 13))
                                 .foregroundColor(AppColors.textMuted)
                         }
+                        .padding(.horizontal, 22)
+                        .padding(.vertical, 14)
+
+                        Divider().overlay(AppColors.border).padding(.leading, 22)
 
                         HStack {
-                            Text("Build")
+                            Text("PROGRAM SYNC")
+                                .font(.custom("Inter-SemiBold", size: 13))
+                                .foregroundColor(.black)
                             Spacer()
-                            Text("2026.01.25")
-                                .foregroundColor(AppColors.textMuted)
+                            Text(UserDefaults.standard.string(forKey: NetworkService.statusKey) ?? "—")
+                                .font(.custom("Inter-Regular", size: 11))
+                                .foregroundColor(AppColors.textSubdued)
+                                .multilineTextAlignment(.trailing)
                         }
-                    } header: {
-                        Text("About")
-                    } footer: {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Speed Machine Training App")
-                                .font(.caption)
-                            Text("Created by Jarit Golf")
-                                .font(.caption)
-                            Text("© 2026 Jarit Golf. All rights reserved.")
-                                .font(.caption)
-                        }
-                        .foregroundColor(AppColors.textMuted)
+                        .padding(.horizontal, 22)
+                        .padding(.vertical, 14)
+
+                        Spacer(minLength: 40)
                     }
                 }
-                .scrollContentBackground(.hidden)
-            }
-            .navigationTitle("Settings")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
-                        dismiss()
-                    }
-                }
-            }
-            .alert("Reset Stats?", isPresented: $showResetStatsAlert) {
-                Button("Cancel", role: .cancel) {}
-                Button("Reset", role: .destructive) {
-                    showResetStatsConfirm = true
-                }
-            } message: {
-                Text("This will erase all your speed profiles, accuracy history, and trend data. Your training program progress will not be affected.")
-            }
-            .alert("Are you sure?", isPresented: $showResetStatsConfirm) {
-                Button("Cancel", role: .cancel) {}
-                Button("Yes, Reset Everything", role: .destructive) {
-                    statsService.resetAllStats()
-                }
-            } message: {
-                Text("This cannot be undone. All stats data will be permanently deleted.")
             }
         }
-        .navigationViewStyle(.stack)
+        .fullScreenCover(isPresented: $showBluetooth) {
+            BluetoothSettingsView()
+        }
+        // Reset confirmation overlay
+        .overlay {
+            if showResetConfirm {
+                ResetStatsModal(isPresented: $showResetConfirm) {
+                    statsService.resetAllStats()
+                }
+            }
+        }
+    }
+
+    private func settingsHeader(_ title: String) -> some View {
+        HStack {
+            Text(title)
+                .font(.custom("Inter-Bold", size: 10))
+                .kerning(2.5)
+                .foregroundColor(AppColors.textSubdued)
+            Spacer()
+        }
+        .padding(.horizontal, 22)
+        .padding(.top, 20)
+        .padding(.bottom, 8)
+    }
+
+    private func settingsToggleRow(label: String, binding: Binding<Bool>) -> some View {
+        HStack {
+            Text(label)
+                .font(.custom("Inter-SemiBold", size: 13))
+                .foregroundColor(.black)
+            Spacer()
+            Toggle("", isOn: binding)
+                .tint(AppColors.accentGreen)
+                .labelsHidden()
+        }
+        .padding(.horizontal, 22)
+        .padding(.vertical, 14)
+    }
+
+    private func settingsFooter(_ text: String) -> some View {
+        HStack {
+            Text(text)
+                .font(.custom("Inter-Regular", size: 12))
+                .foregroundColor(AppColors.textSubdued)
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer()
+        }
+        .padding(.horizontal, 22)
+        .padding(.top, 6)
+        .padding(.bottom, 14)
     }
 }
 
-struct BluetoothSettingsView: View {
-    @EnvironmentObject var bluetoothService: BluetoothService
+// MARK: - Reset Stats Modal
+
+struct ResetStatsModal: View {
+    @Binding var isPresented: Bool
+    let onConfirm: () -> Void
 
     var body: some View {
         ZStack {
-            AppColors.backgroundAlt.ignoresSafeArea()
+            Color.black.opacity(0.50)
+                .ignoresSafeArea()
+                .onTapGesture { isPresented = false }
 
-            List {
-                Section {
-                    HStack {
-                        Text("Status")
-                        Spacer()
-                        Text(bluetoothService.connectionState.rawValue)
-                            .foregroundColor(bluetoothService.isConnected ? AppColors.accentGreen : AppColors.textMuted)
-                    }
+            VStack(spacing: 0) {
+                VStack(spacing: 12) {
+                    Text("Are you sure?")
+                        .font(.custom("Inter-Black", size: 20))
+                        .foregroundColor(.black)
 
-                    if bluetoothService.isConnected {
-                        HStack {
-                            Text("Battery Level")
-                            Spacer()
-                            Text("\(bluetoothService.batteryLevel)%")
-                                .foregroundColor(AppColors.textMuted)
+                    Text("This will erase all your speed profiles, accuracy history, and trend data. Your training program progress will not be affected.")
+                        .font(.custom("Inter-Regular", size: 14))
+                        .foregroundColor(AppColors.textMuted)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .padding(.horizontal, 24)
+                .padding(.top, 28)
+                .padding(.bottom, 20)
+
+                Divider().overlay(AppColors.border)
+
+                // YES button — filled red
+                Button {
+                    onConfirm()
+                    isPresented = false
+                } label: {
+                    Text("Yes, Reset Everything")
+                        .font(.custom("Inter-Bold", size: 16))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(AppColors.error)
+                        .clipShape(Capsule())
+                }
+                .padding(.horizontal, 24)
+                .padding(.top, 16)
+
+                // Cancel button — plain text
+                Button {
+                    isPresented = false
+                } label: {
+                    Text("Cancel")
+                        .font(.custom("Inter-Medium", size: 15))
+                        .foregroundColor(.black)
+                        .padding(.vertical, 14)
+                }
+                .padding(.bottom, 8)
+            }
+            .background(Color.white)
+            .cornerRadius(16)
+            .padding(.horizontal, 28)
+        }
+    }
+}
+
+// MARK: - Bluetooth Settings View
+
+struct BluetoothSettingsView: View {
+    @EnvironmentObject var bluetoothService: BluetoothService
+    @Environment(\.dismiss) var dismiss
+
+    private let troubleshootSteps: [String] = [
+        "Make sure Bluetooth is enabled on your iPhone",
+        "Enable Bluetooth on your The Speed Machine device",
+        "Set The Speed Machine to Speed Mode",
+        "Tap \"Scan for Devices\" on the connection screen"
+    ]
+
+    var body: some View {
+        ZStack(alignment: .top) {
+            Color.white.ignoresSafeArea()
+
+            VStack(spacing: 0) {
+                // Top bar
+                HStack {
+                    Button { dismiss() } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "chevron.left")
+                                .font(.system(size: 14, weight: .semibold))
+                            Text("SETTINGS")
+                                .font(.custom("Inter-Bold", size: 12))
+                                .kerning(1.5)
                         }
+                        .foregroundColor(.black)
                     }
-                } header: {
-                    Text("Connection Status")
+                    Spacer()
+                    Text("BLUETOOTH")
+                        .font(.custom("Inter-Bold", size: 13))
+                        .kerning(2.5)
+                        .foregroundColor(.black)
+                    Spacer()
+                    Color.clear.frame(width: 70, height: 24)
                 }
+                .padding(.horizontal, 22)
+                .padding(.top, 12)
+                .padding(.bottom, 12)
 
-                Section {
-                    VStack(alignment: .leading, spacing: 12) {
-                        TroubleshootRow(
-                            icon: "1.circle.fill",
-                            text: "Make sure Bluetooth is enabled on your device"
-                        )
-                        TroubleshootRow(
-                            icon: "2.circle.fill",
-                            text: "Enable Bluetooth on Speed Machine device"
-                        )
-                        TroubleshootRow(
-                            icon: "3.circle.fill",
-                            text: "Set device to Speed Mode"
-                        )
-                        TroubleshootRow(
-                            icon: "4.circle.fill",
-                            text: "Tap 'Scan for Devices' on connection screen"
-                        )
-                    }
-                    .padding(.vertical, 8)
-                } header: {
-                    Text("Troubleshooting")
-                } footer: {
-                    Text("If you're having trouble connecting, try turning Bluetooth off and on again on both devices.")
-                }
+                Divider().overlay(AppColors.border)
 
-                Section {
-                    VStack(alignment: .leading, spacing: 8) {
-                        InfoDetailRow(label: "Service UUID", value: BLEConstants.serviceUUID)
-                        InfoDetailRow(label: "Device Name", value: BLEConstants.deviceName)
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 0) {
+                        // CONNECTION STATUS
+                        sectionHeader("CONNECTION STATUS")
+
+                        HStack {
+                            Text("STATUS")
+                                .font(.custom("Inter-SemiBold", size: 13))
+                                .foregroundColor(.black)
+                            Spacer()
+                            HStack(spacing: 6) {
+                                Circle()
+                                    .fill(bluetoothService.isConnected ? AppColors.accentGreen : AppColors.textSubdued)
+                                    .frame(width: 7, height: 7)
+                                Text(bluetoothService.isConnected ? "Connected" : "Not Connected")
+                                    .font(.custom("Inter-Bold", size: 12))
+                                    .foregroundColor(bluetoothService.isConnected ? AppColors.accentGreen : AppColors.textSubdued)
+                            }
+                        }
+                        .padding(.horizontal, 22)
+                        .padding(.vertical, 14)
+
+                        if bluetoothService.isConnected && bluetoothService.batteryLevel > 0 {
+                            Divider().overlay(AppColors.border).padding(.leading, 22)
+                            HStack {
+                                Text("BATTERY LEVEL")
+                                    .font(.custom("Inter-SemiBold", size: 13))
+                                    .foregroundColor(.black)
+                                Spacer()
+                                Text("\(bluetoothService.batteryLevel)%")
+                                    .font(.custom("Inter-Regular", size: 13))
+                                    .foregroundColor(AppColors.textMuted)
+                            }
+                            .padding(.horizontal, 22)
+                            .padding(.vertical, 14)
+                        }
+
+                        Divider().overlay(AppColors.border)
+
+                        // TROUBLESHOOTING
+                        sectionHeader("TROUBLESHOOTING")
+
+                        ForEach(Array(troubleshootSteps.enumerated()), id: \.offset) { idx, step in
+                            HStack(alignment: .top, spacing: 14) {
+                                ZStack {
+                                    Circle()
+                                        .fill(AppColors.accentGreen)
+                                        .frame(width: 24, height: 24)
+                                    Text("\(idx + 1)")
+                                        .font(.custom("Inter-Bold", size: 11))
+                                        .foregroundColor(.white)
+                                }
+
+                                Text(step)
+                                    .font(.custom("Inter-Regular", size: 13))
+                                    .foregroundColor(.black)
+                                    .fixedSize(horizontal: false, vertical: true)
+
+                                Spacer()
+                            }
+                            .padding(.horizontal, 22)
+                            .padding(.vertical, 12)
+
+                            if idx < troubleshootSteps.count - 1 {
+                                Divider().overlay(AppColors.border).padding(.leading, 60)
+                            }
+                        }
+
+                        Text("If you're having trouble, try toggling Bluetooth off and on again on both devices.")
+                            .font(.custom("Inter-Regular", size: 12))
+                            .foregroundColor(AppColors.textSubdued)
+                            .padding(.horizontal, 22)
+                            .padding(.top, 8)
+                            .padding(.bottom, 16)
+
+                        Divider().overlay(AppColors.border)
+
+                        // TECHNICAL DETAILS
+                        sectionHeader("TECHNICAL DETAILS")
+
+                        techRow(label: "SERVICE UUID", value: BLEConstants.serviceUUID)
+                        Divider().overlay(AppColors.border).padding(.leading, 22)
+                        techRow(label: "DEVICE NAME", value: BLEConstants.deviceName)
+
+                        Divider().overlay(AppColors.border)
+
+                        Spacer(minLength: 40)
                     }
-                } header: {
-                    Text("Technical Details")
                 }
             }
-            .scrollContentBackground(.hidden)
-        }
-        .navigationTitle("Bluetooth Settings")
-        .navigationBarTitleDisplayMode(.inline)
-    }
-}
-
-struct TroubleshootRow: View {
-    let icon: String
-    let text: String
-
-    var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: icon)
-                .foregroundColor(AppColors.accentGreen)
-                .font(.headline)
-
-            Text(text)
-                .font(.subheadline)
-                .foregroundColor(AppColors.primaryBlack)
         }
     }
-}
 
-struct InfoDetailRow: View {
-    let label: String
-    let value: String
+    private func sectionHeader(_ title: String) -> some View {
+        HStack {
+            Text(title)
+                .font(.custom("Inter-Bold", size: 10))
+                .kerning(2.5)
+                .foregroundColor(AppColors.textSubdued)
+            Spacer()
+        }
+        .padding(.horizontal, 22)
+        .padding(.top, 20)
+        .padding(.bottom, 8)
+    }
 
-    var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+    private func techRow(label: String, value: String) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
             Text(label)
-                .font(.caption)
-                .foregroundColor(AppColors.textMuted)
-
+                .font(.custom("Inter-Bold", size: 10))
+                .kerning(1.5)
+                .foregroundColor(AppColors.textSubdued)
             Text(value)
                 .font(.system(.caption, design: .monospaced))
-                .foregroundColor(AppColors.primaryBlack)
+                .foregroundColor(.black)
         }
-        .padding(.vertical, 4)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 22)
+        .padding(.vertical, 12)
     }
 }

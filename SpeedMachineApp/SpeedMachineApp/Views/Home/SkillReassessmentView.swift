@@ -24,7 +24,7 @@ struct SkillReassessmentView: View {
 
     // Group speeds into rows of 3 for the tier grid
     private var speedTierRows: [[Int]] {
-        let speeds = Array(3...20)
+        let speeds = Array(3...15)
         return stride(from: 0, to: speeds.count, by: 3).map {
             Array(speeds[$0..<min($0 + 3, speeds.count)])
         }

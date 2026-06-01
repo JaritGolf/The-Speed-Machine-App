@@ -15,57 +15,77 @@ struct SessionHistoryView: View {
 
     @State private var sessions: [SessionData] = []
     @State private var selectedSession: SessionData?
+    @State private var showTrends = false
+    @State private var showCombine = false
 
     var body: some View {
-        NavigationView {
-            ZStack {
-                AppColors.backgroundAlt.ignoresSafeArea()
+        ZStack(alignment: .top) {
+            Color.white.ignoresSafeArea()
+
+            VStack(spacing: 0) {
+                HStack {
+                    Button { dismiss() } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(.black)
+                    }
+                    Spacer()
+                    Text("HISTORY")
+                        .font(.custom("Inter-Bold", size: 13))
+                        .kerning(2.5)
+                        .foregroundColor(.black)
+                    Spacer()
+                    Color.clear.frame(width: 28, height: 28)
+                }
+                .padding(.horizontal, 22)
+                .padding(.top, 12)
+                .padding(.bottom, 12)
+
+                Divider().overlay(AppColors.border)
 
                 if sessions.isEmpty {
+                    Spacer()
                     VStack(spacing: 12) {
                         Image(systemName: "list.bullet.rectangle")
                             .font(.system(size: 40))
                             .foregroundColor(AppColors.textMuted.opacity(0.5))
-
                         Text("No sessions yet")
-                            .font(.headline)
-                            .foregroundColor(AppColors.primaryBlack)
-
+                            .font(.custom("Inter-Bold", size: 16))
+                            .foregroundColor(.black)
                         Text("Your session history will appear here after you complete your first training block.")
-                            .font(.subheadline)
+                            .font(.custom("Inter-Regular", size: 13))
                             .foregroundColor(AppColors.textMuted)
                             .multilineTextAlignment(.center)
                             .padding(.horizontal)
                     }
+                    Spacer()
                 } else {
-                    ScrollView {
-                        LazyVStack(spacing: 10) {
+                    ScrollView(showsIndicators: false) {
+                        LazyVStack(spacing: 0) {
                             ForEach(sessions, id: \.id) { session in
                                 SessionHistoryRow(session: session)
-                                    .onTapGesture {
-                                        selectedSession = session
-                                    }
+                                    .onTapGesture { selectedSession = session }
+                                Divider().overlay(AppColors.border)
                             }
                         }
-                        .padding()
                     }
                 }
             }
-            .navigationTitle("Session History")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") { dismiss() }
+        }
+        .safeAreaInset(edge: .bottom) {
+            StatsTabBar(active: .history) { tab in
+                switch tab {
+                case .stats:   dismiss()
+                case .trends:  showTrends = true
+                case .combine: showCombine = true
+                case .history: break
                 }
             }
-            .sheet(item: $selectedSession) { session in
-                SessionDetailView(session: session)
-            }
-            .onAppear {
-                sessions = statsService.getAllSessions()
-            }
         }
-        .navigationViewStyle(.stack)
+        .sheet(item: $selectedSession) { session in SessionDetailView(session: session) }
+        .fullScreenCover(isPresented: $showTrends) { TrendsView() }
+        .fullScreenCover(isPresented: $showCombine) { CombineStatsView() }
+        .onAppear { sessions = statsService.getAllSessions() }
     }
 }
 
@@ -90,28 +110,10 @@ struct SessionHistoryRow: View {
 
     var body: some View {
         HStack(spacing: 14) {
-            // Accuracy ring
-            ZStack {
-                Circle()
-                    .stroke(AppColors.backgroundAlt, lineWidth: 4)
-                    .frame(width: 48, height: 48)
-
-                Circle()
-                    .trim(from: 0, to: CGFloat(accuracy) / 100)
-                    .stroke(accuracyColor, style: StrokeStyle(lineWidth: 4, lineCap: .round))
-                    .frame(width: 48, height: 48)
-                    .rotationEffect(.degrees(-90))
-
-                Text("\(accuracy)%")
-                    .font(.system(.caption2, design: .rounded).weight(.bold))
-                    .foregroundColor(accuracyColor)
-            }
-
             VStack(alignment: .leading, spacing: 4) {
                 Text("Track \(session.dayNumber)")
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                    .foregroundColor(AppColors.primaryBlack)
+                    .font(.custom("Inter-Bold", size: 15))
+                    .foregroundColor(.black)
 
                 Text(session.blockId ?? "Block")
                     .font(.caption)
@@ -126,27 +128,19 @@ struct SessionHistoryRow: View {
 
             Spacer()
 
-            VStack(alignment: .trailing, spacing: 4) {
-                Text("\(session.onTargetPutts)/\(session.completedPutts)")
-                    .font(.system(.subheadline, design: .rounded).weight(.medium))
-                    .foregroundColor(AppColors.primaryBlack)
+            HStack(spacing: 8) {
+                Text("\(accuracy)%")
+                    .font(.custom("Inter-Black", size: 16))
+                    .foregroundColor(accuracyColor)
 
-                Text("on target")
-                    .font(.caption2)
-                    .foregroundColor(AppColors.textMuted)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundColor(AppColors.textSubdued)
             }
-
-            Image(systemName: "chevron.right")
-                .font(.caption2)
-                .foregroundColor(AppColors.textMuted)
         }
-        .padding()
+        .padding(.horizontal, 22)
+        .padding(.vertical, 16)
         .background(Color.white)
-        .cornerRadius(12)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(AppColors.border, lineWidth: 1)
-        )
     }
 }
 

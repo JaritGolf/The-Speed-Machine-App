@@ -7,6 +7,29 @@
 
 import SwiftUI
 
+struct ProgressBarView: View {
+    let current: Int
+    let total: Int
+    let color: Color
+
+    var progress: Double {
+        guard total > 0 else { return 0 }
+        return min(Double(current) / Double(total), 1.0)
+    }
+
+    var body: some View {
+        GeometryReader { geo in
+            ZStack(alignment: .leading) {
+                RoundedRectangle(cornerRadius: 6)
+                    .fill(color.opacity(0.15))
+                RoundedRectangle(cornerRadius: 6)
+                    .fill(color)
+                    .frame(width: geo.size.width * progress)
+            }
+        }
+    }
+}
+
 struct ProgressView: View {
     @EnvironmentObject var dataService: DataService
     @Environment(\.dismiss) var dismiss

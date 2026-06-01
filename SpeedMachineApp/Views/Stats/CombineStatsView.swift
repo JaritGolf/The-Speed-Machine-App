@@ -2,7 +2,7 @@
 //  CombineStatsView.swift
 //  SpeedMachine
 //
-//  Created by Claude for Jarit Golf
+//  Whoop minimal Combine stats (mockup 20).
 //
 
 import SwiftUI
@@ -13,118 +13,169 @@ struct CombineStatsView: View {
     @Environment(\.dismiss) var dismiss
 
     @State private var games: [CombineGameData] = []
+    @State private var showTrends = false
+    @State private var showHistory = false
 
-    private var highScore: Int {
-        Int(dataService.userProgress.combineHighScore)
-    }
-
-    private var averageScore: Double {
+    private var highScore: Int { Int(dataService.userProgress.combineHighScore) }
+    private var averageScore: Int {
         guard !games.isEmpty else { return 0 }
-        let total = games.reduce(0) { $0 + Int($1.totalScore) }
-        return Double(total) / Double(games.count)
+        return games.reduce(0) { $0 + Int($1.totalScore) } / games.count
+    }
+    /// Games oldest → newest for the trend line.
+    private var chrono: [CombineGameData] {
+        games.sorted { ($0.playedAt ?? .distantPast) < ($1.playedAt ?? .distantPast) }
+    }
+    private var improving: Bool {
+        let v = chrono.map { Int($0.totalScore) }
+        guard let f = v.first, let l = v.last else { return true }
+        return l >= f
     }
 
     var body: some View {
-        NavigationView {
-            ZStack {
-                AppColors.backgroundAlt.ignoresSafeArea()
+        ZStack(alignment: .top) {
+            Color.white.ignoresSafeArea()
 
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 20) {
+            VStack(spacing: 0) {
+                StatsHeader(title: "COMBINE") { dismiss() }
+
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 0) {
+                        // KPI 3-up
+                        HStack(alignment: .top, spacing: 24) {
+                            KpiCell(value: "\(highScore)", unit: "", label: "HIGH SCORE")
+                            KpiCell(value: "\(averageScore)", unit: "", label: "AVG SCORE")
+                            KpiCell(value: "\(games.count)", unit: "", label: "GAMES")
+                        }
+                        .padding(.horizontal, 32)
+                        .padding(.vertical, 22)
+
+                        if chrono.count >= 2 {
+                            scoreTrend
+                        }
+
+                        // Game history
+                        HStack {
+                            Text("GAME HISTORY")
+                                .font(.custom("Inter-Bold", size: 15))
+                                .kerning(2.0)
+                                .foregroundColor(AppColors.textSubdued)
+                            Spacer()
+                        }
+                        .padding(.horizontal, 32)
+                        .padding(.top, 16)
+                        .padding(.bottom, 8)
+                        .overlay(Rectangle().fill(AppColors.border).frame(height: 1), alignment: .top)
+
                         if games.isEmpty {
-                            // Empty state
-                            VStack(spacing: 12) {
-                                Image(systemName: "target")
-                                    .font(.system(size: 40))
-                                    .foregroundColor(AppColors.textMuted.opacity(0.5))
-
-                                Text("No Combine games yet")
-                                    .font(.headline)
-                                    .foregroundColor(AppColors.primaryBlack)
-
-                                Text("Play the Combine to see your score history here.")
-                                    .font(.subheadline)
-                                    .foregroundColor(AppColors.textMuted)
-                                    .multilineTextAlignment(.center)
-                            }
-                            .frame(maxWidth: .infinity)
-                            .padding(40)
-                            .background(Color.white)
-                            .cornerRadius(12)
+                            Text("No Combine games yet. Play the Combine to see your scores here.")
+                                .font(.custom("Inter-Regular", size: 14))
+                                .foregroundColor(AppColors.textSubdued)
+                                .padding(.horizontal, 32)
+                                .padding(.vertical, 24)
+                                .frame(maxWidth: .infinity, alignment: .leading)
                         } else {
-                            // Summary metrics
-                            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-                                MetricCard(
-                                    label: "High Score",
-                                    value: "\(highScore)",
-                                    icon: "trophy.fill",
-                                    color: .orange
-                                )
-
-                                MetricCard(
-                                    label: "Avg Score",
-                                    value: String(format: "%.0f", averageScore),
-                                    icon: "chart.bar.fill",
-                                    color: AppColors.accentGreen
-                                )
-
-                                MetricCard(
-                                    label: "Games",
-                                    value: "\(games.count)",
-                                    icon: "gamecontroller.fill",
-                                    color: AppColors.bleBlue
-                                )
+                            ForEach(games, id: \.id) { game in
+                                CombineGameRow(game: game, isHighScore: Int(game.totalScore) == highScore)
                             }
-
-                            // Score trend (mini chart)
-                            if games.count >= 2 {
-                                let sortedGames = games.sorted { ($0.playedAt ?? Date()) < ($1.playedAt ?? Date()) }
-                                TrendChartCard(
-                                    title: "Score Trend",
-                                    subtitle: "Combine score over time",
-                                    data: sortedGames.map {
-                                        TrendPoint(date: $0.playedAt ?? Date(), value: Double($0.totalScore))
-                                    },
-                                    valueFormat: "%.0f pts",
-                                    color: .orange,
-                                    idealDirection: .up
-                                )
-                            }
-
-                            // Game history
-                            VStack(alignment: .leading, spacing: 12) {
-                                Text("Game History")
-                                    .font(.headline)
-                                    .foregroundColor(AppColors.primaryBlack)
-
-                                ForEach(games, id: \.id) { game in
-                                    CombineGameRow(game: game, isHighScore: Int(game.totalScore) == highScore)
-                                }
-                            }
-                            .padding()
-                            .background(Color.white)
-                            .cornerRadius(12)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(AppColors.border, lineWidth: 1)
-                            )
                         }
                     }
-                    .padding()
+                    .padding(.bottom, 16)
                 }
-            }
-            .navigationTitle("Combine Stats")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") { dismiss() }
-                }
-            }
-            .onAppear {
-                games = statsService.getAllCombineGames()
             }
         }
-        .navigationViewStyle(.stack)
+        .safeAreaInset(edge: .bottom) {
+            StatsTabBar(active: .combine) { tab in
+                switch tab {
+                case .stats:   dismiss()
+                case .trends:  showTrends = true
+                case .history: showHistory = true
+                case .combine: break
+                }
+            }
+        }
+        .fullScreenCover(isPresented: $showTrends) { TrendsView() }
+        .fullScreenCover(isPresented: $showHistory) { SessionHistoryView() }
+        .onAppear { games = statsService.getAllCombineGames() }
+    }
+
+    private var scoreTrend: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(alignment: .top) {
+                Text("SCORE TREND")
+                    .font(.custom("Inter-Bold", size: 15))
+                    .kerning(2.0)
+                    .foregroundColor(AppColors.textSubdued)
+                Spacer()
+                VStack(alignment: .trailing, spacing: 5) {
+                    HStack(alignment: .firstTextBaseline, spacing: 4) {
+                        Text("\(Int(chrono.last?.totalScore ?? 0))")
+                            .font(.custom("Inter-Black", size: 30))
+                            .foregroundColor(.black)
+                        Text("pts")
+                            .font(.custom("Inter-Bold", size: 13))
+                            .foregroundColor(AppColors.textSubdued)
+                    }
+                    Text(improving ? "↑ IMPROVING" : "↓ DECLINING")
+                        .font(.custom("Inter-Bold", size: 10))
+                        .kerning(1.4)
+                        .foregroundColor(improving ? AppColors.accentGreen : AppColors.error)
+                }
+            }
+            SimpleLineChart(values: chrono.map { Double($0.totalScore) }, color: AppColors.accentAmber)
+                .frame(height: 120)
+            HStack {
+                Text(chrono.first?.playedAt?.toDisplayString() ?? "")
+                Spacer()
+                Text(chrono.last?.playedAt?.toDisplayString() ?? "")
+            }
+            .font(.custom("Inter-SemiBold", size: 10))
+            .foregroundColor(AppColors.textSubdued)
+        }
+        .padding(.horizontal, 32)
+        .padding(.vertical, 18)
+        .overlay(Rectangle().fill(AppColors.border).frame(height: 1), alignment: .top)
+    }
+}
+
+// MARK: - Simple line chart (chromeless, gradient fill)
+
+struct SimpleLineChart: View {
+    let values: [Double]
+    let color: Color
+
+    var body: some View {
+        GeometryReader { geo in
+            let w = geo.size.width, h = geo.size.height
+            let maxV = values.max() ?? 1
+            let minV = values.min() ?? 0
+            let range = max(1, maxV - minV)
+            let pts: [CGPoint] = values.enumerated().map { i, v in
+                let x = values.count <= 1 ? 0 : w * CGFloat(Double(i) / Double(values.count - 1))
+                let y = h - 6 - (h - 12) * CGFloat((v - minV) / range)
+                return CGPoint(x: x, y: y)
+            }
+            ZStack {
+                if pts.count >= 2 {
+                    // gradient fill under the line
+                    Path { p in
+                        p.move(to: CGPoint(x: pts[0].x, y: h))
+                        pts.forEach { p.addLine(to: $0) }
+                        p.addLine(to: CGPoint(x: pts.last!.x, y: h))
+                        p.closeSubpath()
+                    }
+                    .fill(LinearGradient(colors: [color.opacity(0.18), color.opacity(0)],
+                                         startPoint: .top, endPoint: .bottom))
+                    // line
+                    Path { p in
+                        p.move(to: pts[0])
+                        pts.dropFirst().forEach { p.addLine(to: $0) }
+                    }
+                    .stroke(color, style: StrokeStyle(lineWidth: 2.5, lineCap: .round, lineJoin: .round))
+                    // end dot
+                    Circle().fill(color).frame(width: 9, height: 9).position(pts.last!)
+                }
+            }
+        }
     }
 }
 
@@ -133,43 +184,31 @@ struct CombineGameRow: View {
     let isHighScore: Bool
 
     var body: some View {
-        HStack(spacing: 14) {
-            if isHighScore {
-                Image(systemName: "trophy.fill")
-                    .foregroundColor(.orange)
-                    .font(.headline)
-            } else {
-                Image(systemName: "target")
-                    .foregroundColor(AppColors.textMuted)
-                    .font(.headline)
-            }
-
+        HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Score: \(game.totalScore)")
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                    .foregroundColor(AppColors.primaryBlack)
-
+                Text("\(game.totalScore)")
+                    .font(.custom("Inter-Black", size: 24))
+                    .foregroundColor(.black)
                 if let date = game.playedAt {
-                    Text(date.toDisplayString())
-                        .font(.caption)
-                        .foregroundColor(AppColors.textMuted)
+                    Text(date.toDisplayString().uppercased())
+                        .font(.custom("Inter-Bold", size: 11))
+                        .kerning(1.0)
+                        .foregroundColor(AppColors.textSubdued)
                 }
             }
-
             Spacer()
-
             if isHighScore {
-                Text("Best")
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.orange)
+                Text("BEST")
+                    .font(.custom("Inter-Bold", size: 10))
+                    .kerning(1.4)
+                    .foregroundColor(AppColors.accentAmber)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
-                    .background(Color.orange.opacity(0.1))
-                    .cornerRadius(6)
+                    .overlay(RoundedRectangle(cornerRadius: 4).stroke(AppColors.accentAmber, lineWidth: 1))
             }
         }
-        .padding(.vertical, 8)
+        .padding(.horizontal, 32)
+        .padding(.vertical, 14)
+        .overlay(Rectangle().fill(AppColors.border).frame(height: 1), alignment: .top)
     }
 }

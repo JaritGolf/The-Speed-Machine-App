@@ -1,1124 +1,3711 @@
 {
-  "phases": [
-    {
-      "number": 1,
-      "name": "Foundation",
-      "description": "Build foundational speed control in Zones 1-2",
-      "track_start": 1,
-      "track_end": 10
+  "program": {
+    "name": "Speed Machine 30-Track Precision Putting Program",
+    "author": "Jarit Golf",
+    "version": "2.0",
+    "website": "www.jaritgolf.com",
+    "totalDays": 30,
+    "speedRange": "3-15 MPH",
+    "deviceSpecs": {
+      "minSpace": "4 feet x 3 feet",
+      "ballDistance": "16 inches",
+      "openingWidth": "4 inches"
     },
+    "totalTracks": 30,
+    "dailyDuration": "5-12 minutes",
+    "trackDuration": "5-12 minutes",
+    "puttsPerMinute": 8
+  },
+  "speedZones": [
     {
-      "number": 2,
-      "name": "Expansion",
-      "description": "Expand to Zones 3-4 with increasing complexity",
-      "track_start": 11,
-      "track_end": 20
-    },
-    {
-      "number": 3,
-      "name": "Mastery",
-      "description": "Master all zones including Zone 5 and integration",
-      "track_start": 21,
-      "track_end": 30
-    }
-  ],
-  "zones": [
-    {
+      "id": 6,
       "zone": 1,
-      "speed_range": "3-9 MPH",
+      "name": "Touch",
+      "speedRange": "3-6 MPH",
+      "minSpeed": 3,
+      "maxSpeed": 6,
       "tolerance": 0.5,
-      "description": "Short putts, tight control"
+      "toleranceDisplay": "±0.5 MPH",
+      "example": "Target 5 = 4.5-5.5 MPH",
+      "description": "Soft, touch putts for short distances",
+      "unlockTrack": 1
     },
     {
+      "id": 7,
       "zone": 2,
-      "speed_range": "10-12 MPH",
-      "tolerance": 0.6,
-      "description": "Medium-short putts"
+      "name": "Moderate",
+      "speedRange": "7-9 MPH",
+      "minSpeed": 7,
+      "maxSpeed": 9,
+      "tolerance": 0.5,
+      "toleranceDisplay": "±0.5 MPH",
+      "example": "Target 8 = 7.5-8.5 MPH",
+      "description": "Medium-distance putts with moderate force",
+      "unlockTrack": 7
     },
     {
+      "id": 8,
       "zone": 3,
-      "speed_range": "13-16 MPH",
-      "tolerance": 0.7,
-      "description": "Medium-long putts"
+      "name": "Firm",
+      "speedRange": "10-12 MPH",
+      "minSpeed": 10,
+      "maxSpeed": 12,
+      "tolerance": 0.6,
+      "toleranceDisplay": "±0.6 MPH",
+      "example": "Target 11 = 10.4-11.6 MPH",
+      "description": "Firm putts for longer distances",
+      "unlockTrack": 12
     },
     {
+      "id": 9,
       "zone": 4,
-      "speed_range": "17-18 MPH",
-      "tolerance": 0.8,
-      "description": "Long putts"
-    },
-    {
-      "zone": 5,
-      "speed_range": "19-20 MPH",
-      "tolerance": 0.9,
-      "description": "Extra-long putts"
+      "name": "Power",
+      "speedRange": "13-15 MPH",
+      "minSpeed": 13,
+      "maxSpeed": 15,
+      "tolerance": 0.7,
+      "toleranceDisplay": "±0.7 MPH",
+      "example": "Target 14 = 13.3-14.7 MPH",
+      "description": "Powerful putts for the longest greens",
+      "unlockTrack": 20
     }
   ],
-  "gate_tests": [
+  "phases": [],
+  "gateTests": [
     {
-      "gate_number": 1,
-      "day": 6,
-      "name": "Zone 1 Mastery",
-      "description": "Demonstrate consistent control in Zone 1",
-      "requirements": "Achieve 80% accuracy across all Zone 1 speeds",
-      "pass_requirements": {
-        "min_overall_in_zone": 6,
-        "min_per_speed_in_zone": 1,
-        "avg_deviation_cap_mph": 0.7,
-        "max_single_miss_mph": 1.25,
-        "gate_force": "soft"
-      }
+      "id": "gate-zone1",
+      "name": "Zone 1 Gate Test",
+      "unlocksZone": 1,
+      "unlocksSpeeds": [
+        7
+      ],
+      "protocol": [
+        {
+          "putts": 3,
+          "speed": 3
+        },
+        {
+          "putts": 3,
+          "speed": 4
+        },
+        {
+          "putts": 3,
+          "speed": 5
+        },
+        {
+          "putts": 3,
+          "speed": 6
+        }
+      ],
+      "totalPutts": 12,
+      "passRequirements": {
+        "zoneAccuracy": {
+          "minimum": 8,
+          "percentage": 67
+        }
+      },
+      "track": 6
     },
     {
-      "gate_number": 2,
-      "day": 12,
-      "name": "Zone 2 Mastery",
-      "description": "Demonstrate consistent control in Zones 1-2",
-      "requirements": "Achieve 75% accuracy across Zones 1-2",
-      "pass_requirements": {
-        "min_overall_in_zone": 8,
-        "min_per_speed_in_zone": 2,
-        "avg_deviation_cap_mph": 0.7,
-        "max_single_miss_mph": 1.25,
-        "gate_force": "soft"
-      }
+      "id": "gate-zone2",
+      "name": "Zone 2 Gate Test",
+      "unlocksZone": 2,
+      "unlocksSpeeds": [
+        10
+      ],
+      "protocol": [
+        {
+          "putts": 4,
+          "speed": 7
+        },
+        {
+          "putts": 4,
+          "speed": 8
+        },
+        {
+          "putts": 4,
+          "speed": 9
+        }
+      ],
+      "totalPutts": 12,
+      "passRequirements": {
+        "zoneAccuracy": {
+          "minimum": 8,
+          "percentage": 67
+        }
+      },
+      "track": 11
     },
     {
-      "gate_number": 3,
-      "day": 18,
-      "name": "Zone 3 Mastery",
-      "description": "Demonstrate consistent control in Zones 1-3",
-      "requirements": "Achieve 70% accuracy across Zones 1-3",
-      "pass_requirements": {
-        "min_overall_in_zone": 8,
-        "min_per_speed_in_zone": 2,
-        "avg_deviation_cap_mph": 0.75,
-        "max_single_miss_mph": 1.2,
-        "gate_force": "hard"
-      }
+      "id": "gate-zone3",
+      "name": "Zone 3 Gate Test",
+      "unlocksZone": 3,
+      "unlocksSpeeds": [
+        13
+      ],
+      "protocol": [
+        {
+          "putts": 4,
+          "speed": 10
+        },
+        {
+          "putts": 4,
+          "speed": 11
+        },
+        {
+          "putts": 4,
+          "speed": 12
+        }
+      ],
+      "totalPutts": 12,
+      "passRequirements": {
+        "zoneAccuracy": {
+          "minimum": 8,
+          "percentage": 67
+        }
+      },
+      "track": 19
     },
     {
-      "gate_number": 4,
-      "day": 24,
-      "name": "Zone 4 Mastery",
-      "description": "Demonstrate consistent control in Zones 1-4",
-      "requirements": "Achieve 70% accuracy across Zones 1-4",
-      "pass_requirements": {
-        "min_overall_in_zone": 9,
-        "min_per_speed_in_zone": 2,
-        "avg_deviation_cap_mph": 0.8,
-        "max_single_miss_mph": 1.25,
-        "gate_force": "hard"
-      }
+      "id": "gate-zone4",
+      "name": "Zone 4 Gate Test",
+      "unlocksZone": 4,
+      "unlocksSpeeds": [],
+      "protocol": [
+        {
+          "putts": 4,
+          "speed": 13
+        },
+        {
+          "putts": 4,
+          "speed": 14
+        },
+        {
+          "putts": 4,
+          "speed": 15
+        }
+      ],
+      "totalPutts": 12,
+      "passRequirements": {
+        "zoneAccuracy": {
+          "minimum": 7,
+          "percentage": 58
+        }
+      },
+      "track": 27
     },
     {
-      "gate_number": 5,
-      "day": 30,
-      "name": "Full Spectrum Mastery",
-      "description": "Demonstrate mastery across all 5 zones",
-      "requirements": "Achieve 65% accuracy across all zones",
-      "pass_requirements": {
-        "min_overall_in_zone": 9,
-        "min_per_speed_in_zone": 2,
-        "avg_deviation_cap_mph": 0.9,
-        "max_single_miss_mph": 1.3,
-        "gate_force": "hard"
-      }
-    }
-  ],
-  "phase_floors": [
-    {
-      "days": "1-4",
-      "start_day": 1,
-      "end_day": 4,
-      "floor": 0.4
-    },
-    {
-      "days": "5-9",
-      "start_day": 5,
-      "end_day": 9,
-      "floor": 0.5
-    },
-    {
-      "days": "10-12",
-      "start_day": 10,
-      "end_day": 12,
-      "floor": 0.6
-    },
-    {
-      "days": "13-18",
-      "start_day": 13,
-      "end_day": 18,
-      "floor": 0.65
-    },
-    {
-      "days": "19-24",
-      "start_day": 19,
-      "end_day": 24,
-      "floor": 0.7
-    },
-    {
-      "days": "25-30",
-      "start_day": 25,
-      "end_day": 30,
-      "floor": 0.75
+      "id": "gate-final",
+      "name": "Final Mastery Gate Test",
+      "unlocksZone": 4,
+      "unlocksSpeeds": [],
+      "protocol": [
+        {
+          "putts": 2,
+          "speed": 4
+        },
+        {
+          "putts": 2,
+          "speed": 5
+        },
+        {
+          "putts": 2,
+          "speed": 7
+        },
+        {
+          "putts": 2,
+          "speed": 8
+        },
+        {
+          "putts": 2,
+          "speed": 10
+        },
+        {
+          "putts": 2,
+          "speed": 11
+        },
+        {
+          "putts": 2,
+          "speed": 13
+        },
+        {
+          "putts": 2,
+          "speed": 14
+        }
+      ],
+      "totalPutts": 16,
+      "passRequirements": {
+        "zoneAccuracy": {
+          "minimum": 11,
+          "percentage": 69
+        }
+      },
+      "track": 30
     }
   ],
   "tracks": [
     {
-      "title": "Zone 1 Introduction",
+      "track": 1,
       "phase": 1,
-      "is_gate_test": false,
+      "title": "First Speed — 3 MPH",
+      "duration": "5 minutes",
+      "targetPutts": 20,
+      "availableSpeeds": [
+        3
+      ],
+      "speedRange": "3 MPH",
+      "objective": "Establish the kinesthetic anchor for 3 MPH — the softest putt in the program. Today is about exploration and discovery, not perfection.",
       "blocks": [
         {
-          "block_id": "1A",
-          "name": "3 MPH Foundation",
-          "target_speed": 3,
-          "target_putts": 20,
-          "tolerance": 0.5,
-          "zone": 1,
-          "skip_gating": true
+          "id": "1A",
+          "name": "Free Exploration",
+          "duration": "2 min",
+          "type": "exploration",
+          "putts": 16,
+          "focus": [
+            "Notice your natural range",
+            "Feel the device feedback",
+            "No targets — just explore"
+          ],
+          "description": "Hit putts at whatever feels natural. The app is gathering its first data on your stroke.",
+          "skipGating": true
         },
         {
-          "block_id": "1B",
-          "name": "5 MPH Foundation",
-          "target_speed": 5,
-          "target_putts": 20,
-          "tolerance": 0.5,
-          "zone": 1,
-          "block_pass_threshold": 0.4
+          "id": "1B",
+          "name": "Anchoring 3 MPH",
+          "duration": "2 min",
+          "type": "blocked",
+          "putts": 12,
+          "targetSpeed": 3,
+          "acceptRange": {
+            "max": 3.5,
+            "min": 2.5
+          },
+          "focus": [
+            "Minimal backswing",
+            "Smooth acceleration",
+            "Quiet hands"
+          ],
+          "description": "3 MPH is the softest putt in the program — think of a 2–3 foot putt on a fast green. Minimal backswing, smooth acceleration, quiet hands.",
+          "blockPassThreshold": 0.4
         }
       ],
-      "scientific_focus": "Establishing baseline feel for short putts",
-      "track": 1
+      "successMetrics": [
+        {
+          "note": "Day 1 is exploratory",
+          "metric": "Engagement",
+          "target": "complete all blocks"
+        }
+      ],
+      "warnings": [],
+      "coachingNotes": "Expect inconsistency. The brain is gathering data. Trust the process."
     },
     {
-      "title": "Zone 1 Repetition",
+      "track": 2,
       "phase": 1,
-      "is_gate_test": false,
+      "title": "Adding 4 MPH",
+      "duration": "6 minutes",
+      "targetPutts": 30,
+      "availableSpeeds": [
+        3,
+        4
+      ],
+      "speedRange": "3-4 MPH",
+      "objective": "Introduce 4 MPH and begin discriminating 3 vs 4. Heavy blocked practice anchors the new speed; cumulative work keeps yesterday's speed alive.",
       "blocks": [
         {
-          "block_id": "2A",
-          "name": "4 MPH Practice",
-          "target_speed": 4,
-          "target_putts": 25,
-          "tolerance": 0.5,
-          "zone": 1,
-          "block_pass_threshold": 0.4
+          "id": "2A",
+          "name": "Warmup",
+          "duration": "1 min",
+          "type": "warmup",
+          "putts": 4,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4
+          ],
+          "description": "Ease in with the speeds you know — adaptive engine emphasizes whichever speed you're weaker on.",
+          "blockPassThreshold": 0.4
         },
         {
-          "block_id": "2B",
-          "name": "6 MPH Practice",
-          "target_speed": 6,
-          "target_putts": 25,
-          "tolerance": 0.5,
-          "zone": 1,
-          "block_pass_threshold": 0.4
+          "id": "2B",
+          "name": "Anchoring 4 MPH",
+          "duration": "2 min",
+          "type": "blocked",
+          "putts": 12,
+          "targetSpeed": 4,
+          "acceptRange": {
+            "max": 4.5,
+            "min": 3.5
+          },
+          "focus": [
+            "Notice the small change from 3",
+            "Stay smooth"
+          ],
+          "description": "4 MPH is one notch firmer than 3. Same stroke shape, slightly more pace.",
+          "blockPassThreshold": 0.4
+        },
+        {
+          "id": "2C",
+          "name": "Alternating 3 and 4",
+          "duration": "1.5 min",
+          "type": "alternating",
+          "putts": 8,
+          "sequence": [
+            3,
+            4
+          ],
+          "description": "Switch between 3 and 4. Notice your brain auto-correcting in real time.",
+          "blockPassThreshold": 0.4
+        },
+        {
+          "id": "2D",
+          "name": "Cumulative — Learned Pool",
+          "duration": "1.5 min",
+          "type": "random",
+          "putts": 6,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4
+          ],
+          "description": "Random rotation of every speed learned so far, weighted toward your weaker one.",
+          "blockPassThreshold": 0.4
         }
       ],
-      "scientific_focus": "Motor pattern reinforcement",
-      "track": 2
+      "successMetrics": [
+        {
+          "note": "early learning",
+          "metric": "Zone Accuracy",
+          "target": "40%+"
+        }
+      ],
+      "warnings": [],
+      "coachingNotes": "Notice the small physical difference between 3 and 4. Both speeds should feel distinct by the end."
     },
     {
-      "title": "Zone 1 Variance",
+      "track": 3,
       "phase": 1,
-      "is_gate_test": false,
+      "title": "Adding 5 MPH",
+      "duration": "6 minutes",
+      "targetPutts": 35,
+      "availableSpeeds": [
+        3,
+        4,
+        5
+      ],
+      "speedRange": "3-5 MPH",
+      "objective": "Introduce 5 MPH. Three speeds in rotation begins building the discrimination schema.",
       "blocks": [
         {
-          "block_id": "3A",
-          "name": "3-5 MPH Mix",
-          "target_speed": 4,
-          "target_putts": 30,
-          "tolerance": 0.5,
-          "zone": 1,
-          "skip_gating": true
+          "id": "3A",
+          "name": "Warmup",
+          "duration": "1 min",
+          "type": "warmup",
+          "putts": 5,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4
+          ],
+          "description": "Adaptive warmup across previously learned speeds (3, 4), sorted slow → fast.",
+          "blockPassThreshold": 0.4
         },
         {
-          "block_id": "3B",
-          "name": "5-7 MPH Mix",
-          "target_speed": 6,
-          "target_putts": 30,
-          "tolerance": 0.5,
-          "zone": 1,
-          "block_pass_threshold": 0.4
+          "id": "3B",
+          "name": "Anchoring 5 MPH",
+          "duration": "2 min",
+          "type": "blocked",
+          "putts": 12,
+          "targetSpeed": 5,
+          "acceptRange": {
+            "max": 5.5,
+            "min": 4.5
+          },
+          "focus": [
+            "Slightly longer stroke than 4",
+            "Same smooth tempo"
+          ],
+          "description": "5 MPH is a 6-foot lag putt. Establish it as a distinct, repeatable feel.",
+          "blockPassThreshold": 0.4
+        },
+        {
+          "id": "3C",
+          "name": "Sequence 3-4-5",
+          "duration": "1.5 min",
+          "type": "sequence",
+          "putts": 9,
+          "sequence": [
+            3,
+            4,
+            5
+          ],
+          "description": "Three speeds in ascending order — feel the rhythm step up.",
+          "blockPassThreshold": 0.4
+        },
+        {
+          "id": "3D",
+          "name": "Cumulative — Learned Pool",
+          "duration": "1.5 min",
+          "type": "random",
+          "putts": 9,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5
+          ],
+          "description": "Random rotation of 3, 4, 5 — adaptive engine prioritizes your weak speeds.",
+          "blockPassThreshold": 0.4
         }
       ],
-      "scientific_focus": "Speed differentiation within zone",
-      "track": 3
+      "successMetrics": [
+        {
+          "note": "three-speed mix",
+          "metric": "Zone Accuracy",
+          "target": "45%+"
+        }
+      ],
+      "warnings": [],
+      "coachingNotes": "Five is roughly a 6-foot lag. Anchor it firmly before mixing."
     },
     {
-      "title": "Zone 1 Precision",
+      "track": 4,
       "phase": 1,
-      "is_gate_test": false,
+      "title": "Adding 6 MPH — Zone 1 Complete",
+      "duration": "7 minutes",
+      "targetPutts": 40,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6
+      ],
+      "speedRange": "3-6 MPH",
+      "objective": "Complete the Touch zone with 6 MPH. All four Zone 1 speeds are now active and must be retained through the rest of the program.",
       "blocks": [
         {
-          "block_id": "4A",
-          "name": "3 MPH Precision",
-          "target_speed": 3,
-          "target_putts": 20,
-          "tolerance": 0.5,
-          "zone": 1,
-          "block_pass_threshold": 0.4
+          "id": "4A",
+          "name": "Warmup",
+          "duration": "1 min",
+          "type": "warmup",
+          "putts": 6,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5
+          ],
+          "description": "Adaptive warmup, ascending.",
+          "blockPassThreshold": 0.4
         },
         {
-          "block_id": "4B",
-          "name": "5 MPH Precision",
-          "target_speed": 5,
-          "target_putts": 20,
-          "tolerance": 0.5,
-          "zone": 1,
-          "block_pass_threshold": 0.4
+          "id": "4B",
+          "name": "Anchoring 6 MPH",
+          "duration": "2 min",
+          "type": "blocked",
+          "putts": 12,
+          "targetSpeed": 6,
+          "acceptRange": {
+            "max": 6.5,
+            "min": 5.5
+          },
+          "focus": [
+            "Full Zone 1 range now in play",
+            "Stay committed through the stroke"
+          ],
+          "description": "6 MPH completes the Touch zone. Roughly a 10-foot putt on slow greens or 8 feet on fast.",
+          "blockPassThreshold": 0.4
         },
         {
-          "block_id": "4C",
-          "name": "7 MPH Precision",
-          "target_speed": 7,
-          "target_putts": 20,
-          "tolerance": 0.5,
-          "zone": 1
+          "id": "4C",
+          "name": "Sequence 3-4-5-6",
+          "duration": "1.5 min",
+          "type": "sequence",
+          "putts": 8,
+          "sequence": [
+            3,
+            4,
+            5,
+            6
+          ],
+          "description": "Touch-zone sequence — train the schema across the full zone.",
+          "blockPassThreshold": 0.4
+        },
+        {
+          "id": "4D",
+          "name": "Cumulative — Touch Zone",
+          "duration": "2 min",
+          "type": "random",
+          "putts": 14,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6
+          ],
+          "description": "Random Zone 1 rotation, weighted toward weak speeds.",
+          "blockPassThreshold": 0.4
         }
       ],
-      "scientific_focus": "Fine-tuning accuracy across full Zone 1 range",
-      "track": 4
+      "successMetrics": [
+        {
+          "note": "Zone 1 emerging",
+          "metric": "Zone Accuracy",
+          "target": "50%+"
+        }
+      ],
+      "warnings": [],
+      "coachingNotes": "Zone 1 is your foundation. Tomorrow's consolidation track refines all four speeds before the gate."
     },
     {
-      "title": "Zone 1 Integration",
+      "track": 5,
       "phase": 1,
-      "is_gate_test": false,
+      "title": "Zone 1 Consolidation",
+      "duration": "8 minutes",
+      "targetPutts": 45,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6
+      ],
+      "speedRange": "3-6 MPH",
+      "objective": "Refine all four Touch-zone speeds without introducing anything new. The weakest speed gets the heaviest practice via the adaptive engine.",
       "blocks": [
         {
-          "block_id": "5A",
-          "name": "Full Zone Practice",
-          "target_speed": 5,
-          "target_putts": 40,
-          "tolerance": 0.5,
-          "zone": 1,
-          "skip_gating": true
+          "id": "5A",
+          "name": "Warmup",
+          "duration": "1 min",
+          "type": "warmup",
+          "putts": 6,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6
+          ],
+          "description": "Touch-zone adaptive warmup, ascending.",
+          "blockPassThreshold": 0.5
+        },
+        {
+          "id": "5B",
+          "name": "Weak-Speed Focus",
+          "duration": "2 min",
+          "type": "blocked",
+          "putts": 10,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6
+          ],
+          "focus": [
+            "Trust the selection",
+            "Block the same speed until it's firm"
+          ],
+          "description": "The adaptive engine selects your weakest Zone 1 speed and runs blocked practice on it.",
+          "blockPassThreshold": 0.5
+        },
+        {
+          "id": "5C",
+          "name": "Alternating Zone 1",
+          "duration": "1.5 min",
+          "type": "alternating",
+          "putts": 8,
+          "sequence": [
+            3,
+            4,
+            5,
+            6
+          ],
+          "description": "Alternate across all four Touch speeds.",
+          "blockPassThreshold": 0.5
+        },
+        {
+          "id": "5D",
+          "name": "Cumulative — Touch Zone",
+          "duration": "1.5 min",
+          "type": "random",
+          "putts": 12,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6
+          ],
+          "description": "Cumulative random across Zone 1.",
+          "blockPassThreshold": 0.5
+        },
+        {
+          "id": "5E",
+          "name": "Cool-Down",
+          "duration": "1 min",
+          "type": "recovery",
+          "putts": 9,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6
+          ],
+          "description": "Easy adaptive close-out."
         }
       ],
-      "scientific_focus": "Consolidating Zone 1 mastery",
-      "track": 5
+      "successMetrics": [
+        {
+          "note": "pre-gate target",
+          "metric": "Zone Accuracy",
+          "target": "60%+"
+        }
+      ],
+      "warnings": [],
+      "coachingNotes": "Goal: even accuracy across 3, 4, 5, and 6. If one speed is lagging, expect to see it more often."
     },
     {
-      "title": "Gate Test 1: Zone 1 Mastery",
+      "track": 6,
       "phase": 1,
-      "is_gate_test": true,
-      "gate_test_number": 1,
+      "title": "Gate Test — Zone 1",
+      "duration": "8 minutes",
+      "targetPutts": 45,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6
+      ],
+      "speedRange": "3-6 MPH",
+      "objective": "Zone 1 Gate Test. Passing unlocks 7 MPH and the Moderate zone.",
       "blocks": [
         {
-          "block_id": "GT1A",
-          "name": "3 MPH Test",
-          "target_speed": 3,
-          "target_putts": 15,
-          "tolerance": 0.5,
-          "zone": 1
+          "id": "6A",
+          "name": "Warmup",
+          "duration": "1 min",
+          "type": "warmup",
+          "putts": 6,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6
+          ],
+          "description": "Pre-gate adaptive warmup.",
+          "blockPassThreshold": 0.5
         },
         {
-          "block_id": "GT1B",
-          "name": "5 MPH Test",
-          "target_speed": 5,
-          "target_putts": 15,
-          "tolerance": 0.5,
-          "zone": 1
+          "id": "6B",
+          "name": "Tune-Up Sequence",
+          "duration": "1.5 min",
+          "type": "sequence",
+          "putts": 8,
+          "sequence": [
+            3,
+            4,
+            5,
+            6
+          ],
+          "description": "Light sequence on the gate speeds — rhythm check, not pressure.",
+          "blockPassThreshold": 0.5
         },
         {
-          "block_id": "GT1C",
-          "name": "7 MPH Test",
-          "target_speed": 7,
-          "target_putts": 15,
-          "tolerance": 0.5,
-          "zone": 1
+          "id": "6C",
+          "name": "Zone 1 Gate Test",
+          "duration": "3 min",
+          "type": "gateTest",
+          "putts": 12,
+          "protocol": [
+            {
+              "putts": 3,
+              "speed": 3
+            },
+            {
+              "putts": 3,
+              "speed": 4
+            },
+            {
+              "putts": 3,
+              "speed": 5
+            },
+            {
+              "putts": 3,
+              "speed": 6
+            }
+          ],
+          "description": "Three putts each at 3, 4, 5, and 6 MPH. Pass: 8 of 12 in zone.",
+          "passRequirements": {
+            "zoneAccuracy": {
+              "minimum": 8,
+              "percentage": 67
+            }
+          },
+          "isOfficial": true,
+          "gateId": "gate-zone1",
+          "isPhaseAssessment": false,
+          "isFinalAssessment": false
+        },
+        {
+          "id": "6D",
+          "name": "Cumulative — Touch Zone",
+          "duration": "2 min",
+          "type": "random",
+          "putts": 12,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6
+          ],
+          "description": "Post-gate cumulative round to lock in the learned pool.",
+          "blockPassThreshold": 0.5
         }
       ],
-      "scientific_focus": "Assessment of Zone 1 competency",
-      "track": 6
+      "successMetrics": [
+        {
+          "note": "gate test",
+          "metric": "Gate Pass",
+          "target": "8 of 12 in zone"
+        }
+      ],
+      "warnings": [],
+      "coachingNotes": "Treat the gate like a single putt — focus only on the current speed."
     },
     {
-      "title": "Zone 2 Introduction",
+      "track": 7,
       "phase": 1,
-      "is_gate_test": false,
+      "title": "Adding 7 MPH",
+      "duration": "7 minutes",
+      "targetPutts": 45,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "speedRange": "3-7 MPH",
+      "objective": "Introduce the first Moderate speed. The Touch zone is fully retained via cumulative practice.",
       "blocks": [
         {
-          "block_id": "7A",
-          "name": "8 MPH Foundation",
-          "target_speed": 8,
-          "target_putts": 20,
-          "tolerance": 0.5,
-          "zone": 2,
-          "skip_gating": true
+          "id": "7A",
+          "name": "Warmup",
+          "duration": "1 min",
+          "type": "warmup",
+          "putts": 6,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6
+          ],
+          "description": "Adaptive warmup across the Touch zone, ascending.",
+          "blockPassThreshold": 0.5
         },
         {
-          "block_id": "7B",
-          "name": "10 MPH Foundation",
-          "target_speed": 10,
-          "target_putts": 20,
-          "tolerance": 0.5,
-          "zone": 2
+          "id": "7B",
+          "name": "Anchoring 7 MPH",
+          "duration": "2 min",
+          "type": "blocked",
+          "putts": 12,
+          "targetSpeed": 7,
+          "acceptRange": {
+            "max": 7.5,
+            "min": 6.5
+          },
+          "focus": [
+            "Slightly more recruitment than 6",
+            "Tempo unchanged"
+          ],
+          "description": "7 MPH — first Moderate speed. Average green, 10-foot putt.",
+          "blockPassThreshold": 0.5
         },
         {
-          "block_id": "7C",
-          "name": "Elimination Ladder",
-          "target_speed": 3,
-          "target_putts": 50,
-          "tolerance": 0.5,
-          "zone": 1,
-          "block_type": "ladder",
-          "start_speed": 3,
-          "end_speed": 7
+          "id": "7C",
+          "name": "Bridge Sequence 5-6-7",
+          "duration": "1.5 min",
+          "type": "sequence",
+          "putts": 9,
+          "sequence": [
+            5,
+            6,
+            7
+          ],
+          "description": "Sequence the zone boundary — connect new 7 to known 5, 6.",
+          "blockPassThreshold": 0.5
+        },
+        {
+          "id": "7D",
+          "name": "Cumulative — 3 to 7",
+          "duration": "2 min",
+          "type": "random",
+          "putts": 14,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "description": "Random rotation across every speed learned so far. Weak speeds appear more often.",
+          "blockPassThreshold": 0.5
         }
       ],
-      "scientific_focus": "Expanding speed range to medium putts",
-      "track": 7
+      "successMetrics": [
+        {
+          "note": "new zone open",
+          "metric": "Zone Accuracy",
+          "target": "55%+"
+        }
+      ],
+      "warnings": [],
+      "coachingNotes": "Seven feels like a 10-foot putt on average green speed."
     },
     {
-      "title": "Zone 1-2 Mix",
+      "track": 8,
       "phase": 1,
-      "is_gate_test": false,
+      "title": "Adding 8 MPH",
+      "duration": "8 minutes",
+      "targetPutts": 50,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "speedRange": "3-8 MPH",
+      "objective": "Introduce 8 MPH. The 7/8 boundary is one of the most important discriminations in real golf.",
       "blocks": [
         {
-          "block_id": "8A",
-          "name": "Zone 1 Review",
-          "target_speed": 5,
-          "target_putts": 15,
-          "tolerance": 0.5,
-          "zone": 1,
-          "block_pass_threshold": 0.5
+          "id": "8A",
+          "name": "Warmup",
+          "duration": "1 min",
+          "type": "warmup",
+          "putts": 6,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "description": "Adaptive warmup, ascending.",
+          "blockPassThreshold": 0.5
         },
         {
-          "block_id": "8B",
-          "name": "Zone 2 Practice",
-          "target_speed": 9,
-          "target_putts": 25,
-          "tolerance": 0.5,
-          "zone": 2,
-          "block_pass_threshold": 0.5
+          "id": "8B",
+          "name": "Anchoring 8 MPH",
+          "duration": "2 min",
+          "type": "blocked",
+          "putts": 12,
+          "targetSpeed": 8,
+          "acceptRange": {
+            "max": 8.5,
+            "min": 7.5
+          },
+          "focus": [
+            "Compare to 7 carefully",
+            "Tempo unchanged"
+          ],
+          "description": "8 MPH — the 7/8 discrimination is one of the most important in real golf.",
+          "blockPassThreshold": 0.5
+        },
+        {
+          "id": "8C",
+          "name": "Bridge Sequence 6-7-8",
+          "duration": "1.5 min",
+          "type": "sequence",
+          "putts": 9,
+          "sequence": [
+            6,
+            7,
+            8
+          ],
+          "description": "Step up through the zone boundary.",
+          "blockPassThreshold": 0.5
+        },
+        {
+          "id": "8D",
+          "name": "Alternating 7 and 8",
+          "duration": "1 min",
+          "type": "alternating",
+          "putts": 8,
+          "sequence": [
+            7,
+            8
+          ],
+          "description": "Sharpen the 7/8 discrimination.",
+          "blockPassThreshold": 0.5
+        },
+        {
+          "id": "8E",
+          "name": "Cumulative — 3 to 8",
+          "duration": "1.5 min",
+          "type": "random",
+          "putts": 12,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "description": "Random rotation across all learned speeds.",
+          "blockPassThreshold": 0.5
         }
       ],
-      "scientific_focus": "Zone transition management",
-      "track": 8
+      "successMetrics": [
+        {
+          "note": "adjacent-speed discrimination",
+          "metric": "Zone Accuracy",
+          "target": "55%+"
+        }
+      ],
+      "warnings": [],
+      "coachingNotes": "A small grip pressure change is enough to swing between 7 and 8."
     },
     {
-      "title": "Zone 2 Precision",
+      "track": 9,
       "phase": 1,
-      "is_gate_test": false,
+      "title": "Adding 9 MPH — Zone 2 Complete",
+      "duration": "9 minutes",
+      "targetPutts": 55,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "speedRange": "3-9 MPH",
+      "objective": "Complete the Moderate zone with 9 MPH. All seven slow-and-medium speeds are now in rotation.",
       "blocks": [
         {
-          "block_id": "9A",
-          "name": "8 MPH Precision",
-          "target_speed": 8,
-          "target_putts": 20,
-          "tolerance": 0.5,
-          "zone": 2,
-          "skip_gating": true
+          "id": "9A",
+          "name": "Warmup",
+          "duration": "1 min",
+          "type": "warmup",
+          "putts": 7,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "description": "Adaptive warmup, ascending.",
+          "blockPassThreshold": 0.5
         },
         {
-          "block_id": "9B",
-          "name": "9 MPH Precision",
-          "target_speed": 9,
-          "target_putts": 20,
-          "tolerance": 0.5,
-          "zone": 2
+          "id": "9B",
+          "name": "Anchoring 9 MPH",
+          "duration": "2 min",
+          "type": "blocked",
+          "putts": 12,
+          "targetSpeed": 9,
+          "acceptRange": {
+            "max": 9.5,
+            "min": 8.5
+          },
+          "focus": [
+            "Final Moderate speed",
+            "Smooth, committed stroke"
+          ],
+          "description": "9 MPH completes the Moderate zone — covers most real-round putts.",
+          "blockPassThreshold": 0.5
         },
         {
-          "block_id": "9C",
-          "name": "10 MPH Precision",
-          "target_speed": 10,
-          "target_putts": 20,
-          "tolerance": 0.5,
-          "zone": 2,
-          "block_pass_threshold": 0.55
+          "id": "9C",
+          "name": "Sequence 7-8-9",
+          "duration": "1.5 min",
+          "type": "sequence",
+          "putts": 9,
+          "sequence": [
+            7,
+            8,
+            9
+          ],
+          "description": "Sequence the full Moderate zone.",
+          "blockPassThreshold": 0.5
+        },
+        {
+          "id": "9D",
+          "name": "Cumulative — 3 to 9 (weighted 7-9)",
+          "duration": "2 min",
+          "type": "random",
+          "putts": 16,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9
+          ],
+          "description": "Random rotation weighted toward the newly acquired Moderate speeds.",
+          "blockPassThreshold": 0.5
         }
       ],
-      "scientific_focus": "Refining Zone 2 control",
-      "track": 9
+      "successMetrics": [
+        {
+          "note": "Zone 2 emerging",
+          "metric": "Zone Accuracy",
+          "target": "55%+"
+        }
+      ],
+      "warnings": [],
+      "coachingNotes": "You now own the speed range that covers most putts on a real round."
     },
     {
-      "title": "Phase 1 Integration",
+      "track": 10,
       "phase": 1,
-      "is_gate_test": false,
+      "title": "Zone 2 Pressure Prep",
+      "duration": "9 minutes",
+      "targetPutts": 60,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "speedRange": "3-9 MPH",
+      "objective": "Condition the Moderate zone under pressure: make-in-a-row + ladder. Cumulative work keeps the Touch zone alive.",
       "blocks": [
         {
-          "block_id": "10A",
-          "name": "Zone 1 Mastery",
-          "target_speed": 5,
-          "target_putts": 20,
-          "tolerance": 0.5,
-          "zone": 1,
-          "skip_gating": true
+          "id": "10A",
+          "name": "Warmup",
+          "duration": "1 min",
+          "type": "warmup",
+          "putts": 7,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9
+          ],
+          "description": "Adaptive warmup, ascending.",
+          "blockPassThreshold": 0.6
         },
         {
-          "block_id": "10B",
-          "name": "Zone 2 Mastery",
-          "target_speed": 9,
-          "target_putts": 20,
-          "tolerance": 0.5,
-          "zone": 2
+          "id": "10B",
+          "name": "Make-In-A-Row — Moderate",
+          "duration": "2.5 min",
+          "type": "pressure",
+          "putts": 12,
+          "sequence": [
+            7,
+            8,
+            9
+          ],
+          "focus": [
+            "Composure on each putt",
+            "Routine before every stroke"
+          ],
+          "description": "Hit 3 consecutive in-zone putts at 7, 8, and 9. Reset on miss.",
+          "consecutiveRequired": 3,
+          "challengeType": "make-in-row"
+        },
+        {
+          "id": "10C",
+          "name": "Ladder 7→9 then 9→7",
+          "duration": "1.5 min",
+          "type": "pressure",
+          "putts": 6,
+          "sequence": [
+            7,
+            8,
+            9,
+            9,
+            8,
+            7
+          ],
+          "description": "Up the ladder then back down — six putts, no reset.",
+          "startSpeed": 7,
+          "endSpeed": 9,
+          "challengeType": "ladder"
+        },
+        {
+          "id": "10D",
+          "name": "Cumulative — 3 to 9",
+          "duration": "2 min",
+          "type": "random",
+          "putts": 18,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9
+          ],
+          "description": "Cumulative across the full learned pool.",
+          "blockPassThreshold": 0.6
+        },
+        {
+          "id": "10E",
+          "name": "Cool-Down",
+          "duration": "1 min",
+          "type": "recovery",
+          "putts": 6,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6
+          ],
+          "description": "Easy Touch-zone cool-down."
         }
       ],
-      "scientific_focus": "Consolidating Zones 1-2",
-      "track": 10
+      "successMetrics": [
+        {
+          "note": "pressure prep",
+          "metric": "Make-In-A-Row",
+          "target": "3 consecutive"
+        }
+      ],
+      "warnings": [],
+      "coachingNotes": "Pressure prep before a gate — slow your routine and stay committed."
     },
     {
-      "title": "Zone 3 Introduction",
+      "track": 11,
+      "phase": 1,
+      "title": "Gate Test — Zone 2",
+      "duration": "9 minutes",
+      "targetPutts": 55,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "speedRange": "3-9 MPH",
+      "objective": "Zone 2 Gate Test. Passing unlocks 10 MPH and the Firm zone.",
+      "blocks": [
+        {
+          "id": "11A",
+          "name": "Warmup",
+          "duration": "1 min",
+          "type": "warmup",
+          "putts": 7,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9
+          ],
+          "description": "Pre-gate adaptive warmup.",
+          "blockPassThreshold": 0.6
+        },
+        {
+          "id": "11B",
+          "name": "Tune-Up Sequence",
+          "duration": "1 min",
+          "type": "sequence",
+          "putts": 6,
+          "sequence": [
+            7,
+            8,
+            9
+          ],
+          "description": "Light sequence on the gate speeds — rhythm check.",
+          "blockPassThreshold": 0.6
+        },
+        {
+          "id": "11C",
+          "name": "Zone 2 Gate Test",
+          "duration": "3 min",
+          "type": "gateTest",
+          "putts": 12,
+          "protocol": [
+            {
+              "putts": 4,
+              "speed": 7
+            },
+            {
+              "putts": 4,
+              "speed": 8
+            },
+            {
+              "putts": 4,
+              "speed": 9
+            }
+          ],
+          "description": "Four putts each at 7, 8, 9 MPH. Pass: 8 of 12 in zone.",
+          "passRequirements": {
+            "zoneAccuracy": {
+              "minimum": 8,
+              "percentage": 67
+            }
+          },
+          "isOfficial": true,
+          "gateId": "gate-zone2",
+          "isPhaseAssessment": false,
+          "isFinalAssessment": false
+        },
+        {
+          "id": "11D",
+          "name": "Cumulative — 3 to 9",
+          "duration": "2.5 min",
+          "type": "random",
+          "putts": 18,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9
+          ],
+          "description": "Post-gate cumulative round.",
+          "blockPassThreshold": 0.6
+        }
+      ],
+      "successMetrics": [
+        {
+          "note": "gate test",
+          "metric": "Gate Pass",
+          "target": "8 of 12 in zone"
+        }
+      ],
+      "warnings": [],
+      "coachingNotes": "Same routine as the gate — focus on the current speed."
+    },
+    {
+      "track": 12,
       "phase": 2,
-      "is_gate_test": false,
+      "title": "Adding 10 MPH",
+      "duration": "10 minutes",
+      "targetPutts": 60,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "speedRange": "3-10 MPH",
+      "objective": "Introduce the first Firm speed. From here on every new speed gets a dedicated consolidation track before the next is introduced — these speeds take longer to acquire.",
       "blocks": [
         {
-          "block_id": "11A",
-          "name": "11 MPH Foundation",
-          "target_speed": 11,
-          "target_putts": 20,
-          "tolerance": 0.5,
-          "zone": 3,
-          "block_pass_threshold": 0.5
+          "id": "12A",
+          "name": "Warmup",
+          "duration": "1 min",
+          "type": "warmup",
+          "putts": 7,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9
+          ],
+          "description": "Adaptive warmup, ascending.",
+          "blockPassThreshold": 0.6
         },
         {
-          "block_id": "11B",
-          "name": "13 MPH Foundation",
-          "target_speed": 13,
-          "target_putts": 20,
-          "tolerance": 0.5,
-          "zone": 3,
-          "block_pass_threshold": 0.55
+          "id": "12B",
+          "name": "Anchoring 10 MPH (heavy)",
+          "duration": "2 min",
+          "type": "blocked",
+          "putts": 12,
+          "targetSpeed": 10,
+          "acceptRange": {
+            "max": 10.6,
+            "min": 9.4
+          },
+          "focus": [
+            "Let stroke length do the work",
+            "Don't rush the downswing"
+          ],
+          "description": "10 MPH — first Firm speed. Requires noticeable recruitment but tempo stays the same.",
+          "blockPassThreshold": 0.6
+        },
+        {
+          "id": "12C",
+          "name": "Anchoring 10 MPH (reinforcement)",
+          "duration": "1 min",
+          "type": "blocked",
+          "putts": 6,
+          "targetSpeed": 10,
+          "acceptRange": {
+            "max": 10.6,
+            "min": 9.4
+          },
+          "description": "Second pass on 10 to reinforce the motor pattern.",
+          "blockPassThreshold": 0.6
+        },
+        {
+          "id": "12D",
+          "name": "Bridge Sequence 8-9-10",
+          "duration": "1.5 min",
+          "type": "sequence",
+          "putts": 9,
+          "sequence": [
+            8,
+            9,
+            10
+          ],
+          "description": "Connect the new firm speed to the upper Moderate zone.",
+          "blockPassThreshold": 0.6
+        },
+        {
+          "id": "12E",
+          "name": "Cumulative — 3 to 10 (weighted 10)",
+          "duration": "2.5 min",
+          "type": "random",
+          "putts": 18,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10
+          ],
+          "description": "Random rotation weighted toward the new speed.",
+          "blockPassThreshold": 0.6
         }
       ],
-      "scientific_focus": "Introduction to medium-long putts",
-      "track": 11
+      "successMetrics": [
+        {
+          "note": "first firm speed",
+          "metric": "Zone Accuracy",
+          "target": "50%+ at 10"
+        }
+      ],
+      "warnings": [],
+      "coachingNotes": "Ten requires noticeable recruitment. Don't let the stroke get long — let it accelerate."
     },
     {
-      "title": "Gate Test 2: Zones 1-2",
+      "track": 13,
       "phase": 2,
-      "is_gate_test": true,
-      "gate_test_number": 2,
+      "title": "10 MPH Consolidation",
+      "duration": "10 minutes",
+      "targetPutts": 60,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "speedRange": "3-10 MPH",
+      "objective": "Lock in 10 MPH before adding 11. Variable work between 8-10 trains the upper Moderate / lower Firm boundary.",
       "blocks": [
         {
-          "block_id": "GT2A",
-          "name": "Zone 1 Test",
-          "target_speed": 5,
-          "target_putts": 15,
-          "tolerance": 0.5,
-          "zone": 1
+          "id": "13A",
+          "name": "Warmup",
+          "duration": "1 min",
+          "type": "warmup",
+          "putts": 7,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10
+          ],
+          "description": "Adaptive warmup.",
+          "blockPassThreshold": 0.65
         },
         {
-          "block_id": "GT2B",
-          "name": "Zone 2 Test",
-          "target_speed": 9,
-          "target_putts": 15,
-          "tolerance": 0.5,
-          "zone": 2
+          "id": "13B",
+          "name": "10 MPH Reinforcement",
+          "duration": "1.5 min",
+          "type": "blocked",
+          "putts": 10,
+          "targetSpeed": 10,
+          "acceptRange": {
+            "max": 10.6,
+            "min": 9.4
+          },
+          "description": "Lock in 10.",
+          "blockPassThreshold": 0.65
+        },
+        {
+          "id": "13C",
+          "name": "Alternating 9 and 10",
+          "duration": "1 min",
+          "type": "alternating",
+          "putts": 8,
+          "sequence": [
+            9,
+            10
+          ],
+          "description": "Sharpen the zone-boundary discrimination.",
+          "blockPassThreshold": 0.65
+        },
+        {
+          "id": "13D",
+          "name": "Variable 8-9-10",
+          "duration": "1.5 min",
+          "type": "sequence",
+          "putts": 9,
+          "sequence": [
+            8,
+            9,
+            10
+          ],
+          "description": "Train the boundary across three speeds.",
+          "blockPassThreshold": 0.65
+        },
+        {
+          "id": "13E",
+          "name": "Cumulative — 3 to 10",
+          "duration": "3 min",
+          "type": "random",
+          "putts": 20,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10
+          ],
+          "description": "Full learned pool.",
+          "blockPassThreshold": 0.65
         }
       ],
-      "scientific_focus": "Assessment of Zones 1-2 retention",
-      "track": 12
+      "successMetrics": [
+        {
+          "note": "consolidation",
+          "metric": "Zone Accuracy",
+          "target": "60%+ at 10"
+        }
+      ],
+      "warnings": [],
+      "coachingNotes": "Boundary work between zones is where real green-reading skill lives."
     },
     {
-      "title": "Zone 3 Progression",
+      "track": 14,
       "phase": 2,
-      "is_gate_test": false,
+      "title": "Adding 11 MPH",
+      "duration": "10 minutes",
+      "targetPutts": 65,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "speedRange": "3-11 MPH",
+      "objective": "Introduce 11 MPH. Cumulative pool now spans 9 speeds.",
       "blocks": [
         {
-          "block_id": "13A",
-          "name": "12 MPH Practice",
-          "target_speed": 12,
-          "target_putts": 25,
-          "tolerance": 0.5,
-          "zone": 3,
-          "block_pass_threshold": 0.6
+          "id": "14A",
+          "name": "Warmup",
+          "duration": "1 min",
+          "type": "warmup",
+          "putts": 8,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10
+          ],
+          "description": "Adaptive warmup.",
+          "blockPassThreshold": 0.65
         },
         {
-          "block_id": "13B",
-          "name": "14 MPH Practice",
-          "target_speed": 14,
-          "target_putts": 25,
-          "tolerance": 0.5,
-          "zone": 3,
-          "block_pass_threshold": 0.65
+          "id": "14B",
+          "name": "Anchoring 11 MPH (heavy)",
+          "duration": "2 min",
+          "type": "blocked",
+          "putts": 12,
+          "targetSpeed": 11,
+          "acceptRange": {
+            "max": 11.6,
+            "min": 10.4
+          },
+          "description": "11 MPH — second Firm speed.",
+          "blockPassThreshold": 0.65
+        },
+        {
+          "id": "14C",
+          "name": "Bridge Sequence 9-10-11",
+          "duration": "1.5 min",
+          "type": "sequence",
+          "putts": 9,
+          "sequence": [
+            9,
+            10,
+            11
+          ],
+          "description": "Step up through the zone.",
+          "blockPassThreshold": 0.65
+        },
+        {
+          "id": "14D",
+          "name": "Alternating 10 and 11",
+          "duration": "1 min",
+          "type": "alternating",
+          "putts": 8,
+          "sequence": [
+            10,
+            11
+          ],
+          "description": "Sharpen 10/11 discrimination.",
+          "blockPassThreshold": 0.65
+        },
+        {
+          "id": "14E",
+          "name": "Cumulative — 3 to 11 (weighted 11)",
+          "duration": "3 min",
+          "type": "random",
+          "putts": 22,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11
+          ],
+          "description": "Full learned pool weighted to the new speed.",
+          "blockPassThreshold": 0.65
         }
       ],
-      "scientific_focus": "Building Zone 3 competency",
-      "track": 13
+      "successMetrics": [
+        {
+          "note": "new speed",
+          "metric": "Zone Accuracy",
+          "target": "50%+ at 11"
+        }
+      ],
+      "warnings": [],
+      "coachingNotes": "Eleven and ten should feel distinctly different — small stroke change, big speed change."
     },
     {
-      "title": "Multi-Zone Practice",
+      "track": 15,
       "phase": 2,
-      "is_gate_test": false,
+      "title": "11 MPH Consolidation",
+      "duration": "10 minutes",
+      "targetPutts": 65,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "speedRange": "3-11 MPH",
+      "objective": "Refine 11 MPH and integrate 10/11. Cumulative random keeps the full learned pool fresh.",
       "blocks": [
         {
-          "block_id": "14A",
-          "name": "Zone 1 Review",
-          "target_speed": 6,
-          "target_putts": 15,
-          "tolerance": 0.5,
-          "zone": 1,
-          "block_pass_threshold": 0.6
+          "id": "15A",
+          "name": "Warmup",
+          "duration": "1 min",
+          "type": "warmup",
+          "putts": 8,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11
+          ],
+          "description": "Adaptive warmup.",
+          "blockPassThreshold": 0.65
         },
         {
-          "block_id": "14B",
-          "name": "Zone 2 Review",
-          "target_speed": 9,
-          "target_putts": 15,
-          "tolerance": 0.5,
-          "zone": 2,
-          "block_pass_threshold": 0.55
+          "id": "15B",
+          "name": "11 MPH Reinforcement",
+          "duration": "1.5 min",
+          "type": "blocked",
+          "putts": 10,
+          "targetSpeed": 11,
+          "acceptRange": {
+            "max": 11.6,
+            "min": 10.4
+          },
+          "description": "Lock in 11.",
+          "blockPassThreshold": 0.65
         },
         {
-          "block_id": "14C",
-          "name": "Zone 3 Focus",
-          "target_speed": 12,
-          "target_putts": 20,
-          "tolerance": 0.5,
-          "zone": 3,
-          "block_pass_threshold": 0.6
+          "id": "15C",
+          "name": "Alternating 10 and 11",
+          "duration": "1 min",
+          "type": "alternating",
+          "putts": 8,
+          "sequence": [
+            10,
+            11
+          ],
+          "description": "Boundary refinement.",
+          "blockPassThreshold": 0.65
+        },
+        {
+          "id": "15D",
+          "name": "Variable 9-10-11",
+          "duration": "1.5 min",
+          "type": "sequence",
+          "putts": 9,
+          "sequence": [
+            9,
+            10,
+            11
+          ],
+          "description": "Boundary across three speeds.",
+          "blockPassThreshold": 0.65
+        },
+        {
+          "id": "15E",
+          "name": "Cumulative — 3 to 11",
+          "duration": "3 min",
+          "type": "random",
+          "putts": 22,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11
+          ],
+          "description": "Full learned pool.",
+          "blockPassThreshold": 0.65
         }
       ],
-      "scientific_focus": "Multi-zone switching",
-      "track": 14
+      "successMetrics": [
+        {
+          "note": "consolidation",
+          "metric": "Zone Accuracy",
+          "target": "60%+ at 11"
+        }
+      ],
+      "warnings": [],
+      "coachingNotes": "Aim for parity at 10 and 11 by the end of this track."
     },
     {
-      "title": "Zone 3 Mastery",
+      "track": 16,
       "phase": 2,
-      "is_gate_test": false,
+      "title": "Adding 12 MPH — Zone 3 Complete",
+      "duration": "11 minutes",
+      "targetPutts": 70,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "speedRange": "3-12 MPH",
+      "objective": "Complete the Firm zone with 12 MPH. Cumulative pool now spans 10 speeds — guarantee 2 reps each in the cumulative block.",
       "blocks": [
         {
-          "block_id": "15A",
-          "name": "11 MPH Precision",
-          "target_speed": 11,
-          "target_putts": 20,
-          "tolerance": 0.5,
-          "zone": 3,
-          "block_pass_threshold": 0.6
+          "id": "16A",
+          "name": "Warmup",
+          "duration": "1 min",
+          "type": "warmup",
+          "putts": 8,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11
+          ],
+          "description": "Adaptive warmup.",
+          "blockPassThreshold": 0.65
         },
         {
-          "block_id": "15B",
-          "name": "13 MPH Precision",
-          "target_speed": 13,
-          "target_putts": 20,
-          "tolerance": 0.5,
-          "zone": 3,
-          "block_pass_threshold": 0.55
+          "id": "16B",
+          "name": "Anchoring 12 MPH (heavy)",
+          "duration": "2 min",
+          "type": "blocked",
+          "putts": 12,
+          "targetSpeed": 12,
+          "acceptRange": {
+            "max": 12.6,
+            "min": 11.4
+          },
+          "description": "12 MPH completes the Firm zone.",
+          "blockPassThreshold": 0.65
+        },
+        {
+          "id": "16C",
+          "name": "Sequence 10-11-12",
+          "duration": "1.5 min",
+          "type": "sequence",
+          "putts": 9,
+          "sequence": [
+            10,
+            11,
+            12
+          ],
+          "description": "Sequence the full Firm zone.",
+          "blockPassThreshold": 0.65
+        },
+        {
+          "id": "16D",
+          "name": "Alternating 11 and 12",
+          "duration": "1 min",
+          "type": "alternating",
+          "putts": 8,
+          "sequence": [
+            11,
+            12
+          ],
+          "description": "Sharpen 11/12 discrimination.",
+          "blockPassThreshold": 0.65
+        },
+        {
+          "id": "16E",
+          "name": "Cumulative — 3 to 12 (weighted 12)",
+          "duration": "3 min",
+          "type": "random",
+          "putts": 24,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12
+          ],
+          "description": "Full learned pool weighted to new speed.",
+          "blockPassThreshold": 0.65
         }
       ],
-      "scientific_focus": "Zone 3 accuracy refinement",
-      "track": 15
+      "successMetrics": [
+        {
+          "note": "zone complete",
+          "metric": "Zone Accuracy",
+          "target": "55%+ at 12"
+        }
+      ],
+      "warnings": [],
+      "coachingNotes": "Twelve is firm but not maximal. Stay smooth."
     },
     {
-      "title": "Zone 4 Introduction",
+      "track": 17,
       "phase": 2,
-      "is_gate_test": false,
+      "title": "12 MPH Consolidation + Zone 3 Integration",
+      "duration": "11 minutes",
+      "targetPutts": 70,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "speedRange": "3-12 MPH",
+      "objective": "Lock in 12 MPH and integrate the full Firm zone. Cumulative practice weighted to 10-12.",
       "blocks": [
         {
-          "block_id": "16A",
-          "name": "15 MPH Foundation",
-          "target_speed": 15,
-          "target_putts": 20,
-          "tolerance": 0.5,
-          "zone": 4,
-          "block_pass_threshold": 0.6
+          "id": "17A",
+          "name": "Warmup",
+          "duration": "1 min",
+          "type": "warmup",
+          "putts": 8,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12
+          ],
+          "description": "Adaptive warmup.",
+          "blockPassThreshold": 0.65
         },
         {
-          "block_id": "16B",
-          "name": "17 MPH Foundation",
-          "target_speed": 17,
-          "target_putts": 20,
-          "tolerance": 0.5,
-          "zone": 4
+          "id": "17B",
+          "name": "12 MPH Reinforcement",
+          "duration": "1.5 min",
+          "type": "blocked",
+          "putts": 10,
+          "targetSpeed": 12,
+          "acceptRange": {
+            "max": 12.6,
+            "min": 11.4
+          },
+          "description": "Lock in 12.",
+          "blockPassThreshold": 0.65
+        },
+        {
+          "id": "17C",
+          "name": "Alternating Firm Zone",
+          "duration": "1.5 min",
+          "type": "alternating",
+          "putts": 9,
+          "sequence": [
+            10,
+            11,
+            12
+          ],
+          "description": "Alternate across Zone 3.",
+          "blockPassThreshold": 0.65
+        },
+        {
+          "id": "17D",
+          "name": "Cumulative — 3 to 12 (weighted Firm)",
+          "duration": "3 min",
+          "type": "random",
+          "putts": 22,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12
+          ],
+          "description": "Full pool, weighted to Firm zone.",
+          "blockPassThreshold": 0.65
+        },
+        {
+          "id": "17E",
+          "name": "Cool-Down",
+          "duration": "1 min",
+          "type": "recovery",
+          "putts": 8,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9
+          ],
+          "description": "Easy adaptive close-out across Touch and Moderate zones."
         }
       ],
-      "scientific_focus": "Introduction to long putts",
-      "track": 16
+      "successMetrics": [
+        {
+          "note": "pre-gate consolidation",
+          "metric": "Zone Accuracy",
+          "target": "60%+ Firm"
+        }
+      ],
+      "warnings": [],
+      "coachingNotes": "Last track before pressure prep. Make every Firm-zone putt count."
     },
     {
-      "title": "Zone 4 Progression",
+      "track": 18,
       "phase": 2,
-      "is_gate_test": false,
+      "title": "Pre-Gate 3 Pressure Prep",
+      "duration": "6 minutes",
+      "targetPutts": 30,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "speedRange": "3-12 MPH",
+      "objective": "Short, focused pressure session before Gate 3: one make-in-a-row on the weakest learned speed, one short ladder, then cool-down.",
       "blocks": [
         {
-          "block_id": "17A",
-          "name": "16 MPH Practice",
-          "target_speed": 16,
-          "target_putts": 25,
-          "tolerance": 0.5,
-          "zone": 4,
-          "block_pass_threshold": 0.6
+          "id": "18A",
+          "name": "Warmup",
+          "duration": "1 min",
+          "type": "warmup",
+          "putts": 8,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12
+          ],
+          "description": "Adaptive warmup, ascending.",
+          "blockPassThreshold": 0.65
         },
         {
-          "block_id": "17B",
-          "name": "18 MPH Practice",
-          "target_speed": 18,
-          "target_putts": 25,
-          "tolerance": 0.5,
-          "zone": 4
+          "id": "18B",
+          "name": "Make-In-A-Row — Weakest Speed",
+          "duration": "2 min",
+          "type": "pressure",
+          "putts": 8,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12
+          ],
+          "description": "Adaptive engine selects your weakest learned speed. Hit 3 in a row in-zone. Reset on miss.",
+          "consecutiveRequired": 3,
+          "challengeType": "make-in-row"
+        },
+        {
+          "id": "18C",
+          "name": "Pressure Ladder 3→9",
+          "duration": "1.5 min",
+          "type": "pressure",
+          "putts": 7,
+          "sequence": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9
+          ],
+          "description": "Seven putts ascending through the slower half of the learned pool.",
+          "startSpeed": 3,
+          "endSpeed": 9,
+          "challengeType": "ladder"
+        },
+        {
+          "id": "18D",
+          "name": "Cool-Down",
+          "duration": "1 min",
+          "type": "recovery",
+          "putts": 7,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12
+          ],
+          "description": "Adaptive cool-down."
         }
       ],
-      "scientific_focus": "Building Zone 4 competency",
-      "track": 17
+      "successMetrics": [
+        {
+          "note": "pressure prep",
+          "metric": "Make-In-A-Row",
+          "target": "3 consecutive"
+        }
+      ],
+      "warnings": [],
+      "coachingNotes": "Pressure should feel uncomfortable — that's the point. Tomorrow is the gate."
     },
     {
-      "title": "Gate Test 3: Zones 1-3",
+      "track": 19,
       "phase": 2,
-      "is_gate_test": true,
-      "gate_test_number": 3,
+      "title": "Gate Test — Zone 3",
+      "duration": "10 minutes",
+      "targetPutts": 70,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "speedRange": "3-12 MPH",
+      "objective": "Zone 3 Gate Test. Passing unlocks 13 MPH and the Power zone.",
       "blocks": [
         {
-          "block_id": "GT3A",
-          "name": "Zone 1 Test",
-          "target_speed": 5,
-          "target_putts": 12,
-          "tolerance": 0.5,
-          "zone": 1
+          "id": "19A",
+          "name": "Warmup",
+          "duration": "1 min",
+          "type": "warmup",
+          "putts": 8,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12
+          ],
+          "description": "Pre-gate adaptive warmup.",
+          "blockPassThreshold": 0.7
         },
         {
-          "block_id": "GT3B",
-          "name": "Zone 2 Test",
-          "target_speed": 9,
-          "target_putts": 12,
-          "tolerance": 0.5,
-          "zone": 2
+          "id": "19B",
+          "name": "Tune-Up Sequence",
+          "duration": "1 min",
+          "type": "sequence",
+          "putts": 6,
+          "sequence": [
+            10,
+            11,
+            12
+          ],
+          "description": "Light Firm-zone sequence — rhythm check.",
+          "blockPassThreshold": 0.7
         },
         {
-          "block_id": "GT3C",
-          "name": "Zone 3 Test",
-          "target_speed": 12,
-          "target_putts": 12,
-          "tolerance": 0.5,
-          "zone": 3
+          "id": "19C",
+          "name": "Zone 3 Gate Test",
+          "duration": "3 min",
+          "type": "gateTest",
+          "putts": 12,
+          "protocol": [
+            {
+              "putts": 4,
+              "speed": 10
+            },
+            {
+              "putts": 4,
+              "speed": 11
+            },
+            {
+              "putts": 4,
+              "speed": 12
+            }
+          ],
+          "description": "Four putts each at 10, 11, 12 MPH. Pass: 8 of 12 in zone.",
+          "passRequirements": {
+            "zoneAccuracy": {
+              "minimum": 8,
+              "percentage": 67
+            }
+          },
+          "isOfficial": true,
+          "gateId": "gate-zone3",
+          "isPhaseAssessment": false,
+          "isFinalAssessment": false
+        },
+        {
+          "id": "19D",
+          "name": "Cumulative — 3 to 12",
+          "duration": "3 min",
+          "type": "random",
+          "putts": 24,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12
+          ],
+          "description": "Post-gate cumulative round.",
+          "blockPassThreshold": 0.7
         }
       ],
-      "scientific_focus": "Assessment of Zones 1-3",
-      "track": 18
-    },
-    {
-      "title": "Four-Zone Integration",
-      "phase": 2,
-      "is_gate_test": false,
-      "blocks": [
+      "successMetrics": [
         {
-          "block_id": "19A",
-          "name": "Zone 2 Practice",
-          "target_speed": 9,
-          "target_putts": 15,
-          "tolerance": 0.5,
-          "zone": 2,
-          "block_pass_threshold": 0.65
-        },
-        {
-          "block_id": "19B",
-          "name": "Zone 3 Practice",
-          "target_speed": 13,
-          "target_putts": 15,
-          "tolerance": 0.5,
-          "zone": 3
-        },
-        {
-          "block_id": "19C",
-          "name": "Zone 4 Practice",
-          "target_speed": 16,
-          "target_putts": 15,
-          "tolerance": 0.5,
-          "zone": 4,
-          "block_pass_threshold": 0.5
+          "note": "gate test",
+          "metric": "Gate Pass",
+          "target": "8 of 12 in zone"
         }
       ],
-      "scientific_focus": "Multi-zone fluency",
-      "track": 19
+      "warnings": [],
+      "coachingNotes": "Routine before every putt — and especially before this one."
     },
     {
-      "title": "Phase 2 Integration",
-      "phase": 2,
-      "is_gate_test": false,
-      "blocks": [
-        {
-          "block_id": "20A",
-          "name": "Zone 3 Mastery",
-          "target_speed": 12,
-          "target_putts": 20,
-          "tolerance": 0.5,
-          "zone": 3,
-          "block_pass_threshold": 0.65
-        },
-        {
-          "block_id": "20B",
-          "name": "Zone 4 Mastery",
-          "target_speed": 17,
-          "target_putts": 20,
-          "tolerance": 0.5,
-          "zone": 4
-        }
-      ],
-      "scientific_focus": "Consolidating Zones 3-4",
-      "track": 20
-    },
-    {
-      "title": "Zone 5 Introduction",
+      "track": 20,
       "phase": 3,
-      "is_gate_test": false,
+      "title": "Adding 13 MPH",
+      "duration": "11 minutes",
+      "targetPutts": 75,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13
+      ],
+      "speedRange": "3-13 MPH",
+      "objective": "Introduce the first Power speed. The Power zone has the widest tolerance (±0.7) — but it's still the hardest zone to acquire.",
       "blocks": [
         {
-          "block_id": "21A",
-          "name": "19 MPH Foundation",
-          "target_speed": 19,
-          "target_putts": 20,
-          "tolerance": 0.5,
-          "zone": 5,
-          "block_pass_threshold": 0.65
+          "id": "20A",
+          "name": "Warmup",
+          "duration": "1 min",
+          "type": "warmup",
+          "putts": 8,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12
+          ],
+          "description": "Adaptive warmup.",
+          "blockPassThreshold": 0.7
         },
         {
-          "block_id": "21B",
-          "name": "20 MPH Foundation",
-          "target_speed": 20,
-          "target_putts": 20,
-          "tolerance": 0.5,
-          "zone": 5,
-          "block_pass_threshold": 0.6
+          "id": "20B",
+          "name": "Anchoring 13 MPH (heavy)",
+          "duration": "2 min",
+          "type": "blocked",
+          "putts": 12,
+          "targetSpeed": 13,
+          "acceptRange": {
+            "max": 13.7,
+            "min": 12.3
+          },
+          "focus": [
+            "Length over force",
+            "Don't over-recruit"
+          ],
+          "description": "13 MPH — first Power speed. Long lag putt. Tempo unchanged, stroke longer.",
+          "blockPassThreshold": 0.7
+        },
+        {
+          "id": "20C",
+          "name": "Anchoring 13 (reinforcement)",
+          "duration": "1 min",
+          "type": "blocked",
+          "putts": 6,
+          "targetSpeed": 13,
+          "acceptRange": {
+            "max": 13.7,
+            "min": 12.3
+          },
+          "description": "Second pass on 13.",
+          "blockPassThreshold": 0.7
+        },
+        {
+          "id": "20D",
+          "name": "Bridge Sequence 11-12-13",
+          "duration": "1.5 min",
+          "type": "sequence",
+          "putts": 9,
+          "sequence": [
+            11,
+            12,
+            13
+          ],
+          "description": "Connect Power to upper Firm zone.",
+          "blockPassThreshold": 0.7
+        },
+        {
+          "id": "20E",
+          "name": "Cumulative — 3 to 13 (weighted 13)",
+          "duration": "3.5 min",
+          "type": "random",
+          "putts": 26,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13
+          ],
+          "description": "Full learned pool weighted to new Power speed.",
+          "blockPassThreshold": 0.7
         }
       ],
-      "scientific_focus": "Introduction to extra-long putts",
-      "track": 21
+      "successMetrics": [
+        {
+          "note": "first power speed",
+          "metric": "Zone Accuracy",
+          "target": "45%+ at 13"
+        }
+      ],
+      "warnings": [],
+      "coachingNotes": "Thirteen is a long lag. Don't over-recruit — let the stroke length do the work."
     },
     {
-      "title": "Zone 5 Progression",
+      "track": 21,
       "phase": 3,
-      "is_gate_test": false,
+      "title": "13 MPH Consolidation",
+      "duration": "11 minutes",
+      "targetPutts": 75,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13
+      ],
+      "speedRange": "3-13 MPH",
+      "objective": "Lock in 13 MPH. Variable work between 11-13 trains the Firm/Power boundary.",
       "blocks": [
         {
-          "block_id": "22A",
-          "name": "19 MPH Precision",
-          "target_speed": 19,
-          "target_putts": 25,
-          "tolerance": 0.5,
-          "zone": 5,
-          "block_pass_threshold": 0.6
+          "id": "21A",
+          "name": "Warmup",
+          "duration": "1 min",
+          "type": "warmup",
+          "putts": 8,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13
+          ],
+          "description": "Adaptive warmup.",
+          "blockPassThreshold": 0.7
         },
         {
-          "block_id": "22B",
-          "name": "20 MPH Precision",
-          "target_speed": 20,
-          "target_putts": 25,
-          "tolerance": 0.5,
-          "zone": 5,
-          "block_pass_threshold": 0.65
+          "id": "21B",
+          "name": "13 MPH Reinforcement",
+          "duration": "1.5 min",
+          "type": "blocked",
+          "putts": 10,
+          "targetSpeed": 13,
+          "acceptRange": {
+            "max": 13.7,
+            "min": 12.3
+          },
+          "description": "Lock in 13.",
+          "blockPassThreshold": 0.7
+        },
+        {
+          "id": "21C",
+          "name": "Alternating 12 and 13",
+          "duration": "1 min",
+          "type": "alternating",
+          "putts": 8,
+          "sequence": [
+            12,
+            13
+          ],
+          "description": "Sharpen the Firm/Power boundary.",
+          "blockPassThreshold": 0.7
+        },
+        {
+          "id": "21D",
+          "name": "Variable 11-12-13",
+          "duration": "1.5 min",
+          "type": "sequence",
+          "putts": 9,
+          "sequence": [
+            11,
+            12,
+            13
+          ],
+          "description": "Three-speed boundary work.",
+          "blockPassThreshold": 0.7
+        },
+        {
+          "id": "21E",
+          "name": "Cumulative — 3 to 13",
+          "duration": "3.5 min",
+          "type": "random",
+          "putts": 26,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13
+          ],
+          "description": "Full learned pool.",
+          "blockPassThreshold": 0.7
         }
       ],
-      "scientific_focus": "Building Zone 5 competency",
-      "track": 22
+      "successMetrics": [
+        {
+          "note": "consolidation",
+          "metric": "Zone Accuracy",
+          "target": "55%+ at 13"
+        }
+      ],
+      "warnings": [],
+      "coachingNotes": "Patience. The Power zone takes time. Cumulative work is doing real retention work in the background."
     },
     {
-      "title": "Full Spectrum Practice",
+      "track": 22,
       "phase": 3,
-      "is_gate_test": false,
+      "title": "Adding 14 MPH",
+      "duration": "12 minutes",
+      "targetPutts": 80,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "speedRange": "3-14 MPH",
+      "objective": "Introduce 14 MPH. The cumulative block now hits the 80-putt cap and begins sampling rather than exhausting the learned pool.",
       "blocks": [
         {
-          "block_id": "23A",
-          "name": "Zone 1 Refresh",
-          "target_speed": 5,
-          "target_putts": 10,
-          "tolerance": 0.5,
-          "zone": 1,
-          "block_pass_threshold": 0.65
+          "id": "22A",
+          "name": "Warmup",
+          "duration": "1 min",
+          "type": "warmup",
+          "putts": 8,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13
+          ],
+          "description": "Adaptive warmup.",
+          "blockPassThreshold": 0.7
         },
         {
-          "block_id": "23B",
-          "name": "Zone 2 Refresh",
-          "target_speed": 9,
-          "target_putts": 10,
-          "tolerance": 0.5,
-          "zone": 2,
-          "block_pass_threshold": 0.65
+          "id": "22B",
+          "name": "Anchoring 14 MPH (heavy)",
+          "duration": "2 min",
+          "type": "blocked",
+          "putts": 12,
+          "targetSpeed": 14,
+          "acceptRange": {
+            "max": 14.7,
+            "min": 13.3
+          },
+          "description": "14 MPH — second Power speed. Smooth tempo, full stroke.",
+          "blockPassThreshold": 0.7
         },
         {
-          "block_id": "23C",
-          "name": "Zone 3 Refresh",
-          "target_speed": 12,
-          "target_putts": 10,
-          "tolerance": 0.5,
-          "zone": 3
+          "id": "22C",
+          "name": "Bridge Sequence 12-13-14",
+          "duration": "1.5 min",
+          "type": "sequence",
+          "putts": 9,
+          "sequence": [
+            12,
+            13,
+            14
+          ],
+          "description": "Step up through Firm into Power.",
+          "blockPassThreshold": 0.7
         },
         {
-          "block_id": "23D",
-          "name": "Zone 4 Refresh",
-          "target_speed": 16,
-          "target_putts": 10,
-          "tolerance": 0.5,
-          "zone": 4
+          "id": "22D",
+          "name": "Alternating 13 and 14",
+          "duration": "1 min",
+          "type": "alternating",
+          "putts": 8,
+          "sequence": [
+            13,
+            14
+          ],
+          "description": "Sharpen 13/14.",
+          "blockPassThreshold": 0.7
         },
         {
-          "block_id": "23E",
-          "name": "Zone 5 Practice",
-          "target_speed": 19,
-          "target_putts": 10,
-          "tolerance": 0.5,
-          "zone": 5
+          "id": "22E",
+          "name": "Cumulative — 3 to 14 (weighted 14, capped)",
+          "duration": "3.5 min",
+          "type": "random",
+          "putts": 24,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14
+          ],
+          "description": "Capped at 24 putts; adaptive engine samples weak speeds first.",
+          "blockPassThreshold": 0.7
         }
       ],
-      "scientific_focus": "All-zone integration",
-      "track": 23
+      "successMetrics": [
+        {
+          "note": "new speed",
+          "metric": "Zone Accuracy",
+          "target": "45%+ at 14"
+        }
+      ],
+      "warnings": [],
+      "coachingNotes": "Fourteen requires both length and acceleration. Smooth tempo first, force second."
     },
     {
-      "title": "Gate Test 4: Zones 1-4",
+      "track": 23,
       "phase": 3,
-      "is_gate_test": true,
-      "gate_test_number": 4,
+      "title": "14 MPH Consolidation",
+      "duration": "12 minutes",
+      "targetPutts": 80,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "speedRange": "3-14 MPH",
+      "objective": "Refine 14 MPH and integrate 13/14. Cumulative pool samples weak speeds first.",
       "blocks": [
         {
-          "block_id": "GT4A",
-          "name": "Zone 1 Test",
-          "target_speed": 5,
-          "target_putts": 10,
-          "tolerance": 0.5,
-          "zone": 1
+          "id": "23A",
+          "name": "Warmup",
+          "duration": "1 min",
+          "type": "warmup",
+          "putts": 8,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14
+          ],
+          "description": "Adaptive warmup.",
+          "blockPassThreshold": 0.7
         },
         {
-          "block_id": "GT4B",
-          "name": "Zone 2 Test",
-          "target_speed": 9,
-          "target_putts": 10,
-          "tolerance": 0.5,
-          "zone": 2
+          "id": "23B",
+          "name": "14 MPH Reinforcement",
+          "duration": "1.5 min",
+          "type": "blocked",
+          "putts": 10,
+          "targetSpeed": 14,
+          "acceptRange": {
+            "max": 14.7,
+            "min": 13.3
+          },
+          "description": "Lock in 14.",
+          "blockPassThreshold": 0.7
         },
         {
-          "block_id": "GT4C",
-          "name": "Zone 3 Test",
-          "target_speed": 13,
-          "target_putts": 10,
-          "tolerance": 0.5,
-          "zone": 3
+          "id": "23C",
+          "name": "Alternating 13 and 14",
+          "duration": "1 min",
+          "type": "alternating",
+          "putts": 8,
+          "sequence": [
+            13,
+            14
+          ],
+          "description": "Boundary refinement.",
+          "blockPassThreshold": 0.7
         },
         {
-          "block_id": "GT4D",
-          "name": "Zone 4 Test",
-          "target_speed": 17,
-          "target_putts": 10,
-          "tolerance": 0.5,
-          "zone": 4
+          "id": "23D",
+          "name": "Variable 12-13-14",
+          "duration": "1.5 min",
+          "type": "sequence",
+          "putts": 9,
+          "sequence": [
+            12,
+            13,
+            14
+          ],
+          "description": "Three-speed Power-boundary work.",
+          "blockPassThreshold": 0.7
+        },
+        {
+          "id": "23E",
+          "name": "Cumulative — 3 to 14 (capped)",
+          "duration": "3.5 min",
+          "type": "random",
+          "putts": 24,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14
+          ],
+          "description": "Capped at 24 — adaptive sampling.",
+          "blockPassThreshold": 0.7
         }
       ],
-      "scientific_focus": "Assessment of Zones 1-4",
-      "track": 24
+      "successMetrics": [
+        {
+          "note": "consolidation",
+          "metric": "Zone Accuracy",
+          "target": "55%+ at 14"
+        }
+      ],
+      "warnings": [],
+      "coachingNotes": "The boundary between 13 and 14 is where Power-zone touch lives."
     },
     {
-      "title": "Advanced Integration",
+      "track": 24,
       "phase": 3,
-      "is_gate_test": false,
+      "title": "Adding 15 MPH — Zone 4 Complete",
+      "duration": "12 minutes",
+      "targetPutts": 80,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "speedRange": "3-15 MPH",
+      "objective": "Complete the program's top speed. Every speed in the device's training range is now active.",
       "blocks": [
         {
-          "block_id": "25A",
-          "name": "Low-Mid Mix",
-          "target_speed": 7,
-          "target_putts": 15,
-          "tolerance": 0.5,
-          "zone": 1,
-          "block_pass_threshold": 0.6
+          "id": "24A",
+          "name": "Warmup",
+          "duration": "1 min",
+          "type": "warmup",
+          "putts": 8,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14
+          ],
+          "description": "Adaptive warmup.",
+          "blockPassThreshold": 0.7
         },
         {
-          "block_id": "25B",
-          "name": "Mid-High Mix",
-          "target_speed": 14,
-          "target_putts": 15,
-          "tolerance": 0.5,
-          "zone": 3
+          "id": "24B",
+          "name": "Anchoring 15 MPH (heavy)",
+          "duration": "2 min",
+          "type": "blocked",
+          "putts": 12,
+          "targetSpeed": 15,
+          "acceptRange": {
+            "max": 15.7,
+            "min": 14.3
+          },
+          "focus": [
+            "Maximum length",
+            "Smooth tempo"
+          ],
+          "description": "15 MPH — top speed. Don't over-swing — let the device tell you when you've overshot.",
+          "blockPassThreshold": 0.7
         },
         {
-          "block_id": "25C",
-          "name": "High Speed Practice",
-          "target_speed": 19,
-          "target_putts": 15,
-          "tolerance": 0.5,
-          "zone": 5,
-          "block_pass_threshold": 0.45
+          "id": "24C",
+          "name": "Sequence 13-14-15",
+          "duration": "1.5 min",
+          "type": "sequence",
+          "putts": 9,
+          "sequence": [
+            13,
+            14,
+            15
+          ],
+          "description": "Sequence the full Power zone.",
+          "blockPassThreshold": 0.7
+        },
+        {
+          "id": "24D",
+          "name": "Alternating 14 and 15",
+          "duration": "1 min",
+          "type": "alternating",
+          "putts": 8,
+          "sequence": [
+            14,
+            15
+          ],
+          "description": "Top-speed discrimination.",
+          "blockPassThreshold": 0.7
+        },
+        {
+          "id": "24E",
+          "name": "Cumulative — 3 to 15 (weighted 15, capped)",
+          "duration": "3.5 min",
+          "type": "random",
+          "putts": 26,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "description": "Full 13-speed learned pool.",
+          "blockPassThreshold": 0.7
         }
       ],
-      "scientific_focus": "Complex speed transitions",
-      "track": 25
+      "successMetrics": [
+        {
+          "note": "top speed",
+          "metric": "Zone Accuracy",
+          "target": "45%+ at 15"
+        }
+      ],
+      "warnings": [],
+      "coachingNotes": "Fifteen is maximum. Don't over-swing — the device will tell you when you've overshot."
     },
     {
-      "title": "Precision Challenge",
+      "track": 25,
       "phase": 3,
-      "is_gate_test": false,
+      "title": "15 MPH Consolidation + Zone 4 Integration",
+      "duration": "12 minutes",
+      "targetPutts": 80,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "speedRange": "3-15 MPH",
+      "objective": "Lock in 15 MPH and integrate the full Power zone.",
       "blocks": [
         {
-          "block_id": "26A",
-          "name": "Zone 2 Precision",
-          "target_speed": 10,
-          "target_putts": 20,
-          "tolerance": 0.5,
-          "zone": 2,
-          "block_pass_threshold": 0.75
+          "id": "25A",
+          "name": "Warmup",
+          "duration": "1 min",
+          "type": "warmup",
+          "putts": 8,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "description": "Adaptive warmup.",
+          "blockPassThreshold": 0.75
         },
         {
-          "block_id": "26B",
-          "name": "Zone 3 Precision",
-          "target_speed": 14,
-          "target_putts": 20,
-          "tolerance": 0.5,
-          "zone": 3,
-          "block_pass_threshold": 0.75
+          "id": "25B",
+          "name": "15 MPH Reinforcement",
+          "duration": "1.5 min",
+          "type": "blocked",
+          "putts": 10,
+          "targetSpeed": 15,
+          "acceptRange": {
+            "max": 15.7,
+            "min": 14.3
+          },
+          "description": "Lock in 15.",
+          "blockPassThreshold": 0.75
         },
         {
-          "block_id": "26C",
-          "name": "Zone 5 Precision",
-          "target_speed": 20,
-          "target_putts": 20,
-          "tolerance": 0.5,
-          "zone": 5,
-          "block_pass_threshold": 0.45
+          "id": "25C",
+          "name": "Alternating Power Zone",
+          "duration": "1.5 min",
+          "type": "alternating",
+          "putts": 9,
+          "sequence": [
+            13,
+            14,
+            15
+          ],
+          "description": "Alternate the full Power zone.",
+          "blockPassThreshold": 0.75
+        },
+        {
+          "id": "25D",
+          "name": "Cumulative — 3 to 15 (weighted Power, capped)",
+          "duration": "3.5 min",
+          "type": "random",
+          "putts": 26,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "description": "Full pool, Power-weighted.",
+          "blockPassThreshold": 0.75
+        },
+        {
+          "id": "25E",
+          "name": "Cool-Down",
+          "duration": "1 min",
+          "type": "recovery",
+          "putts": 7,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9
+          ],
+          "description": "Easy Touch + Moderate close-out."
         }
       ],
-      "scientific_focus": "Precision under varied conditions",
-      "track": 26
+      "successMetrics": [
+        {
+          "note": "pre-gate",
+          "metric": "Zone Accuracy",
+          "target": "55%+ Power"
+        }
+      ],
+      "warnings": [],
+      "coachingNotes": "Last technical track before the gate. Use the cumulative block to identify and target weak speeds."
     },
     {
-      "title": "Endurance Training",
+      "track": 26,
       "phase": 3,
-      "is_gate_test": false,
+      "title": "Pre-Gate 4 Pressure Prep",
+      "duration": "6 minutes",
+      "targetPutts": 30,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "speedRange": "3-15 MPH",
+      "objective": "Short, focused pressure session before Gate 4: one make-in-a-row on the weakest learned speed, one short ladder through Firm/Power, cool-down.",
       "blocks": [
         {
-          "block_id": "27A",
-          "name": "Extended Zone 1",
-          "target_speed": 6,
-          "target_putts": 30,
-          "tolerance": 0.5,
-          "zone": 1,
-          "block_pass_threshold": 0.65
+          "id": "26A",
+          "name": "Warmup",
+          "duration": "1 min",
+          "type": "warmup",
+          "putts": 8,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "description": "Adaptive warmup, ascending.",
+          "blockPassThreshold": 0.75
         },
         {
-          "block_id": "27B",
-          "name": "Extended Zone 3",
-          "target_speed": 13,
-          "target_putts": 30,
-          "tolerance": 0.5,
-          "zone": 3,
-          "block_pass_threshold": 0.6
+          "id": "26B",
+          "name": "Make-In-A-Row — Weakest Speed",
+          "duration": "2 min",
+          "type": "pressure",
+          "putts": 8,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "description": "Adaptive engine selects weakest learned speed. Hit 3 in a row in-zone.",
+          "consecutiveRequired": 3,
+          "challengeType": "make-in-row"
+        },
+        {
+          "id": "26C",
+          "name": "Pressure Ladder 9→15",
+          "duration": "1.5 min",
+          "type": "pressure",
+          "putts": 7,
+          "sequence": [
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "description": "Seven putts ascending through the faster half of the learned pool.",
+          "startSpeed": 9,
+          "endSpeed": 15,
+          "challengeType": "ladder"
+        },
+        {
+          "id": "26D",
+          "name": "Cool-Down",
+          "duration": "1 min",
+          "type": "recovery",
+          "putts": 7,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "description": "Adaptive cool-down."
         }
       ],
-      "scientific_focus": "Consistency over extended practice",
-      "track": 27
+      "successMetrics": [
+        {
+          "note": "pressure prep",
+          "metric": "Make-In-A-Row",
+          "target": "3 consecutive"
+        }
+      ],
+      "warnings": [],
+      "coachingNotes": "Final gate prep. Stay process-focused."
     },
     {
-      "title": "Mastery Preparation",
+      "track": 27,
       "phase": 3,
-      "is_gate_test": false,
+      "title": "Gate Test — Zone 4 + Phase Assessment",
+      "duration": "12 minutes",
+      "targetPutts": 80,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "speedRange": "3-15 MPH",
+      "objective": "Zone 4 Gate Test plus a multi-zone assessment. Passing unlocks Phase 4 — pure high-pressure transfer practice.",
       "blocks": [
         {
-          "block_id": "28A",
-          "name": "All Zones Low",
-          "target_speed": 5,
-          "target_putts": 12,
-          "tolerance": 0.5,
-          "zone": 1,
-          "block_pass_threshold": 0.7
+          "id": "27A",
+          "name": "Warmup",
+          "duration": "1 min",
+          "type": "warmup",
+          "putts": 8,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "description": "Pre-gate adaptive warmup.",
+          "blockPassThreshold": 0.75
         },
         {
-          "block_id": "28B",
-          "name": "All Zones Mid-Low",
-          "target_speed": 9,
-          "target_putts": 12,
-          "tolerance": 0.5,
-          "zone": 2
+          "id": "27B",
+          "name": "Tune-Up Sequence",
+          "duration": "1 min",
+          "type": "sequence",
+          "putts": 6,
+          "sequence": [
+            13,
+            14,
+            15
+          ],
+          "description": "Light Power-zone sequence — rhythm check.",
+          "blockPassThreshold": 0.75
         },
         {
-          "block_id": "28C",
-          "name": "All Zones Mid",
-          "target_speed": 13,
-          "target_putts": 12,
-          "tolerance": 0.5,
-          "zone": 3
+          "id": "27C",
+          "name": "Zone 4 Gate Test",
+          "duration": "3 min",
+          "type": "gateTest",
+          "putts": 12,
+          "protocol": [
+            {
+              "putts": 4,
+              "speed": 13
+            },
+            {
+              "putts": 4,
+              "speed": 14
+            },
+            {
+              "putts": 4,
+              "speed": 15
+            }
+          ],
+          "description": "Four putts each at 13, 14, 15 MPH. Pass: 7 of 12 in zone.",
+          "passRequirements": {
+            "zoneAccuracy": {
+              "minimum": 7,
+              "percentage": 58
+            }
+          },
+          "isOfficial": true,
+          "gateId": "gate-zone4",
+          "isPhaseAssessment": true,
+          "isFinalAssessment": false
         },
         {
-          "block_id": "28D",
-          "name": "All Zones Mid-High",
-          "target_speed": 17,
-          "target_putts": 12,
-          "tolerance": 0.5,
-          "zone": 4
+          "id": "27D",
+          "name": "Phase 3 Assessment — All Zones",
+          "duration": "5 min",
+          "type": "assessment",
+          "putts": 26,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "description": "Two-pass cumulative across the full 13-speed learned pool — measures retention before Phase 4.",
+          "isOfficial": false,
+          "isPhaseAssessment": true,
+          "isFinalAssessment": false,
+          "blockPassThreshold": 0.75
         }
       ],
-      "scientific_focus": "Final preparation for mastery test",
-      "track": 28
+      "successMetrics": [
+        {
+          "note": "gate + assessment",
+          "metric": "Gate Pass",
+          "target": "7 of 12 in zone"
+        }
+      ],
+      "warnings": [],
+      "coachingNotes": "The assessment block samples every zone. Treat it like the Final dress rehearsal."
     },
     {
-      "title": "Final Refinement",
-      "phase": 3,
-      "is_gate_test": false,
+      "track": 28,
+      "phase": 4,
+      "title": "Random Under Pressure",
+      "duration": "12 minutes",
+      "targetPutts": 80,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "speedRange": "3-15 MPH",
+      "objective": "High contextual interference — random speed selection across the full range under a make-in-a-row pressure constraint, plus reactive practice.",
       "blocks": [
         {
-          "block_id": "29A",
-          "name": "Zone 1 Final",
-          "target_speed": 5,
-          "target_putts": 15,
-          "tolerance": 0.5,
-          "zone": 1,
-          "block_pass_threshold": 0.65
+          "id": "28A",
+          "name": "Warmup",
+          "duration": "1 min",
+          "type": "warmup",
+          "putts": 8,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "description": "Adaptive warmup, ascending.",
+          "blockPassThreshold": 0.75
         },
         {
-          "block_id": "29B",
-          "name": "Zone 3 Final",
-          "target_speed": 12,
-          "target_putts": 15,
-          "tolerance": 0.5,
-          "zone": 3
+          "id": "28B",
+          "name": "Random Pressure (Make-3)",
+          "duration": "3 min",
+          "type": "pressure",
+          "putts": 20,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "description": "Random speed across full pool, but you must make 3 in-zone consecutively. Reset on miss.",
+          "consecutiveRequired": 3,
+          "challengeType": "make-in-row"
         },
         {
-          "block_id": "29C",
-          "name": "Zone 5 Final",
-          "target_speed": 20,
-          "target_putts": 15,
-          "tolerance": 0.5,
-          "zone": 5,
-          "block_pass_threshold": 0.65
+          "id": "28C",
+          "name": "Reactive Practice",
+          "duration": "2.5 min",
+          "type": "reactive",
+          "putts": 15,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "description": "Next target is selected based on your previous result — miss low and the next is at the same speed; hit and it changes.",
+          "blockPassThreshold": 0.75
+        },
+        {
+          "id": "28D",
+          "name": "Cumulative — Full Pool (capped)",
+          "duration": "3.5 min",
+          "type": "random",
+          "putts": 30,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "description": "Full random rotation across all 13 speeds.",
+          "blockPassThreshold": 0.75
+        },
+        {
+          "id": "28E",
+          "name": "Cool-Down",
+          "duration": "1 min",
+          "type": "recovery",
+          "putts": 7,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9
+          ],
+          "description": "Easy close-out."
         }
       ],
-      "scientific_focus": "Final skill consolidation",
-      "track": 29
+      "successMetrics": [
+        {
+          "note": "transfer practice",
+          "metric": "Adaptive Score",
+          "target": "trending up"
+        }
+      ],
+      "warnings": [],
+      "coachingNotes": "No new content from here on. Phase 4 trains transfer to real-round conditions."
     },
     {
-      "title": "Gate Test 5: Full Spectrum Mastery",
-      "phase": 3,
-      "is_gate_test": true,
-      "gate_test_number": 5,
+      "track": 29,
+      "phase": 4,
+      "title": "Competition Simulation",
+      "duration": "12 minutes",
+      "targetPutts": 80,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "speedRange": "3-15 MPH",
+      "objective": "Two full rounds of the Combine game, back-to-back, with rest between. Trains performance recovery.",
       "blocks": [
         {
-          "block_id": "GT5A",
-          "name": "Zone 1 Final Test",
-          "target_speed": 5,
-          "target_putts": 10,
-          "tolerance": 0.5,
-          "zone": 1
+          "id": "29A",
+          "name": "Warmup",
+          "duration": "1 min",
+          "type": "warmup",
+          "putts": 8,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "description": "Adaptive warmup.",
+          "blockPassThreshold": 0.75
         },
         {
-          "block_id": "GT5B",
-          "name": "Zone 2 Final Test",
-          "target_speed": 9,
-          "target_putts": 10,
-          "tolerance": 0.5,
-          "zone": 2
+          "id": "29B",
+          "name": "Combine — Round 1",
+          "duration": "4 min",
+          "type": "combine",
+          "putts": 18,
+          "description": "Full Combine round across the 3–15 MPH target set. Score every shot."
         },
         {
-          "block_id": "GT5C",
-          "name": "Zone 3 Final Test",
-          "target_speed": 13,
-          "target_putts": 10,
-          "tolerance": 0.5,
-          "zone": 3
+          "id": "29C",
+          "name": "Combine — Round 2",
+          "duration": "4 min",
+          "type": "combine",
+          "putts": 18,
+          "description": "Second round, back-to-back. Trains performance recovery between rounds."
         },
         {
-          "block_id": "GT5D",
-          "name": "Zone 4 Final Test",
-          "target_speed": 17,
-          "target_putts": 10,
-          "tolerance": 0.5,
-          "zone": 4
+          "id": "29D",
+          "name": "Cumulative — Full Pool (capped)",
+          "duration": "3 min",
+          "type": "random",
+          "putts": 26,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "description": "Cool down with cumulative practice.",
+          "blockPassThreshold": 0.75
         },
         {
-          "block_id": "GT5E",
-          "name": "Zone 5 Final Test",
-          "target_speed": 20,
-          "target_putts": 10,
-          "tolerance": 0.5,
-          "zone": 5
+          "id": "29E",
+          "name": "Cool-Down",
+          "duration": "1 min",
+          "type": "recovery",
+          "putts": 7,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9
+          ],
+          "description": "Easy close-out."
         }
       ],
-      "scientific_focus": "Comprehensive assessment of all zones",
-      "track": 30
+      "successMetrics": [
+        {
+          "note": "two-round endurance",
+          "metric": "Combine Score",
+          "target": "personal best"
+        }
+      ],
+      "warnings": [],
+      "coachingNotes": "Score every shot. Forget bad shots immediately and reset before the next."
+    },
+    {
+      "track": 30,
+      "phase": 4,
+      "title": "Final Mastery Gate",
+      "duration": "10 minutes",
+      "targetPutts": 60,
+      "availableSpeeds": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "speedRange": "3-15 MPH",
+      "objective": "Final Mastery Gate Test. Sample every zone. Pass to complete the program.",
+      "blocks": [
+        {
+          "id": "30A",
+          "name": "Warmup",
+          "duration": "1.5 min",
+          "type": "warmup",
+          "putts": 8,
+          "adaptiveMode": "challenge",
+          "adaptivePool": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "description": "Final adaptive warmup across the full 13-speed learned pool.",
+          "blockPassThreshold": 0.75
+        },
+        {
+          "id": "30B",
+          "name": "Final Mastery Gate Test",
+          "duration": "5 min",
+          "type": "gateTest",
+          "putts": 16,
+          "protocol": [
+            {
+              "putts": 2,
+              "speed": 4
+            },
+            {
+              "putts": 2,
+              "speed": 5
+            },
+            {
+              "putts": 2,
+              "speed": 7
+            },
+            {
+              "putts": 2,
+              "speed": 8
+            },
+            {
+              "putts": 2,
+              "speed": 10
+            },
+            {
+              "putts": 2,
+              "speed": 11
+            },
+            {
+              "putts": 2,
+              "speed": 13
+            },
+            {
+              "putts": 2,
+              "speed": 14
+            }
+          ],
+          "description": "Sample every zone (4 putts per zone, 2 speeds × 2 putts). Pass: 11 of 16 in zone.",
+          "passRequirements": {
+            "zoneAccuracy": {
+              "minimum": 11,
+              "percentage": 69
+            }
+          },
+          "isOfficial": true,
+          "gateId": "gate-final",
+          "isPhaseAssessment": false,
+          "isFinalAssessment": true
+        },
+        {
+          "id": "30C",
+          "name": "Celebration",
+          "duration": "2 min",
+          "type": "celebration",
+          "putts": 5,
+          "description": "You completed every speed in the 3–15 MPH range. Free practice — no scoring.",
+          "blockPassThreshold": 0.75
+        }
+      ],
+      "successMetrics": [
+        {
+          "note": "program completion",
+          "metric": "Final Gate",
+          "target": "11 of 16 in zone"
+        }
+      ],
+      "warnings": [],
+      "coachingNotes": "You've practiced every speed in every track for 30 sessions. Trust what you've built."
     }
-  ]
+  ],
+  "phaseFloors": [
+    {
+      "name": "Touch & Moderate Acquisition",
+      "phase": 1,
+      "tracks": "1-11",
+      "endTrack": 11,
+      "speedRange": "3-9 MPH",
+      "startTrack": 1
+    },
+    {
+      "name": "Firm Acquisition",
+      "phase": 2,
+      "tracks": "12-19",
+      "endTrack": 19,
+      "speedRange": "3-12 MPH",
+      "startTrack": 12
+    },
+    {
+      "name": "Power Acquisition",
+      "phase": 3,
+      "tracks": "20-27",
+      "endTrack": 27,
+      "speedRange": "3-15 MPH",
+      "startTrack": 20
+    },
+    {
+      "name": "High-Pressure Transfer",
+      "phase": 4,
+      "tracks": "28-30",
+      "endTrack": 30,
+      "speedRange": "3-15 MPH",
+      "startTrack": 28
+    }
+  ],
+  "scientificFoundation": [
+    {
+      "summary": "Every track contains putts at every speed learned to date. Once introduced, a speed is revisited every subsequent track to prevent motor decay.",
+      "citation": "Schmidt & Lee — Motor Control and Learning",
+      "principle": "Cumulative practice"
+    },
+    {
+      "summary": "Practice difficulty is matched to current proficiency: blocked practice when a speed is new (low CI), random practice across the learned pool once acquired (high CI for retention and transfer).",
+      "citation": "Guadagnoli & Lee (2004)",
+      "principle": "Challenge-point framework"
+    },
+    {
+      "summary": "Random practice across the full learned pool hurts in-session performance but improves retention and transfer to novel situations.",
+      "citation": "Shea & Morgan (1979)",
+      "principle": "Contextual interference"
+    },
+    {
+      "summary": "Variable practice across the full speed range builds one generalized putting motor schema rather than 13 discrete speed-specific patterns.",
+      "citation": "Schmidt (1975) — schema theory",
+      "principle": "Schema generalization"
+    },
+    {
+      "summary": "Make-in-a-row and ladder pressure blocks before each gate condition the user to perform under stress, training transfer from practice context to performance context.",
+      "citation": "Beilock & Carr (2001)",
+      "principle": "Pressure transfer"
+    }
+  ],
+  "supplementaryMaterials": {}
 }

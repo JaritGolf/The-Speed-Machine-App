@@ -13,8 +13,10 @@ struct MakeInRowSessionView: View {
             block: block,
             day: day,
             stripConfig: .makeInRow(
+                totalPutts: session.totalPutts,
                 puttsTaken: session.currentPutt,
-                toGo: max(0, rowGoal - session.consecutiveSuccesses)
+                consecutive: session.consecutiveSuccesses,
+                goal: rowGoal
             ),
             headerIcon: .rec
         )

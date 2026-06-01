@@ -6,238 +6,261 @@
 //
 
 import SwiftUI
+import CoreBluetooth
 
 struct ConnectionView: View {
     @EnvironmentObject var bluetoothService: BluetoothService
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
-        NavigationView {
-            ZStack {
-                AppColors.backgroundAlt.ignoresSafeArea()
-
-                VStack(spacing: 24) {
-                    if bluetoothService.isConnected {
-                        // Connected State
-                        ConnectedStateView()
-                    } else {
-                        // Not Connected State
-                        DisconnectedStateView()
-                    }
-                }
-                .padding()
+        ZStack {
+            Color.white.ignoresSafeArea()
+            VStack(spacing: 0) {
+                scrollContent
+                bottomBar
             }
-            .navigationTitle("Device Connection")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
-                        dismiss()
-                    }
-                }
+        }
+        .onAppear {
+            if !bluetoothService.isConnected && !bluetoothService.isScanning {
+                bluetoothService.startScanning()
+            }
+        }
+        .onDisappear {
+            if bluetoothService.isScanning {
+                bluetoothService.stopScanning()
             }
         }
     }
-}
 
-struct ConnectedStateView: View {
-    @EnvironmentObject var bluetoothService: BluetoothService
+    // MARK: - Scroll Content
 
-    var body: some View {
-        VStack(spacing: 32) {
-            Spacer()
-
-            // Connection Status Icon
-            ZStack {
-                Circle()
-                    .fill(AppColors.accentLight)
-                    .frame(width: 120, height: 120)
-
-                Image(systemName: "checkmark.circle.fill")
-                    .font(.system(size: 60))
-                    .foregroundColor(AppColors.accentGreen)
+    private var scrollContent: some View {
+        ScrollView(showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 0) {
+                chapterHeader
+                headline
+                stepsSection
+                    .padding(.top, 28)
+                Spacer(minLength: 24)
             }
+            .padding(.horizontal, 32)
+        }
+    }
 
-            VStack(spacing: 8) {
-                Text("Connected")
-                    .font(.title)
-                    .fontWeight(.bold)
-                    .foregroundColor(AppColors.primaryBlack)
+    // MARK: - Chapter Header
 
-                Text(BLEConstants.deviceName)
-                    .font(.headline)
-                    .foregroundColor(AppColors.textMuted)
+    private var chapterHeader: some View {
+        HStack(alignment: .bottom, spacing: 0) {
+            Text("02.")
+                .font(.custom("Inter-Black", size: 110))
+                .foregroundColor(.black)
+                .tracking(-5)
+                .lineLimit(1)
+                .padding(.top, 60)
+
+            VStack(alignment: .leading, spacing: 0) {
+                HStack(spacing: 8) {
+                    Text("PAIR")
+                        .font(.custom("Inter-Bold", size: 11))
+                        .kerning(2.5)
+                        .foregroundColor(.black)
+                    Spacer()
+                    Image("SpeedMachineLogo")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(height: 35)
+                }
+                .padding(.bottom, 14)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.leading, 8)
+            .padding(.top, 60)
+        }
+    }
 
-            // Battery Level
-            HStack(spacing: 12) {
-                Image(systemName: batteryIcon)
-                    .font(.title3)
-                    .foregroundColor(batteryColor)
+    // MARK: - Headline
 
-                Text("\(bluetoothService.batteryLevel)%")
-                    .font(.headline)
-                    .foregroundColor(AppColors.textMuted)
-            }
-            .padding()
-            .background(Color.white)
-            .cornerRadius(12)
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(AppColors.border, lineWidth: 1)
+    private var headline: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Connect your\nmachine.")
+                .font(.custom("Inter-Black", size: 40))
+                .foregroundColor(.black)
+                .lineSpacing(2)
+                .tracking(-1)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Text("Follow these steps to get started.")
+                .font(.custom("Inter-Regular", size: 14))
+                .foregroundColor(AppColors.textMuted)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(.top, 28)
+    }
+
+    // MARK: - Steps
+
+    private var stepsSection: some View {
+        VStack(spacing: 0) {
+            pairingStep(
+                number: 1,
+                state: .active,
+                title: "Turn it on",
+                subtitle: "Press the power button on the top right corner of your The Speed Machine."
             )
 
-            Spacer()
+            stepConnector(active: true)
 
-            // Disconnect Button
-            Button {
-                bluetoothService.disconnect()
-            } label: {
-                Text("Disconnect")
-                    .secondaryButtonStyle()
-            }
+            pairingStep(
+                number: 2,
+                state: .active,
+                title: "Set Speed Mode",
+                subtitle: "On the device screen, press Speed to switch into Speed Mode."
+            )
 
-            // Troubleshooting
-            Text("Make sure device is in Speed Mode")
-                .font(.caption)
-                .foregroundColor(AppColors.textMuted)
-                .multilineTextAlignment(.center)
-        }
-    }
+            stepConnector(active: !bluetoothService.isConnected)
 
-    var batteryIcon: String {
-        let level = bluetoothService.batteryLevel
-        if level > 75 { return "battery.100" }
-        if level > 50 { return "battery.75" }
-        if level > 25 { return "battery.50" }
-        return "battery.25"
-    }
-
-    var batteryColor: Color {
-        let level = bluetoothService.batteryLevel
-        if level > 25 { return AppColors.accentGreen }
-        return AppColors.error
-    }
-}
-
-struct DisconnectedStateView: View {
-    @EnvironmentObject var bluetoothService: BluetoothService
-
-    var body: some View {
-        VStack(spacing: 32) {
-            Spacer()
-
-            // Instructions
-            VStack(spacing: 16) {
-                Image(systemName: "antenna.radiowaves.left.and.right")
-                    .font(.system(size: 60))
-                    .foregroundColor(AppColors.textMuted)
-
-                Text("Connect to Speed Machine")
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .foregroundColor(AppColors.primaryBlack)
-
-                VStack(alignment: .leading, spacing: 12) {
-                    InstructionRow(number: 1, text: "Enable Bluetooth on device")
-                    InstructionRow(number: 2, text: "Set device to Speed Mode")
-                    InstructionRow(number: 3, text: "Tap 'Scan for Devices'")
-                }
-                .padding()
-                .background(Color.white)
-                .cornerRadius(12)
-            }
-
-            // Device List
-            if bluetoothService.isScanning || !bluetoothService.discoveredDevices.isEmpty {
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Available Devices")
-                        .font(.headline)
-                        .foregroundColor(AppColors.primaryBlack)
-
-                    if bluetoothService.discoveredDevices.isEmpty {
-                        HStack {
-                            Spacer()
-                            ProgressView()
-                            Text("Scanning...")
-                                .foregroundColor(AppColors.textMuted)
-                            Spacer()
-                        }
-                        .padding()
-                    } else {
-                        ForEach(bluetoothService.discoveredDevices, id: \.identifier) { device in
-                            Button {
-                                bluetoothService.connect(to: device)
-                            } label: {
-                                HStack {
-                                    Image(systemName: "circle.fill")
-                                        .font(.caption)
-                                        .foregroundColor(AppColors.bleBlue)
-
-                                    Text(device.name ?? "Unknown Device")
-                                        .foregroundColor(AppColors.primaryBlack)
-
-                                    Spacer()
-
-                                    Image(systemName: "chevron.right")
-                                        .foregroundColor(AppColors.textMuted)
-                                }
-                                .padding()
-                                .background(Color.white)
-                                .cornerRadius(12)
-                            }
-                        }
-                    }
-                }
-            }
-
-            Spacer()
-
-            // Scan Button
-            Button {
-                if bluetoothService.isScanning {
-                    bluetoothService.stopScanning()
-                } else {
-                    bluetoothService.startScanning()
-                }
-            } label: {
-                Text(bluetoothService.isScanning ? "Stop Scanning" : "Scan for Devices")
-                    .primaryButtonStyle()
-            }
-
-            // Error Message
-            if let error = bluetoothService.errorMessage {
-                Text(error)
-                    .font(.caption)
-                    .foregroundColor(AppColors.error)
-                    .multilineTextAlignment(.center)
-                    .padding()
+            if bluetoothService.isConnected {
+                pairingStep(
+                    number: 3,
+                    state: .done,
+                    title: "Device found!",
+                    subtitle: nil
+                )
+                deviceFoundCard
+            } else {
+                pairingStep(
+                    number: 3,
+                    state: .waiting,
+                    title: "Waiting for device...",
+                    subtitle: "The app will recognize your machine automatically."
+                )
+                listeningIndicator
             }
         }
     }
-}
 
-struct InstructionRow: View {
-    let number: Int
-    let text: String
+    private enum StepState { case active, waiting, done }
 
-    var body: some View {
-        HStack(spacing: 12) {
+    private func pairingStep(number: Int, state: StepState, title: String, subtitle: String?) -> some View {
+        HStack(alignment: .top, spacing: 16) {
             ZStack {
                 Circle()
-                    .fill(AppColors.accentGreen)
-                    .frame(width: 28, height: 28)
+                    .fill(state == .active ? Color.black
+                          : state == .done ? AppColors.accentGreen
+                          : Color(hex: "f0f0f0"))
+                    .frame(width: 32, height: 32)
 
-                Text("\(number)")
-                    .font(.system(.caption, design: .rounded).weight(.bold))
-                    .foregroundColor(.white)
+                if state == .done {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundColor(.white)
+                } else {
+                    Text("\(number)")
+                        .font(.custom("Inter-ExtraBold", size: 14))
+                        .foregroundColor(state == .active ? .white : Color(hex: "c8c8c8"))
+                }
             }
 
-            Text(text)
-                .font(.subheadline)
-                .foregroundColor(AppColors.primaryBlack)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.custom("Inter-Bold", size: 16))
+                    .foregroundColor(state == .waiting ? AppColors.textSubdued : .black)
+
+                if let sub = subtitle {
+                    Text(sub)
+                        .font(.custom("Inter-Regular", size: 13))
+                        .foregroundColor(AppColors.textMuted)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
 
             Spacer()
         }
+    }
+
+    private func stepConnector(active: Bool) -> some View {
+        HStack(spacing: 16) {
+            Rectangle()
+                .fill(active ? Color.black.opacity(0.15) : Color(hex: "f0f0f0"))
+                .frame(width: 1, height: 24)
+                .padding(.leading, 15)
+            Spacer()
+        }
+        .padding(.vertical, 4)
+    }
+
+    private var listeningIndicator: some View {
+        HStack(spacing: 8) {
+            Circle()
+                .fill(AppColors.accentGreen)
+                .frame(width: 9, height: 9)
+                .shadow(color: AppColors.accentGreen.opacity(0.5), radius: 4)
+
+            Text("LISTENING")
+                .font(.custom("Inter-Bold", size: 11))
+                .kerning(2.5)
+                .foregroundColor(AppColors.accentGreen)
+        }
+        .padding(.top, 12)
+        .padding(.leading, 48)
+    }
+
+    private var deviceFoundCard: some View {
+        HStack(spacing: 12) {
+            Circle()
+                .fill(AppColors.accentGreen)
+                .frame(width: 9, height: 9)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(BLEConstants.deviceName)
+                    .font(.custom("Inter-Bold", size: 15))
+                    .foregroundColor(.black)
+                Text("SM-A47B · CONNECTED")
+                    .font(.custom("Inter-Bold", size: 10))
+                    .kerning(1.5)
+                    .foregroundColor(AppColors.textMuted)
+            }
+
+            Spacer()
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
+        .background(AppColors.accentGreen.opacity(0.06))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(AppColors.accentGreen.opacity(0.25), lineWidth: 1.5)
+        )
+        .cornerRadius(12)
+        .padding(.top, 12)
+        .padding(.leading, 48)
+    }
+
+    // MARK: - Bottom Bar
+
+    private var bottomBar: some View {
+        VStack(spacing: 14) {
+            if bluetoothService.isConnected {
+                Button { dismiss() } label: {
+                    Text("Begin Training →")
+                        .font(.custom("Inter-Bold", size: 17))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 20)
+                        .background(AppColors.accentGreen)
+                        .clipShape(Capsule())
+                }
+            }
+
+            Button { dismiss() } label: {
+                Text("Having trouble?")
+                    .font(.custom("Inter-Medium", size: 13))
+                    .foregroundColor(AppColors.textMuted)
+                    .underline()
+            }
+        }
+        .padding(.horizontal, 32)
+        .padding(.top, 12)
+        .padding(.bottom, 32)
+        .background(Color.white)
     }
 }

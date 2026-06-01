@@ -51,11 +51,11 @@ struct SportHeroCard: View {
                     Spacer()
                     VStack(alignment: .trailing, spacing: 0) {
                         Text("HIT RATE")
-                            .font(.oswald(fs(10), weight: .semibold))
+                            .font(.inter(fs(10), weight: .semibold))
                             .foregroundColor(tokens.sub)
                             .tracking(1)
                         Text("\(hitRate)%")
-                            .font(.oswald(fs(22)))
+                            .font(.inter(fs(22)))
                             .foregroundColor(hitRate >= 60 ? tokens.zone : tokens.sub)
                             .monospacedDigit()
                     }
@@ -78,14 +78,14 @@ struct SportHeroCard: View {
                     VStack(spacing: 2) {
                         Spacer()
                         Text(speedText)
-                            .font(.oswald(speedFontSize))
+                            .font(.inter(speedFontSize))
                             .foregroundColor(speedColor)
                             .minimumScaleFactor(0.2)
                             .lineLimit(1)
                             .monospacedDigit()
                             .sportPopIn(trigger: session.puttRecords.count)
                         Text("MPH")
-                            .font(.oswald(fs(22), weight: .semibold))
+                            .font(.inter(fs(22), weight: .semibold))
                             .foregroundColor(tokens.sub)
                         Spacer()
                     }
@@ -131,7 +131,7 @@ struct SportExplorationHero: View {
 
             VStack(spacing: 0) {
                 Text("YOUR SPEED")
-                    .font(.oswald(fs(14), weight: .semibold))
+                    .font(.inter(fs(14), weight: .semibold))
                     .foregroundColor(tokens.sub)
                     .tracking(2)
                     .padding(.top, 16)
@@ -139,7 +139,7 @@ struct SportExplorationHero: View {
                 Spacer()
 
                 Text(speedText)
-                    .font(.oswald(speedFontSize))
+                    .font(.inter(speedFontSize))
                     .foregroundColor(tokens.zone)
                     .minimumScaleFactor(0.2)
                     .lineLimit(1)
@@ -147,7 +147,7 @@ struct SportExplorationHero: View {
                     .sportPopIn(trigger: session.puttRecords.count)
 
                 Text("MPH")
-                    .font(.oswald(fs(22), weight: .semibold))
+                    .font(.inter(fs(22), weight: .semibold))
                     .foregroundColor(tokens.sub)
 
                 Spacer()
@@ -178,16 +178,16 @@ struct SportLiveReadout: View {
     var body: some View {
         HStack {
             Text("TARGET")
-                .font(.oswald(fs(10), weight: .semibold))
+                .font(.inter(fs(10), weight: .semibold))
                 .foregroundColor(tokens.sub)
                 .tracking(1.5)
             Text("\(targetSpeed) MPH")
-                .font(.oswald(fs(13)))
+                .font(.inter(fs(13)))
                 .foregroundColor(tokens.fg)
             Spacer()
             if lastPutt != nil {
                 Text(deltaText)
-                    .font(.oswald(fs(11), weight: .semibold))
+                    .font(.inter(fs(11), weight: .semibold))
                     .foregroundColor(deltaColor)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 3)

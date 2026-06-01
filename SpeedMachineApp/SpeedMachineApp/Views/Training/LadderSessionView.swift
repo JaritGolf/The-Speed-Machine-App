@@ -23,10 +23,10 @@ struct LadderSessionView: View {
     @State private var showEndSessionAlert = false
     @Environment(\.isLandscapeOrientation) var isLandscape
 
-    @AppStorage("liveViewTheme") private var themeRaw: String = LiveViewTheme.dark.rawValue
+    @AppStorage("liveViewTheme") private var themeRaw: String = LiveViewTheme.light.rawValue
     @Environment(\.colorScheme) private var colorScheme
 
-    private var theme: LiveViewTheme { LiveViewTheme(rawValue: themeRaw) ?? .dark }
+    private var theme: LiveViewTheme { LiveViewTheme(rawValue: themeRaw) ?? .light }
     private var isDark: Bool { theme.resolvedDark(scheme: colorScheme) }
     private var tokens: SportTokens { SportTokens.make(dark: isDark) }
 
@@ -213,7 +213,7 @@ private struct LadderSpeedPanel: View {
     var body: some View {
         VStack(spacing: 0) {
             Text(label)
-                .font(.oswald(kLabelSize, weight: .semibold))
+                .font(.inter(kLabelSize, weight: .semibold))
                 .foregroundColor(tokens.sub)
                 .tracking(3)
                 .padding(.top, 12)
@@ -221,7 +221,7 @@ private struct LadderSpeedPanel: View {
             Spacer(minLength: 0)
 
             Text(valueText)
-                .font(.oswald(fs(180)))
+                .font(.inter(fs(180)))
                 .foregroundColor(tokens.fg)
                 .minimumScaleFactor(0.1)
                 .lineLimit(1)
@@ -229,7 +229,7 @@ private struct LadderSpeedPanel: View {
                 .padding(.horizontal, 8)
 
             Text("MPH")
-                .font(.oswald(kLabelSize, weight: .semibold))
+                .font(.inter(kLabelSize, weight: .semibold))
                 .foregroundColor(tokens.sub)
 
             Spacer(minLength: 0)
@@ -253,7 +253,7 @@ private struct LadderActualSpeedPanel: View {
     var body: some View {
         VStack(spacing: 0) {
             Text("ACTUAL")
-                .font(.oswald(kLabelSize, weight: .semibold))
+                .font(.inter(kLabelSize, weight: .semibold))
                 .foregroundColor(tokens.sub)
                 .tracking(3)
                 .padding(.top, 12)
@@ -262,7 +262,7 @@ private struct LadderActualSpeedPanel: View {
 
             if let putt = lastPutt {
                 Text(putt.actualSpeed.toSpeedString())
-                    .font(.oswald(fs(140)))
+                    .font(.inter(fs(140)))
                     .foregroundColor(speedColor)
                     .minimumScaleFactor(0.1)
                     .lineLimit(1)
@@ -275,7 +275,7 @@ private struct LadderActualSpeedPanel: View {
                     .foregroundColor(speedColor)
             } else {
                 Text("— —")
-                    .font(.oswald(fs(100)))
+                    .font(.inter(fs(100)))
                     .foregroundColor(tokens.sub)
                     .minimumScaleFactor(0.1)
                     .lineLimit(1)
@@ -301,13 +301,13 @@ private struct LadderPuttsHitPanel: View {
         VStack(spacing: 2) {
             Spacer(minLength: 0)
             Text("\(count)")
-                .font(.oswald(fs(72)))
+                .font(.inter(fs(72)))
                 .foregroundColor(tokens.fg)
                 .minimumScaleFactor(0.5)
                 .lineLimit(1)
                 .monospacedDigit()
             Text("PUTTS HIT")
-                .font(.oswald(kLabelSize, weight: .semibold))
+                .font(.inter(kLabelSize, weight: .semibold))
                 .foregroundColor(tokens.sub)
                 .tracking(2)
             Spacer(minLength: 0)
@@ -462,13 +462,13 @@ private struct LadderRungBlock: View {
                     }
 
                     Text("\(speed)")
-                        .font(.oswald(numSize))
+                        .font(.inter(numSize))
                         .foregroundColor(numColor)
                         .minimumScaleFactor(0.6)
                         .lineLimit(1)
 
                     Text("MPH")
-                        .font(.oswald(unitSize, weight: .semibold))
+                        .font(.inter(unitSize, weight: .semibold))
                         .foregroundColor(numColor.opacity(0.75))
                 }
             }

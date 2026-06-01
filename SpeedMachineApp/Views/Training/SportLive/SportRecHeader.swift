@@ -20,38 +20,36 @@ struct SportRecHeader: View {
         (day.blocks.firstIndex(where: { $0.id == block.id }) ?? 0) + 1
     }
 
-    var body: some View {
-        HStack(spacing: 10) {
-            iconView
-                .frame(width: fs(16), height: fs(16))
-
-            VStack(alignment: .leading, spacing: 1) {
-                Text("TRACK \(day.day)  /  BLOCK \(blockNumber)")
-                    .font(.oswald(fs(11), weight: .semibold))
-                    .foregroundColor(tokens.sub)
-                    .tracking(1.5)
-                if let ctx = adaptiveContext {
-                    Text(ctx.uppercased())
-                        .font(.system(size: fs(9), weight: .semibold))
-                        .foregroundColor(tokens.zone)
-                }
-            }
-
-            Spacer()
-
-            Text(block.name.uppercased())
-                .font(.oswald(fs(11), weight: .semibold))
-                .foregroundColor(tokens.sub)
-                .tracking(1)
-                .lineLimit(1)
-                .minimumScaleFactor(0.6)
-
-            Circle()
-                .fill(isConnected ? tokens.zone : tokens.miss)
-                .frame(width: 8, height: 8)
+    // Header tint: standard = black, gate = blue, pressure = red (mockup .live-header)
+    private var titleColor: Color {
+        switch icon {
+        case .rec:  return tokens.fg
+        case .flag: return AppColors.bleBlue
+        case .bolt: return AppColors.error
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, isIPad ? 12 : 8)
+    }
+
+    private var titleText: String {
+        "T\(day.day) · BLOCK \(blockNumber) · \(block.name.uppercased())"
+    }
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 10) {
+            iconView
+                .frame(width: fs(18), height: fs(18))
+                .padding(.top, fs(3))
+
+            Text(titleText)
+                .font(.inter(fs(20), weight: .heavy))
+                .foregroundColor(titleColor)
+                .tracking(fs(20) * 0.14)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 22)
+        .padding(.top, 14)
+        .padding(.bottom, 8)
         .background(tokens.surface)
     }
 
@@ -59,15 +57,15 @@ struct SportRecHeader: View {
     private var iconView: some View {
         switch icon {
         case .rec:
-            SportPulsingDot(color: Color(hex: "EF4444"))
+            SportPulsingDot(color: isConnected ? tokens.zone : tokens.miss)
         case .flag:
             Image(systemName: "flag.checkered")
-                .font(.system(size: fs(13), weight: .bold))
-                .foregroundColor(tokens.zone)
+                .font(.system(size: fs(16), weight: .bold))
+                .foregroundColor(AppColors.bleBlue)
         case .bolt:
             Image(systemName: "bolt.fill")
-                .font(.system(size: fs(13), weight: .bold))
-                .foregroundColor(Color(hex: "EF4444"))
+                .font(.system(size: fs(16), weight: .bold))
+                .foregroundColor(AppColors.error)
         }
     }
 }

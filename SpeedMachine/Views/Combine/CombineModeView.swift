@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct CombineModeView: View {
     @EnvironmentObject var combineViewModel: CombineViewModel
@@ -16,7 +17,7 @@ struct CombineModeView: View {
 
     var body: some View {
         ZStack {
-            AppColors.backgroundAlt.ignoresSafeArea()
+            Color.white.ignoresSafeArea()
 
             if combineViewModel.isGameActive {
                 if combineViewModel.game.isComplete {
@@ -28,13 +29,11 @@ struct CombineModeView: View {
                 CombineStartView()
             }
         }
-        .onChange(of: bluetoothService.currentSpeed) { newSpeed in
+        .onChange(of: bluetoothService.currentSpeed) { _, newSpeed in
             if combineViewModel.isGameActive && !combineViewModel.game.isComplete {
                 if newSpeed > 0 && newSpeed != lastRecordedSpeed {
                     combineViewModel.recordShot(newSpeed)
                     lastRecordedSpeed = newSpeed
-
-                    // Haptic feedback
                     let impact = UIImpactFeedbackGenerator(style: .medium)
                     impact.impactOccurred()
                 }
@@ -43,104 +42,155 @@ struct CombineModeView: View {
     }
 }
 
+// MARK: - Pre-game Screen
+
 struct CombineStartView: View {
     @EnvironmentObject var combineViewModel: CombineViewModel
     @EnvironmentObject var bluetoothService: BluetoothService
     @Environment(\.dismiss) var dismiss
 
+    private let howItWorks: [(String, String)] = [
+        ("18 putts across all speed zones", "Zones 1–5 · targets vary each shot"),
+        ("Points based on precision", "Perfect 10 · Excellent 8 · Good 6 · In Zone 4 · Close 2"),
+        ("Higher zones multiply your score", "Touch 1.0× → Maximum 2.0×"),
+        ("Every shot feeds your Stats", "Speed profiles update in real time")
+    ]
+
     var body: some View {
-        NavigationView {
-            VStack(spacing: 32) {
-                Spacer()
+        ZStack(alignment: .top) {
+            Color.white.ignoresSafeArea()
 
-                // Icon
-                Image(systemName: "target")
-                    .font(.system(size: 80))
-                    .foregroundColor(AppColors.accentGreen)
-
-                // Title
-                VStack(spacing: 8) {
-                    Text("Combine Mode")
-                        .font(.title)
-                        .fontWeight(.bold)
-                        .foregroundColor(AppColors.primaryBlack)
-
-                    Text("18 shots across all zones")
-                        .font(.headline)
-                        .foregroundColor(AppColors.textMuted)
+            VStack(spacing: 0) {
+                // Top bar
+                HStack {
+                    Button { dismiss() } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(.black)
+                    }
+                    Spacer()
+                    Text("COMBINE")
+                        .font(.custom("Inter-Bold", size: 13))
+                        .kerning(2.5)
+                        .foregroundColor(.black)
+                    Spacer()
+                    Color.clear.frame(width: 28, height: 28)
                 }
+                .padding(.horizontal, 22)
+                .padding(.top, 12)
+                .padding(.bottom, 12)
 
-                // Stats
-                VStack(spacing: 16) {
-                    HStack {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("High Score")
-                                .font(.subheadline)
-                                .foregroundColor(AppColors.textMuted)
-                            Text("\(combineViewModel.highScore)")
-                                .font(.system(.title, design: .rounded).weight(.bold))
-                                .foregroundColor(AppColors.primaryBlack)
+                Divider().overlay(AppColors.border)
+
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 0) {
+                        // Score row
+                        HStack(spacing: 0) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("HIGH SCORE")
+                                    .font(.custom("Inter-Bold", size: 10))
+                                    .kerning(2.0)
+                                    .foregroundColor(AppColors.textSubdued)
+                                Text("\(combineViewModel.highScore)")
+                                    .font(.custom("Inter-Black", size: 48))
+                                    .foregroundColor(AppColors.accentGreen)
+                                    .tracking(-1)
+                                Text("points")
+                                    .font(.custom("Inter-Regular", size: 12))
+                                    .foregroundColor(AppColors.textSubdued)
+                            }
+
+                            Spacer()
+
+                            Rectangle()
+                                .fill(AppColors.border)
+                                .frame(width: 1, height: 70)
+
+                            Spacer()
+
+                            VStack(alignment: .trailing, spacing: 4) {
+                                Text("MAX POSSIBLE")
+                                    .font(.custom("Inter-Bold", size: 10))
+                                    .kerning(2.0)
+                                    .foregroundColor(AppColors.textSubdued)
+                                Text("\(combineViewModel.maxScore)")
+                                    .font(.custom("Inter-Black", size: 48))
+                                    .foregroundColor(Color(hex: "d4d4d4"))
+                                    .tracking(-1)
+                                Text("points")
+                                    .font(.custom("Inter-Regular", size: 12))
+                                    .foregroundColor(AppColors.textSubdued)
+                            }
+                        }
+                        .padding(.horizontal, 28)
+                        .padding(.vertical, 24)
+
+                        Divider().overlay(AppColors.border)
+
+                        // HOW IT WORKS
+                        VStack(alignment: .leading, spacing: 0) {
+                            Text("HOW IT WORKS")
+                                .font(.custom("Inter-Bold", size: 10))
+                                .kerning(2.5)
+                                .foregroundColor(AppColors.textSubdued)
+                                .padding(.horizontal, 22)
+                                .padding(.top, 20)
+                                .padding(.bottom, 14)
+
+                            ForEach(howItWorks, id: \.0) { title, subtitle in
+                                VStack(spacing: 0) {
+                                    HStack(alignment: .top, spacing: 14) {
+                                        Image(systemName: "checkmark")
+                                            .font(.system(size: 12, weight: .bold))
+                                            .foregroundColor(AppColors.accentGreen)
+                                            .frame(width: 20, height: 20)
+                                            .padding(.top, 1)
+
+                                        VStack(alignment: .leading, spacing: 3) {
+                                            Text(title)
+                                                .font(.custom("Inter-SemiBold", size: 15))
+                                                .foregroundColor(.black)
+                                            Text(subtitle)
+                                                .font(.custom("Inter-Regular", size: 12))
+                                                .foregroundColor(AppColors.textMuted)
+                                        }
+
+                                        Spacer()
+                                    }
+                                    .padding(.horizontal, 22)
+                                    .padding(.vertical, 14)
+
+                                    Divider().overlay(AppColors.border)
+                                }
+                            }
                         }
 
-                        Spacer()
-
-                        VStack(alignment: .trailing, spacing: 4) {
-                            Text("Max Possible")
-                                .font(.subheadline)
-                                .foregroundColor(AppColors.textMuted)
-                            Text("\(combineViewModel.maxScore)")
-                                .font(.system(.title, design: .rounded).weight(.bold))
-                                .foregroundColor(AppColors.textMuted)
+                        // CTA
+                        Button {
+                            if bluetoothService.isConnected {
+                                combineViewModel.startNewGame()
+                            }
+                        } label: {
+                            Text(bluetoothService.isConnected ? "Start Combine" : "Connect Device First")
+                                .font(.custom("Inter-Bold", size: 17))
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 18)
+                                .background(bluetoothService.isConnected ? AppColors.accentGreen : AppColors.textSubdued)
+                                .clipShape(Capsule())
                         }
-                    }
-                }
-                .padding()
-                .background(Color.white)
-                .cornerRadius(16)
-
-                // How it works
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("How it Works")
-                        .font(.headline)
-                        .foregroundColor(AppColors.primaryBlack)
-
-                    VStack(alignment: .leading, spacing: 8) {
-                        InfoRow(text: "18 putts with varying targets")
-                        InfoRow(text: "Points based on accuracy")
-                        InfoRow(text: "Higher zones worth more points")
-                        InfoRow(text: "Perfect putt = 10 base points")
-                    }
-                }
-                .padding()
-                .background(Color.white)
-                .cornerRadius(16)
-
-                Spacer()
-
-                // Start Button
-                Button {
-                    if bluetoothService.isConnected {
-                        combineViewModel.startNewGame()
-                    }
-                } label: {
-                    Text(bluetoothService.isConnected ? "Start Combine" : "Connect Device First")
-                        .primaryButtonStyle()
-                }
-                .disabled(!bluetoothService.isConnected)
-                .padding(.horizontal)
-            }
-            .padding()
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
-                        dismiss()
+                        .disabled(!bluetoothService.isConnected)
+                        .padding(.horizontal, 22)
+                        .padding(.top, 24)
+                        .padding(.bottom, 32)
                     }
                 }
             }
         }
     }
 }
+
+// MARK: - Live Game Screen
 
 struct ActiveCombineView: View {
     @EnvironmentObject var combineViewModel: CombineViewModel
@@ -148,287 +198,289 @@ struct ActiveCombineView: View {
 
     @State private var showEndGameAlert = false
 
-    var game: CombineGame {
-        combineViewModel.game
+    var game: CombineGame { combineViewModel.game }
+
+    private var remainingTargets: [Int] {
+        Array(game.targets.suffix(from: min(game.currentShot, game.targets.count)))
     }
 
     var body: some View {
         VStack(spacing: 0) {
             // Header
-            VStack(spacing: 8) {
-                Text("COMBINE MODE")
-                    .font(.headline)
-                    .foregroundColor(AppColors.textMuted)
-
-                Text("Shot \(game.currentShot + 1) / \(TrainingConstants.combineShots)")
-                    .font(.title3)
-                    .fontWeight(.bold)
-                    .foregroundColor(AppColors.primaryBlack)
+            HStack(spacing: 8) {
+                Circle()
+                    .fill(bluetoothService.isConnected ? AppColors.accentGreen : AppColors.textSubdued)
+                    .frame(width: 8, height: 8)
+                Text("COMBINE")
+                    .font(.custom("Inter-Bold", size: 13))
+                    .kerning(2.5)
+                    .foregroundColor(.black)
+                Spacer()
+                Text("SCORE")
+                    .font(.custom("Inter-Bold", size: 11))
+                    .kerning(1.5)
+                    .foregroundColor(AppColors.textSubdued)
+                Text("\(game.totalScore)")
+                    .font(.custom("Inter-Black", size: 22))
+                    .foregroundColor(.black)
+                    .tracking(-0.5)
             }
-            .padding()
-            .background(Color.white)
+            .padding(.horizontal, 22)
+            .padding(.vertical, 14)
+
+            Divider().overlay(AppColors.border)
+
+            // REMAINING chips
+            VStack(alignment: .leading, spacing: 10) {
+                Text("REMAINING")
+                    .font(.custom("Inter-Bold", size: 10))
+                    .kerning(2.0)
+                    .foregroundColor(AppColors.textSubdued)
+                    .padding(.horizontal, 22)
+
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(Array(remainingTargets.enumerated()), id: \.offset) { idx, target in
+                            let isCurrent = idx == 0
+                            Text("\(target)")
+                                .font(.custom("Inter-Bold", size: 13))
+                                .foregroundColor(isCurrent ? .white : AppColors.textMuted)
+                                .frame(width: 42, height: 42)
+                                .background(isCurrent ? AppColors.accentGreen : AppColors.surfaceAlt)
+                                .cornerRadius(8)
+                        }
+                    }
+                    .padding(.horizontal, 22)
+                }
+            }
+            .padding(.top, 14)
+            .padding(.bottom, 10)
+
+            Divider().overlay(AppColors.border)
 
             Spacer()
 
-            // Target Display
-            VStack(spacing: 16) {
-                Text("TARGET")
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                    .foregroundColor(AppColors.textMuted)
-
+            // Hero target number
+            VStack(spacing: 0) {
                 Text("\(game.currentTarget)")
-                    .font(.system(size: 80, weight: .black, design: .rounded))
-                    .foregroundColor(AppColors.primaryBlack)
+                    .font(.system(size: fs(200), weight: .black, design: .rounded))
+                    .foregroundColor(.black)
+                    .minimumScaleFactor(0.3)
+                    .lineLimit(1)
+                    .tracking(-4)
 
-                Text("MPH")
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .foregroundColor(AppColors.textMuted)
-
-                // Zone info
-                let zone = game.currentZone
-                Text("\(zone.name) (\(zone.multiplier, specifier: "%.1f")x)")
-                    .font(.headline)
-                    .foregroundColor(AppColors.accentGreen)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
-                    .background(AppColors.accentLight)
-                    .cornerRadius(20)
+                Text("MPH  ·  TARGET")
+                    .font(.custom("Inter-Bold", size: 13))
+                    .kerning(2.0)
+                    .foregroundColor(AppColors.textSubdued)
             }
 
             Spacer()
 
-            // Score Section
-            VStack(spacing: 16) {
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Score")
-                            .font(.subheadline)
-                            .foregroundColor(AppColors.textMuted)
-                        Text("\(game.totalScore)")
-                            .font(.system(.title, design: .rounded).weight(.bold))
-                            .foregroundColor(AppColors.primaryBlack)
-                    }
+            Divider().overlay(AppColors.border)
 
-                    Spacer()
-
-                    VStack(alignment: .trailing, spacing: 4) {
-                        Text("High Score")
-                            .font(.subheadline)
-                            .foregroundColor(AppColors.textMuted)
-                        Text("\(combineViewModel.highScore)")
-                            .font(.system(.title, design: .rounded).weight(.bold))
-                            .foregroundColor(AppColors.accentGreen)
-                    }
-                }
-
-                // Last Shot Result
+            // Last shot
+            HStack(spacing: 12) {
                 if let lastShot = game.lastShot {
-                    HStack {
-                        Text("Last: \(lastShot.actualSpeed.toSpeedString())")
-                            .font(.headline)
-                            .foregroundColor(AppColors.textMuted)
-
-                        Image(systemName: "arrow.right")
-                            .foregroundColor(AppColors.textMuted)
-
-                        Text("+\(lastShot.points) pts")
-                            .font(.headline)
-                            .foregroundColor(lastShot.accuracy.color)
-
-                        Text("(\(lastShot.accuracy.rawValue))")
-                            .font(.subheadline)
-                            .foregroundColor(AppColors.textMuted)
-                    }
-                    .padding()
-                    .background(lastShot.accuracy.color.opacity(0.1))
-                    .cornerRadius(12)
+                    Text(lastShot.actualSpeed.toSpeedString())
+                        .font(.custom("Inter-Black", size: 22))
+                        .foregroundColor(.black)
+                    Text("+\(lastShot.points)")
+                        .font(.custom("Inter-Bold", size: 17))
+                        .foregroundColor(AppColors.accentGreen)
+                    Text(lastShot.accuracy.rawValue.uppercased())
+                        .font(.custom("Inter-Bold", size: 13))
+                        .kerning(1.0)
+                        .foregroundColor(AppColors.textSubdued)
+                } else {
+                    Text("LAST SHOT")
+                        .font(.custom("Inter-Bold", size: 13))
+                        .kerning(2.0)
+                        .foregroundColor(AppColors.textSubdued)
                 }
+                Spacer()
             }
-            .padding()
-            .background(Color.white)
+            .padding(.horizontal, 22)
+            .padding(.vertical, 14)
 
-            // End Game Button
-            Button {
-                showEndGameAlert = true
-            } label: {
-                Text("End Game")
-                    .font(.headline)
+            Divider().overlay(AppColors.border)
+
+            // END GAME button
+            Button { showEndGameAlert = true } label: {
+                Text("END GAME")
+                    .font(.custom("Inter-Bold", size: 15))
                     .foregroundColor(AppColors.error)
+                    .kerning(1.5)
                     .frame(maxWidth: .infinity)
-                    .padding()
+                    .padding(.vertical, 16)
+                    .background(Color.clear)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(AppColors.error, lineWidth: 1.5)
+                    )
             }
-            .background(Color.white)
+            .padding(.horizontal, 22)
+            .padding(.vertical, 14)
         }
+        .background(Color.white.ignoresSafeArea())
         .alert("End Game?", isPresented: $showEndGameAlert) {
             Button("Cancel", role: .cancel) { }
-            Button("End", role: .destructive) {
-                combineViewModel.endGame()
-            }
+            Button("End", role: .destructive) { combineViewModel.endGame() }
         } message: {
-            Text("Are you sure you want to end this game? Your progress will not be saved.")
+            Text("End this game? Your progress will not be saved.")
         }
     }
 }
+
+// MARK: - Complete Screen (full black)
 
 struct CombineCompleteView: View {
     @EnvironmentObject var combineViewModel: CombineViewModel
     @Environment(\.dismiss) var dismiss
 
-    var game: CombineGame {
-        combineViewModel.game
-    }
+    var game: CombineGame { combineViewModel.game }
 
-    var isNewHighScore: Bool {
-        game.totalScore >= combineViewModel.highScore
-    }
+    var isNewHighScore: Bool { game.totalScore >= combineViewModel.highScore }
 
     var scoreRating: String {
-        let percentage = Double(game.totalScore) / Double(combineViewModel.maxScore)
-        if percentage >= 0.75 { return "Outstanding!" }
-        if percentage >= 0.60 { return "Excellent!" }
-        if percentage >= 0.45 { return "Great Job!" }
-        if percentage >= 0.30 { return "Good Effort!" }
+        let pct = Double(game.totalScore) / Double(combineViewModel.maxScore)
+        if pct >= 0.75 { return "Outstanding!" }
+        if pct >= 0.60 { return "Excellent!" }
+        if pct >= 0.45 { return "Great Job!" }
+        if pct >= 0.30 { return "Good Effort!" }
         return "Keep Practicing!"
     }
 
+    private var orderedTiers: [AccuracyTier] {
+        [.perfect, .excellent, .good, .inZone, .close, .miss]
+    }
+
     var body: some View {
-        VStack(spacing: 32) {
-            Spacer()
+        ZStack {
+            Color.black.ignoresSafeArea()
 
-            // Icon
-            ZStack {
-                Circle()
-                    .fill(AppColors.accentLight)
-                    .frame(width: 120, height: 120)
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 0) {
+                    Spacer(minLength: 40)
 
-                if isNewHighScore {
+                    // Trophy / icon
                     Image(systemName: "trophy.fill")
-                        .font(.system(size: 60))
-                        .foregroundColor(AppColors.accentGreen)
-                } else {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 60))
-                        .foregroundColor(AppColors.accentGreen)
-                }
-            }
+                        .font(.system(size: fs(56)))
+                        .foregroundColor(isNewHighScore ? AppColors.accentGreen : .white.opacity(0.60))
+                        .padding(.bottom, 16)
 
-            // Title
-            VStack(spacing: 8) {
-                if isNewHighScore {
-                    Text("New High Score!")
-                        .font(.title)
-                        .fontWeight(.bold)
-                        .foregroundColor(AppColors.accentGreen)
-                } else {
-                    Text("Combine Complete!")
-                        .font(.title)
-                        .fontWeight(.bold)
-                        .foregroundColor(AppColors.primaryBlack)
-                }
+                    // Title
+                    if isNewHighScore {
+                        Text("NEW HIGH SCORE")
+                            .font(.custom("Inter-Black", size: fs(32)))
+                            .foregroundColor(AppColors.accentGreen)
+                            .tracking(1)
+                    } else {
+                        Text("COMBINE COMPLETE")
+                            .font(.custom("Inter-Black", size: fs(32)))
+                            .foregroundColor(.white)
+                            .tracking(1)
+                    }
 
-                Text(scoreRating)
-                    .font(.headline)
-                    .foregroundColor(AppColors.textMuted)
-            }
+                    Text(scoreRating)
+                        .font(.custom("Inter-Regular", size: fs(16)))
+                        .foregroundColor(.white.opacity(0.60))
+                        .padding(.top, 6)
 
-            // Score Display
-            VStack(spacing: 16) {
-                Text("\(game.totalScore)")
-                    .font(.system(size: 72, weight: .black, design: .rounded))
-                    .foregroundColor(AppColors.primaryBlack)
+                    Spacer(minLength: 24)
 
-                Text("out of \(combineViewModel.maxScore) possible points")
-                    .font(.subheadline)
-                    .foregroundColor(AppColors.textMuted)
+                    // Score hero
+                    Text("\(game.totalScore)")
+                        .font(.custom("Inter-Black", size: fs(96)))
+                        .foregroundColor(.white)
+                        .tracking(-2)
 
-                ProgressBarView(
-                    current: game.totalScore,
-                    total: combineViewModel.maxScore,
-                    color: AppColors.accentGreen
-                )
-                .frame(height: 12)
-            }
-            .padding()
-            .background(Color.white)
-            .cornerRadius(16)
+                    Text("of \(combineViewModel.maxScore) possible points")
+                        .font(.custom("Inter-Regular", size: fs(14)))
+                        .foregroundColor(.white.opacity(0.50))
+                        .padding(.top, 4)
 
-            // Stats Breakdown
-            VStack(spacing: 12) {
-                Text("Performance Breakdown")
-                    .font(.headline)
-                    .foregroundColor(AppColors.primaryBlack)
-
-                let breakdown = getAccuracyBreakdown()
-                ForEach(Array(breakdown.keys.sorted(by: { AccuracyTier(rawValue: $0)?.basePoints ?? 0 > AccuracyTier(rawValue: $1)?.basePoints ?? 0 })), id: \.self) { key in
-                    if let count = breakdown[key], count > 0 {
-                        HStack {
-                            Text(key)
-                                .font(.subheadline)
-                                .foregroundColor(AppColors.textMuted)
-
-                            Spacer()
-
-                            Text("\(count)")
-                                .font(.headline)
-                                .foregroundColor(AppColors.primaryBlack)
+                    // Progress bar
+                    GeometryReader { geo in
+                        ZStack(alignment: .leading) {
+                            RoundedRectangle(cornerRadius: 2)
+                                .fill(Color.white.opacity(0.12))
+                                .frame(height: 4)
+                            RoundedRectangle(cornerRadius: 2)
+                                .fill(AppColors.accentGreen)
+                                .frame(width: max(0, geo.size.width * CGFloat(game.totalScore) / CGFloat(max(1, combineViewModel.maxScore))), height: 4)
                         }
                     }
+                    .frame(height: 4)
+                    .padding(.horizontal, 32)
+                    .padding(.top, 16)
+                    .padding(.bottom, 32)
+
+                    // Accuracy breakdown
+                    VStack(spacing: 0) {
+                        let breakdown = getBreakdown()
+                        ForEach(orderedTiers, id: \.rawValue) { tier in
+                            let count = breakdown[tier.rawValue] ?? 0
+                            HStack {
+                                Text(tier.rawValue.uppercased())
+                                    .font(.custom("Inter-Bold", size: 13))
+                                    .kerning(1.0)
+                                    .foregroundColor(tier == .miss ? AppColors.error : .white.opacity(0.70))
+                                Spacer()
+                                Text("\(count)")
+                                    .font(.custom("Inter-Black", size: 20))
+                                    .foregroundColor(tier == .miss ? AppColors.error : .white)
+                            }
+                            .padding(.horizontal, 32)
+                            .padding(.vertical, 12)
+
+                            if tier != .miss {
+                                Rectangle()
+                                    .fill(Color.white.opacity(0.08))
+                                    .frame(height: 1)
+                                    .padding(.horizontal, 32)
+                            }
+                        }
+                    }
+                    .padding(.bottom, 32)
+
+                    // Buttons
+                    VStack(spacing: 10) {
+                        Button {
+                            combineViewModel.startNewGame()
+                        } label: {
+                            Text("Play Again")
+                                .font(.custom("Inter-Bold", size: 17))
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 18)
+                                .background(AppColors.accentGreen)
+                                .clipShape(Capsule())
+                        }
+
+                        Button {
+                            combineViewModel.endGame()
+                            dismiss()
+                        } label: {
+                            Text("Done")
+                                .font(.custom("Inter-Bold", size: 17))
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 18)
+                                .background(Color.clear)
+                                .overlay(Capsule().stroke(Color.white.opacity(0.30), lineWidth: 1.5))
+                        }
+                    }
+                    .padding(.horizontal, 32)
+                    .padding(.bottom, 40)
                 }
             }
-            .padding()
-            .background(Color.white)
-            .cornerRadius(16)
-
-            Spacer()
-
-            // Buttons
-            VStack(spacing: 12) {
-                Button {
-                    combineViewModel.startNewGame()
-                } label: {
-                    Text("Play Again")
-                        .primaryButtonStyle()
-                }
-
-                Button {
-                    combineViewModel.endGame()
-                    dismiss()
-                } label: {
-                    Text("Done")
-                        .secondaryButtonStyle()
-                }
-            }
-            .padding(.horizontal)
         }
-        .padding()
     }
 
-    func getAccuracyBreakdown() -> [String: Int] {
-        var breakdown: [String: Int] = [:]
-        for shot in game.shots {
-            let key = shot.accuracy.rawValue
-            breakdown[key, default: 0] += 1
-        }
-        return breakdown
-    }
-}
-
-struct InfoRow: View {
-    let text: String
-
-    var body: some View {
-        HStack(spacing: 8) {
-            Image(systemName: "checkmark.circle.fill")
-                .font(.caption)
-                .foregroundColor(AppColors.accentGreen)
-
-            Text(text)
-                .font(.subheadline)
-                .foregroundColor(AppColors.textMuted)
-
-            Spacer()
-        }
+    func getBreakdown() -> [String: Int] {
+        var b: [String: Int] = [:]
+        for shot in game.shots { b[shot.accuracy.rawValue, default: 0] += 1 }
+        return b
     }
 }

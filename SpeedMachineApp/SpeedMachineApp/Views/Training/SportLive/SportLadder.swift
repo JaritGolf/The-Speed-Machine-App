@@ -62,7 +62,7 @@ struct SportLadder: View {
                 let isTarget = mph == targetSpeed
                 HStack(spacing: 0) {
                     Text("\(mph)")
-                        .font(.oswald(isTarget ? fs(12) : fs(11), weight: isTarget ? .bold : .semibold))
+                        .font(.inter(isTarget ? fs(12) : fs(11), weight: isTarget ? .bold : .semibold))
                         .foregroundColor(isTarget ? tokens.fg : tokens.sub)
                         .monospacedDigit()
                         .frame(width: 28, alignment: .trailing)

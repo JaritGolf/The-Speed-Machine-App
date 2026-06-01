@@ -12,6 +12,9 @@ struct TrendsView: View {
     @Environment(\.dismiss) var dismiss
 
     @State private var selectedRange: TimeRange = .thirtyDays
+    @State private var showStats = false
+    @State private var showHistory = false
+    @State private var showCombine = false
 
     enum TimeRange: String, CaseIterable {
         case sevenDays = "7D"
@@ -38,13 +41,32 @@ struct TrendsView: View {
     }
 
     var body: some View {
-        NavigationView {
-            ZStack {
-                AppColors.backgroundAlt.ignoresSafeArea()
+        ZStack(alignment: .top) {
+            Color.white.ignoresSafeArea()
 
-                ScrollView {
+            VStack(spacing: 0) {
+                HStack {
+                    Button { dismiss() } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(.black)
+                    }
+                    Spacer()
+                    Text("TRENDS")
+                        .font(.custom("Inter-Bold", size: 13))
+                        .kerning(2.5)
+                        .foregroundColor(.black)
+                    Spacer()
+                    Color.clear.frame(width: 28, height: 28)
+                }
+                .padding(.horizontal, 22)
+                .padding(.top, 12)
+                .padding(.bottom, 12)
+
+                Divider().overlay(AppColors.border)
+
+                ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 20) {
-                        // Time Range Picker
                         Picker("Range", selection: $selectedRange) {
                             ForEach(TimeRange.allCases, id: \.self) { range in
                                 Text(range.rawValue).tag(range)
@@ -101,15 +123,19 @@ struct TrendsView: View {
                     .padding()
                 }
             }
-            .navigationTitle("Trends")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") { dismiss() }
+        }
+        .safeAreaInset(edge: .bottom) {
+            StatsTabBar(active: .trends) { tab in
+                switch tab {
+                case .stats:   dismiss()
+                case .history: showHistory = true
+                case .combine: showCombine = true
+                case .trends:  break
                 }
             }
         }
-        .navigationViewStyle(.stack)
+        .fullScreenCover(isPresented: $showHistory) { SessionHistoryView() }
+        .fullScreenCover(isPresented: $showCombine) { CombineStatsView() }
     }
 }
 

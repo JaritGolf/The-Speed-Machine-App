@@ -16,7 +16,6 @@ struct TrainingProgram: Codable {
     let phases: [Phase]
     let gateTests: [GateTest]
     let tracks: [TrainingTrack]
-    let scientificFoundation: [ScientificPrinciple]?
     let supplementaryMaterials: SupplementaryMaterials?
 }
 
@@ -44,7 +43,7 @@ struct ProgramInfo: Codable {
     let author: String
     let website: String
     let totalTracks: Int
-    let dailyDuration: String
+    let dailyDuration: String?
     let puttsPerMinute: Int
     let deviceSpecs: DeviceSpecs
 }
@@ -287,25 +286,6 @@ struct EmergencyProtocol: Codable {
 struct EntryRequirement: Codable {
     let metric: String
     let target: Int
-}
-
-struct ScientificPrinciple: Codable, Identifiable {
-    let id: Int
-    let principle: String
-    let explanation: String
-    let application: String
-    let citation: Citation
-}
-
-struct Citation: Codable {
-    let authors: String
-    let year: Int
-    let title: String
-    let journal: String?
-    let volume: String?
-    let pages: String?
-    let publisher: String?
-    let edition: String?
 }
 
 // MARK: - Training Program Loader

@@ -2,14 +2,18 @@
 
 ## 🚀 Get Running in 5 Minutes
 
-### 1. Open Xcode Project
+### 1. Open the Xcode Project
+
+⚠️ **Open the OUTER project only** (the one directly inside the top `SpeedMachineApp` folder). A renamed
+old duplicate (`SpeedMachineApp_OLD_DO_NOT_OPEN.xcodeproj`) lives one folder deeper — never open it.
+
 ```bash
-open "/Users/jaritgolf/Desktop/Traning Program App/SpeedMachineApp/SpeedMachineApp/SpeedMachineApp.xcodeproj"
+open "/Users/jaritgolf/Desktop/Traning Program App/SpeedMachineApp/SpeedMachineApp.xcodeproj"
 ```
 
 Or:
-- Navigate to: `Desktop/Traning Program App/SpeedMachineApp/SpeedMachineApp/`
-- Double-click `SpeedMachineApp.xcodeproj`
+- Navigate to: `Desktop/Traning Program App/SpeedMachineApp/`
+- Double-click `SpeedMachineApp.xcodeproj` (the one at this level — NOT inside the nested `SpeedMachineApp/` folder)
 
 ---
 

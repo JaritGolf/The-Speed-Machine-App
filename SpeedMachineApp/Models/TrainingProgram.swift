@@ -187,6 +187,13 @@ struct TrainingBlock: Codable, Identifiable {
     let adaptiveMode: String?
     /// Eligible speed pool for adaptive selection. Engine picks from these speeds only.
     let adaptivePool: [Int]?
+    /// When true, the adaptive engine drills ONE speed exclusively (single-speed focus) instead of
+    /// featuring the relevant speeds more often across the full pool. nil/false = full-pool variety.
+    let adaptiveSingleSpeed: Bool?
+    /// Per-block pass threshold override (0.0–1.0). nil = use phase floor.
+    let blockPassThreshold: Float?
+    /// true = block is not pass-gated (warmups, recovery, free practice).
+    let skipGating: Bool?
 
     enum CodingKeys: String, CodingKey {
         case blockId = "id"
@@ -199,7 +206,8 @@ struct TrainingBlock: Codable, Identifiable {
         case lives, startSpeed, endSpeed, speedRange
         case isPhaseAssessment, isFinalAssessment, allowSpeedChange
         case emergencyProtocol, entryRequirement, maxAttempts, safetyChecklist
-        case adaptiveMode, adaptivePool
+        case adaptiveMode, adaptivePool, adaptiveSingleSpeed
+        case blockPassThreshold, skipGating
     }
 }
 
@@ -293,6 +301,9 @@ class TrainingProgramLoader {
 
     private init() {
         loadProgram()
+        // Check the admin backend for a newer published program. Non-blocking;
+        // the bundled program above is used until/unless this succeeds.
+        Task { await NetworkService.shared.fetchProgramIfNeeded() }
     }
 
     private func loadProgram() {
@@ -303,8 +314,12 @@ class TrainingProgramLoader {
 
         do {
             let data = try Data(contentsOf: url)
+            // Accept either schema: the bundle may be the older "days" JSON or the
+            // newer "tracks" JSON published from admin. remapTracksSchema is a no-op
+            // on "days" data and renames "tracks" data to match the model.
+            let remapped = try Self.remapTracksSchema(data)
             let decoder = JSONDecoder()
-            program = try decoder.decode(TrainingProgram.self, from: data)
+            program = try decoder.decode(TrainingProgram.self, from: remapped)
             print("Training program loaded successfully with \(program?.days.count ?? 0) days")
             if let loaded = program { validateProgram(loaded) }
         } catch let DecodingError.dataCorrupted(context) {
@@ -322,6 +337,66 @@ class TrainingProgramLoader {
         } catch {
             print("Error loading training program: \(error)")
         }
+    }
+
+    /// Decode and apply a program downloaded from the admin backend. The admin
+    /// publishes a "tracks" schema; this app's model uses the older "days" schema,
+    /// so the JSON keys are remapped before decoding. On any failure the bundled
+    /// program is left in place.
+    func useRemoteProgram(_ data: Data) {
+        do {
+            let remapped = try Self.remapTracksSchema(data)
+            let decoded = try JSONDecoder().decode(TrainingProgram.self, from: remapped)
+            DispatchQueue.main.async {
+                self.program = decoded
+                self.validateProgram(decoded)
+                print("🔄 Applied remote program: \(decoded.days.count) tracks")
+            }
+        } catch {
+            print("🔄 Failed to decode remote program (keeping bundle): \(error)")
+        }
+    }
+
+    /// Rename the admin "tracks" schema keys to the bundled "days" schema names
+    /// (tracks→days, track→day, unlockTrack→unlockDay) and drop scientificFoundation,
+    /// whose shape isn't decoded here. Unknown keys are ignored by the decoder.
+    static func remapTracksSchema(_ data: Data) throws -> Data {
+        guard var root = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            return data
+        }
+        if let tracks = root["tracks"] as? [[String: Any]] {
+            root["days"] = tracks.map { tr -> [String: Any] in
+                var t = tr
+                if let v = t["track"] { t["day"] = v; t.removeValue(forKey: "track") }
+                return t
+            }
+            root.removeValue(forKey: "tracks")
+        }
+        if let gates = root["gateTests"] as? [[String: Any]] {
+            root["gateTests"] = gates.map { g -> [String: Any] in
+                var x = g
+                if let v = x["track"] { x["day"] = v; x.removeValue(forKey: "track") }
+                return x
+            }
+        }
+        if let zones = root["speedZones"] as? [[String: Any]] {
+            root["speedZones"] = zones.map { z -> [String: Any] in
+                var x = z
+                if let v = x["unlockTrack"] { x["unlockDay"] = v; x.removeValue(forKey: "unlockTrack") }
+                return x
+            }
+        }
+        if let phases = root["phases"] as? [[String: Any]] {
+            root["phases"] = phases.map { p -> [String: Any] in
+                var x = p
+                if let v = x["startTrack"] { x["startDay"] = v; x.removeValue(forKey: "startTrack") }
+                if let v = x["endTrack"] { x["endDay"] = v; x.removeValue(forKey: "endTrack") }
+                if let v = x["tracks"] { x["days"] = v; x.removeValue(forKey: "tracks") }
+                return x
+            }
+        }
+        root.removeValue(forKey: "scientificFoundation")
+        return try JSONSerialization.data(withJSONObject: root)
     }
 
     func getDay(_ dayNumber: Int) -> TrainingDay? {
@@ -690,5 +765,109 @@ struct PuttResult: Identifiable {
         guard tolerance > 0 else { return 0 }
         let accuracyRatio = 1.0 - (difference / (tolerance * 1.5))
         return max(0, min(1, accuracyRatio))
+    }
+}
+
+// MARK: - Network Service
+
+/// Fetches the training program from the Speed Machine admin backend on launch.
+/// Caches the last download in UserDefaults so the app keeps working offline,
+/// and falls back to the bundled JSON if the backend is unreachable.
+final class NetworkService {
+    static let shared = NetworkService()
+
+    private let baseURL = "https://speed-machine-admin.vercel.app"
+    private let versionKey = "remoteProgramVersion"
+    private let dataKey = "remoteProgramData"
+    static let statusKey = "networkServiceStatus"
+
+    private init() {}
+
+    /// Called at app launch from TrainingProgramLoader. Non-blocking.
+    func fetchProgramIfNeeded() async {
+        setStatus("Checking…")
+
+        // Version check (a few retries for transient network/SSL hiccups).
+        var remoteVersion: String?
+        for attempt in 1...3 {
+            do {
+                remoteVersion = try await fetchVersion()
+                if remoteVersion != nil { break }
+            } catch {
+                if attempt < 3 { try? await Task.sleep(nanoseconds: 1_500_000_000) }
+            }
+        }
+
+        guard let remoteVersion else {
+            setStatus("Offline — using bundled")
+            // Apply any previously cached remote program so we're not stuck on bundle.
+            if let cached = UserDefaults.standard.data(forKey: dataKey) {
+                TrainingProgramLoader.shared.useRemoteProgram(cached)
+            }
+            return
+        }
+
+        let cachedVersion = UserDefaults.standard.string(forKey: versionKey) ?? ""
+        if remoteVersion == cachedVersion,
+           let cachedData = UserDefaults.standard.data(forKey: dataKey) {
+            TrainingProgramLoader.shared.useRemoteProgram(cachedData)
+            setStatus("v\(displayVersion(remoteVersion)) (cached)")
+            return
+        }
+
+        // Download the newer published program.
+        setStatus("Downloading…")
+        do {
+            let data = try await fetchProgramData()
+            UserDefaults.standard.set(data, forKey: dataKey)
+            UserDefaults.standard.set(remoteVersion, forKey: versionKey)
+            TrainingProgramLoader.shared.useRemoteProgram(data)
+            setStatus("v\(displayVersion(remoteVersion)) ✓")
+        } catch {
+            setStatus("Download failed — using bundled")
+            if let cachedData = UserDefaults.standard.data(forKey: dataKey) {
+                TrainingProgramLoader.shared.useRemoteProgram(cachedData)
+            }
+        }
+    }
+
+    private func setStatus(_ status: String) {
+        UserDefaults.standard.set(status, forKey: NetworkService.statusKey)
+    }
+
+    /// The cache key is "version|publishedAt"; show just the version for display.
+    private func displayVersion(_ raw: String) -> String {
+        raw.split(separator: "|").first.map(String.init) ?? raw
+    }
+
+    private func fetchVersion() async throws -> String? {
+        guard let url = URL(string: "\(baseURL)/api/program/version") else { return nil }
+        var request = URLRequest(url: url)
+        request.timeoutInterval = 8
+        request.cachePolicy = .reloadIgnoringLocalCacheData
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard (response as? HTTPURLResponse)?.statusCode == 200 else { return nil }
+        let decoded = try JSONDecoder().decode(VersionResponse.self, from: data)
+        // Include publishedAt so a re-publish of the same version still busts the cache.
+        return "\(decoded.version)|\(decoded.publishedAt)"
+    }
+
+    private func fetchProgramData() async throws -> Data {
+        guard let url = URL(string: "\(baseURL)/api/program/current") else {
+            throw URLError(.badURL)
+        }
+        var request = URLRequest(url: url)
+        request.timeoutInterval = 20
+        request.cachePolicy = .reloadIgnoringLocalCacheData
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard (response as? HTTPURLResponse)?.statusCode == 200 else {
+            throw URLError(.badServerResponse)
+        }
+        return data
+    }
+
+    private struct VersionResponse: Decodable {
+        let version: String
+        let publishedAt: String
     }
 }

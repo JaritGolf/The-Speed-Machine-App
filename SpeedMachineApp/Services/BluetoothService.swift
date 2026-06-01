@@ -34,6 +34,9 @@ class BluetoothService: NSObject, ObservableObject {
     private var lastConnectedDeviceIdentifier: UUID?
     private let lastDeviceKey = "lastConnectedDevice"
 
+    // Set when startScanning() is called before Bluetooth is powered on.
+    private var wantsToScan = false
+
     enum ConnectionState: String {
         case disconnected = "Disconnected"
         case scanning = "Scanning..."
@@ -51,22 +54,32 @@ class BluetoothService: NSObject, ObservableObject {
     // MARK: - Public Methods
 
     func startScanning() {
+        // Bluetooth may not have finished powering on yet (first launch, right after
+        // the permission prompt). Remember the intent and start once it's ready —
+        // centralManagerDidUpdateState picks this up.
         guard centralManager.state == .poweredOn else {
-            errorMessage = "Bluetooth is not available"
+            wantsToScan = true
+            isScanning = true
+            connectionState = .scanning
             return
         }
 
+        wantsToScan = false
         discoveredDevices.removeAll()
         isScanning = true
         connectionState = .scanning
+        // Scan for all devices and match by name. The Speed Machine advertises its
+        // name but not its service UUID, so a service-filtered scan never sees it.
         centralManager.scanForPeripherals(
-            withServices: [serviceUUID],
+            withServices: nil,
             options: [CBCentralManagerScanOptionAllowDuplicatesKey: false]
         )
 
         // Stop scanning after 10 seconds
         DispatchQueue.main.asyncAfter(deadline: .now() + 10) { [weak self] in
-            self?.stopScanning()
+            guard let self else { return }
+            // Don't kill an in-flight connection attempt that discovery kicked off.
+            if self.connectionState == .scanning { self.stopScanning() }
         }
     }
 
@@ -157,8 +170,13 @@ extension BluetoothService: CBCentralManagerDelegate {
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
         switch central.state {
         case .poweredOn:
-            // Attempt auto-reconnect
+            // Attempt auto-reconnect to a previously paired device.
             attemptAutoReconnect()
+            // If a scan was requested before Bluetooth was ready, start it now —
+            // unless auto-reconnect already kicked off a connection.
+            if wantsToScan && connectionState != .connecting && connectionState != .reconnecting {
+                startScanning()
+            }
         case .poweredOff:
             errorMessage = "Bluetooth is turned off"
             resetConnection()
@@ -177,6 +195,11 @@ extension BluetoothService: CBCentralManagerDelegate {
         if let name = peripheral.name, name.contains(BLEConstants.deviceName) {
             if !discoveredDevices.contains(where: { $0.identifier == peripheral.identifier }) {
                 discoveredDevices.append(peripheral)
+            }
+            // Auto-connect to the first matching device. The ConnectionView has no
+            // manual device-picker, so discovery must drive the connection directly.
+            if connectionState == .scanning {
+                connect(to: peripheral)
             }
         }
     }

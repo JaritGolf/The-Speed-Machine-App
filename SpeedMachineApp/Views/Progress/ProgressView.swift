@@ -69,7 +69,7 @@ struct OverallStatsCard: View {
     }
 
     var progressPercentage: Int {
-        Int((Double(completedDays) / Double(TrainingConstants.totalDays)) * 100)
+        Int((Double(completedDays) / Double(TrainingConstants.totalTracks)) * 100)
     }
 
     var body: some View {
@@ -95,11 +95,15 @@ struct OverallStatsCard: View {
                     Spacer()
                 }
 
-                ProgressBarView(
-                    current: completedDays,
-                    total: TrainingConstants.totalDays,
-                    color: AppColors.accentGreen
-                )
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        RoundedRectangle(cornerRadius: 6)
+                            .fill(AppColors.border)
+                        RoundedRectangle(cornerRadius: 6)
+                            .fill(AppColors.accentGreen)
+                            .frame(width: max(0, geo.size.width * (Double(completedDays) / Double(TrainingConstants.totalTracks))))
+                    }
+                }
                 .frame(height: 12)
             }
 
@@ -107,7 +111,7 @@ struct OverallStatsCard: View {
 
             // Stats Grid
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
-                StatBox(title: "Days Complete", value: "\(completedDays)/\(TrainingConstants.totalDays)")
+                StatBox(title: "Days Complete", value: "\(completedDays)/\(TrainingConstants.totalTracks)")
                 StatBox(title: "Current Day", value: "\(currentDay)")
                 StatBox(title: "Total Putts", value: "\(totalPutts)")
                 StatBox(title: "High Score", value: "\(combineViewModel.highScore)")

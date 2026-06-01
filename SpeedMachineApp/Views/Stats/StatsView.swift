@@ -2,7 +2,7 @@
 //  StatsView.swift
 //  SpeedMachine
 //
-//  Created by Claude for Jarit Golf
+//  Whoop minimal Stats Dashboard (mockup 14).
 //
 
 import SwiftUI
@@ -19,382 +19,193 @@ struct StatsDashboardView: View {
     @State private var showCombineStats = false
     @State private var selectedSpeedProfile: SpeedProfileData?
 
+    private func fmtPutts(_ n: Int) -> (String, String) {
+        n >= 1000 ? (String(format: "%.1f", Double(n) / 1000.0), "k") : ("\(n)", "")
+    }
+
     var body: some View {
-        NavigationView {
-            ZStack {
-                AppColors.backgroundAlt.ignoresSafeArea()
+        ZStack(alignment: .top) {
+            Color.white.ignoresSafeArea()
 
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 20) {
-                        // Key Metrics Row
-                        KeyMetricsSection()
+            VStack(spacing: 0) {
+                StatsHeader(title: "STATS") { dismiss() }
 
-                        // Needs Work Callout
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 0) {
+                        // KPI 3-up
+                        HStack(alignment: .top, spacing: 24) {
+                            KpiCell(value: "\(Int(statsService.overallAccuracy))", unit: "%", label: "ACCURACY")
+                            let p = fmtPutts(statsService.totalLifetimePutts)
+                            KpiCell(value: p.0, unit: p.1, label: "PUTTS")
+                            KpiCell(value: "\(statsService.currentPracticeStreak)", unit: " day", label: "STREAK")
+                        }
+                        .padding(.horizontal, 32)
+                        .padding(.vertical, 22)
+
+                        // Needs Work
                         if !statsService.weakestSpeeds.isEmpty {
-                            NeedsWorkCard()
+                            HStack(alignment: .center, spacing: 18) {
+                                Text("NEEDS WORK")
+                                    .font(.custom("Inter-Bold", size: 14))
+                                    .kerning(2.1)
+                                    .foregroundColor(AppColors.accentAmber)
+                                HStack(spacing: 22) {
+                                    ForEach(statsService.weakestSpeeds.prefix(3), id: \.targetSpeed) { p in
+                                        HStack(alignment: .firstTextBaseline, spacing: 5) {
+                                            Text("\(p.targetSpeed)")
+                                                .font(.custom("Inter-Black", size: 26))
+                                                .foregroundColor(AppColors.error)
+                                            Text("MPH")
+                                                .font(.custom("Inter-Bold", size: 14))
+                                                .foregroundColor(AppColors.error)
+                                            Text("\(Int(p.accuracy))%")
+                                                .font(.custom("Inter-Bold", size: 15))
+                                                .foregroundColor(AppColors.textSubdued)
+                                        }
+                                    }
+                                }
+                                Spacer(minLength: 0)
+                            }
+                            .padding(.horizontal, 32)
+                            .padding(.vertical, 14)
+                            .overlay(Rectangle().fill(AppColors.border).frame(height: 1), alignment: .top)
                         }
 
-                        // Speed Ladder — the hero visual
-                        SpeedLadderSection(selectedProfile: $selectedSpeedProfile)
+                        // Speed Ladder header
+                        HStack {
+                            Text("SPEED LADDER")
+                                .font(.custom("Inter-Bold", size: 15))
+                                .kerning(2.0)
+                                .foregroundColor(AppColors.textSubdued)
+                            Spacer()
+                            Text("TAP TO EXPLORE →")
+                                .font(.custom("Inter-Bold", size: 13))
+                                .kerning(1.0)
+                                .foregroundColor(Color(hex: "d4d4d4"))
+                        }
+                        .padding(.horizontal, 32)
+                        .padding(.top, 16)
+                        .padding(.bottom, 10)
+                        .overlay(Rectangle().fill(AppColors.border).frame(height: 1), alignment: .top)
 
-                        // Quick Links
-                        VStack(spacing: 12) {
-                            QuickLinkButton(
-                                title: "Trends Over Time",
-                                subtitle: "Accuracy, consistency & practice charts",
-                                icon: "chart.line.uptrend.xyaxis",
-                                color: AppColors.accentGreen
-                            ) {
-                                showTrends = true
-                            }
-
-                            QuickLinkButton(
-                                title: "Session History",
-                                subtitle: "Putt-by-putt deep dives",
-                                icon: "list.bullet.rectangle",
-                                color: AppColors.bleBlue
-                            ) {
-                                showSessionHistory = true
-                            }
-
-                            QuickLinkButton(
-                                title: "Combine Stats",
-                                subtitle: "Game scores & zone breakdown",
-                                icon: "target",
-                                color: .orange
-                            ) {
-                                showCombineStats = true
-                            }
+                        // Ladder rows
+                        ForEach(statsService.sortedProfiles, id: \.targetSpeed) { profile in
+                            SpeedLadderRow(profile: profile)
+                                .contentShape(Rectangle())
+                                .onTapGesture { selectedSpeedProfile = profile }
                         }
                     }
-                    .padding()
-                    // On iPad, centre the content so cards don't stretch edge-to-edge
-                    .adaptiveContentFrame(maxWidth: 700)
-                }
-            }
-            .navigationTitle("Stats")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") { dismiss() }
-                }
-            }
-            .fullScreenCover(isPresented: $showTrends) {
-                TrendsView()
-            }
-            .fullScreenCover(isPresented: $showSessionHistory) {
-                SessionHistoryView()
-            }
-            .fullScreenCover(isPresented: $showCombineStats) {
-                CombineStatsView()
-            }
-            .sheet(item: $selectedSpeedProfile) { profile in
-                SpeedDetailView(profile: profile)
-            }
-        }
-        .navigationViewStyle(.stack)
-    }
-}
-
-// MARK: - Key Metrics Section
-
-struct KeyMetricsSection: View {
-    @EnvironmentObject var statsService: StatsService
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Overview")
-                .font(.title3)
-                .fontWeight(.bold)
-                .foregroundColor(AppColors.primaryBlack)
-
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: isIPad ? 4 : 2), spacing: 12) {
-                MetricCard(
-                    label: "Accuracy",
-                    value: String(format: "%.0f%%", statsService.overallAccuracy),
-                    icon: "target",
-                    color: accuracyColor(statsService.overallAccuracy)
-                )
-
-                MetricCard(
-                    label: "Total Putts",
-                    value: formatNumber(statsService.totalLifetimePutts),
-                    icon: "figure.golf",
-                    color: AppColors.accentGreen
-                )
-
-                MetricCard(
-                    label: "Consistency",
-                    value: statsService.overallConsistency > 0 ?
-                        String(format: "%.2f", statsService.overallConsistency) : "—",
-                    icon: "waveform.path",
-                    color: AppColors.bleBlue
-                )
-
-                MetricCard(
-                    label: "Day Streak",
-                    value: "\(statsService.currentPracticeStreak)",
-                    icon: "flame.fill",
-                    color: .orange
-                )
-            }
-        }
-    }
-
-    private func accuracyColor(_ accuracy: Double) -> Color {
-        if accuracy >= 75 { return AppColors.accentGreen }
-        if accuracy >= 50 { return .orange }
-        return AppColors.error
-    }
-
-    private func formatNumber(_ n: Int) -> String {
-        if n >= 1000 {
-            return String(format: "%.1fk", Double(n) / 1000.0)
-        }
-        return "\(n)"
-    }
-}
-
-struct MetricCard: View {
-    let label: String
-    let value: String
-    let icon: String
-    let color: Color
-
-    var body: some View {
-        VStack(spacing: 8) {
-            HStack(spacing: 6) {
-                Image(systemName: icon)
-                    .font(.caption)
-                    .foregroundColor(color)
-                Text(label)
-                    .font(.caption)
-                    .foregroundColor(AppColors.textMuted)
-            }
-
-            Text(value)
-                .font(.system(.title2, design: .rounded).weight(.bold))
-                .foregroundColor(AppColors.primaryBlack)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 14)
-        .background(Color.white)
-        .cornerRadius(12)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(AppColors.border, lineWidth: 1)
-        )
-    }
-}
-
-// MARK: - Needs Work Card
-
-struct NeedsWorkCard: View {
-    @EnvironmentObject var statsService: StatsService
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 8) {
-                Image(systemName: "exclamationmark.triangle.fill")
-                    .foregroundColor(.orange)
-                    .font(.headline)
-                Text("Needs Work")
-                    .font(.headline)
-                    .foregroundColor(AppColors.primaryBlack)
-            }
-
-            Text("Focus practice on these speeds to improve:")
-                .font(.subheadline)
-                .foregroundColor(AppColors.textMuted)
-
-            HStack(spacing: 10) {
-                ForEach(statsService.weakestSpeeds, id: \.targetSpeed) { profile in
-                    WeakSpeedPill(profile: profile)
+                    .padding(.bottom, 16)
                 }
             }
         }
-        .padding()
-        .background(Color.orange.opacity(0.08))
-        .cornerRadius(12)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.orange.opacity(0.3), lineWidth: 1)
-        )
-    }
-}
-
-struct WeakSpeedPill: View {
-    let profile: SpeedProfileData
-
-    var body: some View {
-        VStack(spacing: 4) {
-            Text("\(profile.targetSpeed) MPH")
-                .font(.system(.subheadline, design: .rounded).weight(.bold))
-                .foregroundColor(AppColors.error)
-
-            Text(String(format: "%.0f%%", profile.accuracy))
-                .font(.caption)
-                .foregroundColor(AppColors.textMuted)
+        .safeAreaInset(edge: .bottom) {
+            StatsTabBar(active: .stats) { tab in
+                switch tab {
+                case .trends:  showTrends = true
+                case .history: showSessionHistory = true
+                case .combine: showCombineStats = true
+                case .stats:   break
+                }
+            }
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
-        .background(Color.white)
-        .cornerRadius(8)
-        .overlay(
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(AppColors.error.opacity(0.3), lineWidth: 1)
-        )
+        .fullScreenCover(isPresented: $showTrends) { TrendsView() }
+        .fullScreenCover(isPresented: $showSessionHistory) { SessionHistoryView() }
+        .fullScreenCover(isPresented: $showCombineStats) { CombineStatsView() }
+        .sheet(item: $selectedSpeedProfile) { profile in SpeedDetailView(profile: profile) }
     }
 }
 
-// MARK: - Speed Ladder Section (Hero Visual)
+// MARK: - Shared stats pieces
 
-struct SpeedLadderSection: View {
-    @EnvironmentObject var statsService: StatsService
-    @Binding var selectedProfile: SpeedProfileData?
+/// Accuracy → tier color (mockup g/a/r): ≥70 green, ≥50 amber, else red.
+func statAccuracyColor(_ accuracy: Double) -> Color {
+    if accuracy >= 70 { return AppColors.accentGreen }
+    if accuracy >= 50 { return AppColors.accentAmber }
+    return AppColors.error
+}
 
+struct StatsHeader: View {
+    let title: String
+    let onBack: () -> Void
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        ZStack {
+            Text(title)
+                .font(.custom("Inter-Bold", size: 16))
+                .kerning(3)
+                .foregroundColor(.black)
             HStack {
-                Text("Speed Ladder")
-                    .font(.title3)
-                    .fontWeight(.bold)
-                    .foregroundColor(AppColors.primaryBlack)
-
-                Spacer()
-
-                Text("Tap for details")
-                    .font(.caption)
-                    .foregroundColor(AppColors.textMuted)
-            }
-
-            VStack(spacing: 6) {
-                ForEach(statsService.sortedProfiles, id: \.targetSpeed) { profile in
-                    SpeedLadderRow(profile: profile)
-                        .onTapGesture {
-                            selectedProfile = profile
-                        }
+                Button(action: onBack) {
+                    Image(systemName: "arrow.left")
+                        .font(.system(size: 22, weight: .regular))
+                        .foregroundColor(.black)
                 }
+                Spacer()
             }
         }
-        .padding()
-        .background(Color.white)
-        .cornerRadius(12)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(AppColors.border, lineWidth: 1)
-        )
+        .padding(.horizontal, 28)
+        .padding(.top, 14)
+        .padding(.bottom, 14)
+        .overlay(Rectangle().fill(AppColors.border).frame(height: 1), alignment: .bottom)
+    }
+}
+
+struct KpiCell: View {
+    let value: String
+    let unit: String
+    let label: String
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(alignment: .firstTextBaseline, spacing: 0) {
+                Text(value)
+                    .font(.custom("Inter-Black", size: 28))
+                    .foregroundColor(.black)
+                Text(unit)
+                    .font(.custom("Inter-Bold", size: 15))
+                    .foregroundColor(AppColors.textSubdued)
+            }
+            Text(label)
+                .font(.custom("Inter-Bold", size: 10))
+                .kerning(2.0)
+                .foregroundColor(AppColors.textSubdued)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
 struct SpeedLadderRow: View {
     let profile: SpeedProfileData
 
-    private var accuracyColor: Color {
-        let acc = profile.accuracy
-        if profile.totalPutts == 0 { return AppColors.textMuted.opacity(0.3) }
-        if acc >= 80 { return AppColors.accentGreen }
-        if acc >= 65 { return AppColors.accentBright }
-        if acc >= 50 { return .yellow }
-        if acc >= 35 { return .orange }
-        return AppColors.error
-    }
-
-    private var barWidth: CGFloat {
-        if profile.totalPutts == 0 { return 0 }
-        return CGFloat(profile.accuracy / 100.0)
-    }
+    private var hasData: Bool { profile.totalPutts > 0 }
+    private var color: Color { statAccuracyColor(profile.accuracy) }
 
     var body: some View {
-        HStack(spacing: 10) {
-            // Speed label
+        HStack(spacing: 16) {
             Text("\(profile.targetSpeed)")
-                .font(.system(.subheadline, design: .rounded).weight(.bold))
-                .foregroundColor(AppColors.primaryBlack)
+                .font(.custom("Inter-Black", size: 22))
+                .foregroundColor(.black)
                 .frame(width: 28, alignment: .trailing)
 
-            // Accuracy bar
-            GeometryReader { geometry in
+            GeometryReader { geo in
                 ZStack(alignment: .leading) {
-                    // Background track
-                    Rectangle()
-                        .fill(AppColors.backgroundAlt)
-                        .frame(height: 24)
-                        .cornerRadius(4)
-
-                    // Filled bar
-                    Rectangle()
-                        .fill(accuracyColor)
-                        .frame(width: geometry.size.width * barWidth, height: 24)
-                        .cornerRadius(4)
+                    Capsule().fill(AppColors.border).frame(height: 7)
+                    if hasData {
+                        Capsule().fill(color)
+                            .frame(width: max(0, min(1, profile.accuracy / 100.0)) * geo.size.width, height: 7)
+                    }
                 }
+                .frame(maxHeight: .infinity, alignment: .center)
             }
             .frame(height: 24)
 
-            // Accuracy percentage
-            if profile.totalPutts > 0 {
-                Text(String(format: "%.0f%%", profile.accuracy))
-                    .font(.system(.caption, design: .rounded).weight(.semibold))
-                    .foregroundColor(accuracyColor)
-                    .frame(width: 40, alignment: .trailing)
-            } else {
-                Text("—")
-                    .font(.caption)
-                    .foregroundColor(AppColors.textMuted)
-                    .frame(width: 40, alignment: .trailing)
-            }
+            Text(hasData ? "\(Int(profile.accuracy))%" : "—")
+                .font(.custom("Inter-Bold", size: 16))
+                .foregroundColor(hasData ? color : Color(hex: "d4d4d4"))
+                .frame(width: 44, alignment: .trailing)
         }
-        .padding(.vertical, 2)
-    }
-}
-
-// MARK: - Quick Link Button
-
-struct QuickLinkButton: View {
-    let title: String
-    let subtitle: String
-    let icon: String
-    let color: Color
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: 14) {
-                ZStack {
-                    Circle()
-                        .fill(color.opacity(0.15))
-                        .frame(width: 44, height: 44)
-
-                    Image(systemName: icon)
-                        .font(.system(size: 18))
-                        .foregroundColor(color)
-                }
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(title)
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .foregroundColor(AppColors.primaryBlack)
-
-                    Text(subtitle)
-                        .font(.caption)
-                        .foregroundColor(AppColors.textMuted)
-                }
-
-                Spacer()
-
-                Image(systemName: "chevron.right")
-                    .foregroundColor(AppColors.textMuted)
-                    .font(.caption)
-            }
-            .padding()
-            .background(Color.white)
-            .cornerRadius(12)
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(AppColors.border, lineWidth: 1)
-            )
-        }
+        .padding(.horizontal, 32)
+        .padding(.vertical, 11)
+        .overlay(Rectangle().fill(AppColors.border).frame(height: 1), alignment: .top)
     }
 }
 
@@ -402,4 +213,44 @@ struct QuickLinkButton: View {
 
 extension SpeedProfileData: Identifiable {
     public var id: Int16 { targetSpeed }
+}
+
+// MARK: - Stats Tab Bar
+
+enum StatsTab {
+    case stats, trends, history, combine
+}
+
+struct StatsTabBar: View {
+    let active: StatsTab
+    let onTap: (StatsTab) -> Void
+
+    private let tabs: [(StatsTab, String)] = [
+        (.stats,   "STATS"),
+        (.trends,  "TRENDS"),
+        (.history, "HISTORY"),
+        (.combine, "COMBINE")
+    ]
+
+    var body: some View {
+        HStack(spacing: 0) {
+            ForEach(tabs, id: \.1) { tab, label in
+                Button { onTap(tab) } label: {
+                    VStack(spacing: 0) {
+                        Rectangle()
+                            .fill(active == tab ? Color.black : Color.clear)
+                            .frame(height: 2)
+                        Text(label)
+                            .font(.custom("Inter-Bold", size: 13))
+                            .kerning(1.2)
+                            .foregroundColor(active == tab ? .black : Color(hex: "c8c8c8"))
+                            .padding(.top, 10)
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+            }
+        }
+        .background(Color.white)
+        .overlay(Rectangle().fill(AppColors.border).frame(height: 1), alignment: .top)
+    }
 }

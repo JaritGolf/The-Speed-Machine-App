@@ -1,73 +1,95 @@
+//
+//  SportRecHeader.swift
+//  SpeedMachine
+//
+//  Sport-style top header bar.
+//  Mirrors SportRecHeader from sport-shared.jsx.
+//  Pulsing REC dot · "TRACK X / BLOCK Y" · drill name (right)
+//
+
 import SwiftUI
 
-// MARK: - Header Icon Type
-
-enum SportHeaderIcon {
-    case rec, flag, bolt
-}
-
-// MARK: - Sport Session Header
-
 struct SportRecHeader: View {
-    let day: TrainingDay
+    let track: TrainingTrack
     let block: TrainingBlock
     let tokens: SportTokens
-    let icon: SportHeaderIcon
-    let isConnected: Bool
+    var icon: SportHeaderIcon = .rec
+    var isConnected: Bool = true
     var adaptiveContext: String? = nil
 
-    private var blockNumber: Int {
-        (day.blocks.firstIndex(where: { $0.id == block.id }) ?? 0) + 1
+    var blockNumber: Int {
+        (track.blocks.firstIndex(where: { $0.id == block.id }) ?? 0) + 1
+    }
+
+    private var headerColor: Color {
+        switch icon {
+        case .bolt: return Color(hex: "DC2626")
+        case .flag: return Color(hex: "1D4ED8")
+        case .rec:  return tokens.fg
+        }
     }
 
     var body: some View {
-        HStack(spacing: 10) {
-            iconView
-                .frame(width: fs(16), height: fs(16))
+        VStack(spacing: 0) {
+            HStack(spacing: 10) {
+                iconView
+                    .frame(width: 16, height: 16)
 
-            VStack(alignment: .leading, spacing: 1) {
-                Text("TRACK \(day.day)  /  BLOCK \(blockNumber)")
-                    .font(.oswald(fs(11), weight: .semibold))
-                    .foregroundColor(tokens.sub)
-                    .tracking(1.5)
-                if let ctx = adaptiveContext {
-                    Text(ctx.uppercased())
-                        .font(.system(size: fs(9), weight: .semibold))
-                        .foregroundColor(tokens.zone)
-                }
+                Text("TRACK \(track.number) / BLOCK \(blockNumber)")
+                    .font(.inter(fs(18)))
+                    .foregroundColor(headerColor)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
+
+                Spacer()
+
+                Text(block.name.uppercased())
+                    .font(.inter(fs(16), weight: .semibold))
+                    .foregroundColor(headerColor.opacity(0.6))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
             }
+            .padding(.horizontal, 18)
+            .padding(.top, 10)
+            .padding(.bottom, adaptiveContext != nil ? 4 : 10)
 
-            Spacer()
-
-            Text(block.name.uppercased())
-                .font(.oswald(fs(11), weight: .semibold))
-                .foregroundColor(tokens.sub)
-                .tracking(1)
-                .lineLimit(1)
-                .minimumScaleFactor(0.6)
-
-            Circle()
-                .fill(isConnected ? tokens.zone : tokens.miss)
-                .frame(width: 8, height: 8)
+            if let ctx = adaptiveContext {
+                HStack(spacing: 5) {
+                    Image(systemName: "wand.and.stars")
+                        .font(.system(size: fs(12), weight: .semibold))
+                        .foregroundColor(tokens.zone)
+                    Text(ctx)
+                        .font(.system(size: fs(13), weight: .semibold, design: .rounded))
+                        .foregroundColor(tokens.zone)
+                    Spacer()
+                }
+                .padding(.horizontal, 18)
+                .padding(.bottom, 8)
+            }
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, isIPad ? 12 : 8)
-        .background(tokens.surface)
+        .background(tokens.bg.ignoresSafeArea(edges: .top))
+        .overlay(Rectangle().fill(tokens.subtle).frame(height: 1), alignment: .bottom)
     }
 
     @ViewBuilder
     private var iconView: some View {
         switch icon {
         case .rec:
-            SportPulsingDot(color: Color(hex: "EF4444"))
+            SportPulsingDot(color: tokens.zone)
         case .flag:
             Image(systemName: "flag.checkered")
-                .font(.system(size: fs(13), weight: .bold))
-                .foregroundColor(tokens.zone)
+                .font(.system(size: 16, weight: .bold))
+                .foregroundColor(Color(hex: "1D4ED8"))
         case .bolt:
             Image(systemName: "bolt.fill")
-                .font(.system(size: fs(13), weight: .bold))
-                .foregroundColor(Color(hex: "EF4444"))
+                .font(.system(size: 16, weight: .bold))
+                .foregroundColor(Color(hex: "DC2626"))
         }
     }
+}
+
+enum SportHeaderIcon {
+    case rec
+    case flag
+    case bolt
 }

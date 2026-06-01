@@ -16,6 +16,7 @@
 
 import SwiftUI
 import UIKit
+import Combine
 
 // MARK: - Main Session Router
 
@@ -91,10 +92,9 @@ struct TrainingSessionView: View {
 
                         Spacer()
                     }
-                    .padding(.top, 16)
+                    .padding(.top, 4)
                     .transition(.move(edge: .top).combined(with: .opacity))
                     .animation(.spring(response: 0.4, dampingFraction: 0.75), value: trainingViewModel.blockJustCompleted)
-                    .ignoresSafeArea(edges: .top)
                 }
             }
             .environment(\.isLandscapeOrientation, geo.size.width > geo.size.height)
@@ -126,14 +126,41 @@ struct ActiveSessionView: View {
     let day: TrainingDay
     let isTransitioning: Bool
 
+    /// PUTTS NEEDED = in-zone putts required to pass = threshold fraction × total putts.
+    /// Per-block override wins; otherwise the track's phase floor. Non-gated block
+    /// types (combine/recovery/skipGating) have no requirement → 0.
+    private var passThreshold: Int {
+        if let explicit = block.passRequirements?.zoneAccuracy.minimum { return explicit }
+        if block.skipGating == true { return 0 }
+        switch block.type {
+        case .combine, .recovery: return 0
+        default: break
+        }
+        let fraction = block.blockPassThreshold ?? phaseFloor(day.day)
+        return Int(ceil(fraction * Float(session.totalPutts)))
+    }
+
+    private func phaseFloor(_ track: Int) -> Float {
+        switch track {
+        case 1...4:   return 0.40
+        case 5...9:   return 0.50
+        case 10...12: return 0.60
+        case 13...18: return 0.65
+        case 19...24: return 0.70
+        default:      return 0.75
+        }
+    }
+
     var body: some View {
         SportLiveContainer(
             session: session,
             block: block,
             day: day,
             stripConfig: .standard(
-                puttsLeft: max(0, session.totalPutts - session.currentPutt),
-                puttsNeeded: max(0, (block.passRequirements?.zoneAccuracy.minimum ?? 0) - session.inZonePutts)
+                totalPutts: session.totalPutts,
+                puttsTaken: session.currentPutt,
+                inZone: session.inZonePutts,
+                passThreshold: passThreshold
             ),
             headerIcon: .rec
         )
@@ -153,7 +180,7 @@ struct ExplorationSessionView: View {
             session: session,
             block: block,
             day: day,
-            stripConfig: .exploration(puttsTaken: session.currentPutt),
+            stripConfig: .exploration(totalPutts: session.totalPutts, puttsTaken: session.currentPutt),
             headerIcon: .rec
         )
     }
@@ -170,65 +197,63 @@ struct PressureSessionView: View {
     @EnvironmentObject var trainingViewModel: TrainingViewModel
     @EnvironmentObject var bluetoothService: BluetoothService
     @State private var showEndSessionAlert = false
-    @Environment(\.isLandscapeOrientation) var isLandscape
+
+    @AppStorage("liveViewTheme") private var themeRaw: String = LiveViewTheme.light.rawValue
+    @Environment(\.colorScheme) private var colorScheme
+
+    private var tokens: SportTokens {
+        let isDark = (LiveViewTheme(rawValue: themeRaw) ?? .light).resolvedDark(scheme: colorScheme)
+        return SportTokens.make(dark: isDark)
+    }
 
     var lastPutt: PuttResult? { session.puttRecords.last }
-    var isConsecutiveChallenge: Bool { block.challengeType == "consecutive" }
+    var isConsecutive: Bool { block.challengeType == "consecutive" }
+    var goal: Int { block.consecutiveRequired ?? 5 }
+    var totalLives: Int { block.lives ?? 3 }
+
+    private var pressureLabel: String { isConsecutive ? "DON'T BREAK" : "HOLD STEADY" }
+    private var lastPuttLabel: String {
+        if !isConsecutive, let p = lastPutt, !p.isInZone { return "LAST PUTT — COST A LIFE" }
+        return "LAST PUTT"
+    }
 
     var body: some View {
-        VStack(spacing: 0) {
-            PressureHeaderCompact(day: day, block: block, bluetoothService: bluetoothService)
+        ZStack {
+            tokens.bg.ignoresSafeArea()
 
-            if isLandscape {
-                GeometryReader { geo in
-                    HStack(spacing: 8) {
-                        // Left: target
-                        targetCard
-                            .frame(width: geo.size.width * 0.45)
+            VStack(spacing: 0) {
+                SportRecHeader(
+                    day: day,
+                    block: block,
+                    tokens: tokens,
+                    icon: .bolt,
+                    isConnected: bluetoothService.isConnected
+                )
 
-                        // Center: challenge status
-                        challengeStatusView
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                            .background(Color.white).cornerRadius(24)
-                            .overlay(RoundedRectangle(cornerRadius: 24).stroke(AppColors.border, lineWidth: 1))
-
-                        // Right: last putt + end
-                        VStack(spacing: 8) {
-                            if let lastPutt = lastPutt {
-                                LastPuttCardLarge(lastPutt: lastPutt)
-                            }
-                            EndSessionButtonCompact(showEndSessionAlert: $showEndSessionAlert)
-                        }
-                        .frame(maxWidth: .infinity)
-                    }
-                    .padding(.top, 6)
-                    .padding(.bottom, max(6, geo.safeAreaInsets.bottom))
-                    .padding(.leading, max(12, geo.safeAreaInsets.leading + 4))
-                    .padding(.trailing, max(12, geo.safeAreaInsets.trailing + 4))
+                if isConsecutive {
+                    thresholdStrip
+                    challengeHero
+                } else {
+                    puttsBanner
+                    livesHero
                 }
-                .ignoresSafeArea(edges: .horizontal)
-            } else {
-                VStack(spacing: 8) {
-                    // Challenge status — prominent
-                    challengeStatusView
-                        .padding(.vertical, 16).padding(.horizontal, 20)
-                        .frame(maxWidth: .infinity)
-                        .background(Color.white).cornerRadius(20)
-                        .overlay(RoundedRectangle(cornerRadius: 20).stroke(AppColors.border, lineWidth: 1))
 
-                    // Target — fills remaining space
-                    targetCard
+                Spacer(minLength: 0)
+                pressureTarget
+                Spacer(minLength: 0)
 
-                    if let lastPutt = lastPutt {
-                        LastPuttCardLarge(lastPutt: lastPutt)
-                    }
+                SportLastPutt(lastPutt: lastPutt, tokens: tokens, label: lastPuttLabel)
 
-                    EndSessionButtonCompact(showEndSessionAlert: $showEndSessionAlert)
-                }
-                .padding(.horizontal, 12)
-                .padding(.bottom, 8)
-                .padding(.top, 4)
+                SportEndButton(tokens: tokens, showAlert: $showEndSessionAlert, title: "END PRESSURE")
+                    .padding(.horizontal, 22)
+                    .padding(.top, 4)
+                    .padding(.bottom, 22)
             }
+
+            SportEdgeFlash(
+                lastPuttID: session.puttRecords.count,
+                inZone: session.puttRecords.last?.isInZone
+            )
         }
         .alert("End Session?", isPresented: $showEndSessionAlert) {
             Button("Cancel", role: .cancel) { }
@@ -238,72 +263,158 @@ struct PressureSessionView: View {
         }
     }
 
+    // Centered target (mockup .live-target, red label)
     @ViewBuilder
-    var targetCard: some View {
-        VStack(spacing: 0) {
-            Spacer()
-            if isTransitioning {
+    private var pressureTarget: some View {
+        if isTransitioning {
+            VStack(spacing: fs(8)) {
                 Image(systemName: "checkmark.circle.fill")
-                    .font(.system(size: isLandscape ? fs(80) : fs(100)))
-                    .foregroundColor(AppColors.accentGreen)
+                    .font(.system(size: fs(100)))
+                    .foregroundColor(tokens.zone)
                 Text("DONE")
-                    .font(.system(size: isLandscape ? fs(60) : fs(72), weight: .black, design: .rounded))
-                    .foregroundColor(AppColors.accentGreen)
-            } else {
-                Text("TARGET")
-                    .font(.system(size: isLandscape ? fs(24) : fs(28), weight: .bold, design: .rounded))
-                    .foregroundColor(AppColors.textMuted).tracking(3)
-                Text("\(session.currentTargetSpeed)")
-                    .font(.system(size: isLandscape ? fs(180) : fs(220), weight: .black, design: .rounded))
-                    .foregroundColor(AppColors.primaryBlack)
-                    .minimumScaleFactor(0.3).lineLimit(1)
-                Text("MPH")
-                    .font(.system(size: isLandscape ? fs(28) : fs(32), weight: .bold, design: .rounded))
-                    .foregroundColor(AppColors.textMuted)
+                    .font(.inter(fs(48), weight: .heavy))
+                    .foregroundColor(tokens.zone)
+                    .tracking(fs(48) * 0.1)
             }
-            Spacer()
+            .frame(maxWidth: .infinity)
+        } else {
+            let tStr = "\(session.currentTargetSpeed)"
+            VStack(spacing: fs(8)) {
+                Text(tStr)
+                    .font(.inter(tStr.count >= 2 ? fs(150) : fs(200)))
+                    .foregroundColor(tokens.fg)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.3)
+                    .monospacedDigit()
+                HStack(spacing: 14) {
+                    Text("MPH")
+                        .font(.inter(fs(24), weight: .heavy))
+                        .foregroundColor(tokens.fg)
+                        .tracking(fs(24) * 0.06)
+                    Rectangle().fill(tokens.subtle).frame(width: 1, height: fs(20))
+                    Text(pressureLabel)
+                        .font(.inter(fs(24), weight: .heavy))
+                        .foregroundColor(AppColors.error)
+                        .tracking(fs(24) * 0.22)
+                }
+            }
+            .frame(maxWidth: .infinity)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.white).cornerRadius(24)
-        .overlay(RoundedRectangle(cornerRadius: 24).stroke(isTransitioning ? AppColors.accentGreen : AppColors.border, lineWidth: isTransitioning ? 3 : 1))
     }
 
+    // PUTTS LEFT banner (lives variant)
     @ViewBuilder
-    var challengeStatusView: some View {
-        if isConsecutiveChallenge {
-            VStack(spacing: 12) {
-                Text("HIT \(block.consecutiveRequired ?? 5) IN A ROW")
-                    .font(.system(size: fs(28), weight: .bold, design: .rounded))
-                    .foregroundColor(AppColors.primaryBlack)
-                HStack(spacing: 10) {
-                    ForEach(0..<(block.consecutiveRequired ?? 5), id: \.self) { index in
-                        Circle()
-                            .fill(index < session.consecutiveSuccesses ? AppColors.accentGreen : AppColors.border)
-                            .frame(width: 44, height: 44)
-                            .overlay(
-                                index < session.consecutiveSuccesses ?
-                                Image(systemName: "checkmark").font(.title3).fontWeight(.bold).foregroundColor(.white) : nil
-                            )
-                    }
-                }
-                Text("\(session.consecutiveSuccesses) / \(block.consecutiveRequired ?? 5)")
-                    .font(.system(size: fs(36), weight: .bold, design: .rounded))
-                    .foregroundColor(AppColors.accentGreen)
+    private var puttsBanner: some View {
+        VStack(spacing: 4) {
+            Text("PUTTS LEFT")
+                .font(.inter(fs(14), weight: .heavy))
+                .foregroundColor(tokens.sub)
+                .tracking(fs(14) * 0.22)
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                Text(String(format: "%02d", max(0, session.totalPutts - session.currentPutt)))
+                    .font(.inter(fs(84)))
+                    .foregroundColor(tokens.fg)
+                    .monospacedDigit()
+                Text("/ \(session.totalPutts)")
+                    .font(.inter(fs(84)))
+                    .foregroundColor(tokens.sub)
+                    .monospacedDigit()
             }
-        } else {
-            VStack(spacing: 12) {
-                Text("LIVES")
-                    .font(.system(size: fs(28), weight: .bold, design: .rounded))
-                    .foregroundColor(AppColors.textMuted).tracking(2)
-                HStack(spacing: 14) {
-                    ForEach(0..<(block.lives ?? 3), id: \.self) { index in
-                        Image(systemName: index < session.livesRemaining ? "heart.fill" : "heart")
-                            .font(.system(size: fs(40)))
-                            .foregroundColor(index < session.livesRemaining ? AppColors.error : AppColors.border)
-                    }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 22)
+        .padding(.top, 8)
+        .padding(.bottom, 10)
+        .overlay(Rectangle().fill(tokens.hairline).frame(height: 1), alignment: .bottom)
+    }
+
+    // Hearts hero (lives variant)
+    @ViewBuilder
+    private var livesHero: some View {
+        VStack(spacing: 14) {
+            Text("LIVES REMAINING")
+                .font(.inter(fs(20), weight: .heavy))
+                .foregroundColor(tokens.sub)
+                .tracking(fs(20) * 0.22)
+            HStack(spacing: 18) {
+                ForEach(0..<totalLives, id: \.self) { i in
+                    Image(systemName: i < session.livesRemaining ? "heart.fill" : "heart")
+                        .font(.system(size: fs(40)))
+                        .foregroundColor(i < session.livesRemaining ? tokens.miss : tokens.subtle)
                 }
             }
         }
+        .frame(maxWidth: .infinity)
+        .padding(.top, 22)
+        .padding(.bottom, 12)
+    }
+
+    // STREAK / PUTTS TAKEN strip (consecutive variant)
+    @ViewBuilder
+    private var thresholdStrip: some View {
+        HStack(spacing: 16) {
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                Text("STREAK")
+                    .font(.inter(fs(20), weight: .heavy))
+                    .foregroundColor(tokens.sub)
+                    .tracking(fs(20) * 0.16)
+                Text("\(session.consecutiveSuccesses)")
+                    .font(.inter(fs(36)))
+                    .foregroundColor(tokens.fg)
+                    .monospacedDigit()
+                Text("/")
+                    .font(.inter(fs(22), weight: .heavy))
+                    .foregroundColor(tokens.sub)
+                Text("\(goal)")
+                    .font(.inter(fs(22), weight: .heavy))
+                    .foregroundColor(tokens.sub)
+                    .monospacedDigit()
+            }
+            Rectangle().fill(tokens.hairline).frame(width: 1, height: fs(34))
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                Text("PUTTS TAKEN")
+                    .font(.inter(fs(20), weight: .heavy))
+                    .foregroundColor(tokens.sub)
+                    .tracking(fs(20) * 0.16)
+                Text(String(format: "%02d", session.currentPutt))
+                    .font(.inter(fs(36)))
+                    .foregroundColor(tokens.fg)
+                    .monospacedDigit()
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 22)
+        .padding(.vertical, 14)
+        .overlay(Rectangle().fill(tokens.hairline).frame(height: 1), alignment: .bottom)
+    }
+
+    // Consecutive dots hero
+    @ViewBuilder
+    private var challengeHero: some View {
+        VStack(spacing: 14) {
+            Text("HIT \(goal) IN A ROW")
+                .font(.inter(fs(20), weight: .heavy))
+                .foregroundColor(tokens.fg)
+                .tracking(fs(20) * 0.22)
+            HStack(spacing: 14) {
+                ForEach(0..<goal, id: \.self) { i in
+                    let hit = i < session.consecutiveSuccesses
+                    ZStack {
+                        Circle().fill(hit ? tokens.zone : Color.clear)
+                        Circle().stroke(hit ? tokens.zone : tokens.subtle, lineWidth: 2.5)
+                        if hit {
+                            Image(systemName: "checkmark")
+                                .font(.system(size: fs(20), weight: .bold))
+                                .foregroundColor(.white)
+                        }
+                    }
+                    .frame(width: fs(48), height: fs(48))
+                }
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.top, 18)
+        .padding(.bottom, 12)
     }
 }
 
@@ -321,10 +432,14 @@ struct GateTestSessionView: View {
             block: block,
             day: day,
             stripConfig: .gateTest(
-                puttsLeft: max(0, session.totalPutts - session.currentPutt),
-                puttsNeeded: max(0, passMin - session.inZonePutts)
+                totalPutts: session.totalPutts,
+                puttsTaken: session.currentPutt,
+                inZone: session.inZonePutts,
+                passThreshold: passMin
             ),
-            headerIcon: .flag
+            headerIcon: .flag,
+            endTitle: "END GATE TEST",
+            endAccent: AppColors.bleBlue
         )
     }
 }
@@ -473,57 +588,86 @@ struct BlockTransitionView: View {
     let day: TrainingDay
     let nextBlock: TrainingBlock
 
+    @State private var countdown: Int = 3
+    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+
     private var nextBlockNumber: Int {
         (day.blocks.firstIndex(where: { $0.id == nextBlock.id }) ?? 0) + 1
     }
 
     var body: some View {
         ZStack {
-            Color(hex: "08090C").ignoresSafeArea()
+            Color.black.ignoresSafeArea()
 
             VStack(spacing: 0) {
                 Spacer()
 
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: fs(60), weight: .bold))
+                    .foregroundColor(AppColors.accentGreen)
+                    .padding(.bottom, 20)
+
                 Text("BLOCK COMPLETE")
-                    .font(.oswald(fs(56), weight: .bold))
+                    .font(.inter(fs(32)))
                     .foregroundColor(.white)
-                    .tracking(3)
+                    .kerning(1.5)
                     .minimumScaleFactor(0.5)
                     .lineLimit(1)
 
-                Rectangle()
-                    .fill(Color.white.opacity(0.15))
-                    .frame(height: 1)
-                    .padding(.horizontal, 40)
-                    .padding(.vertical, 28)
+                Text("Track \(day.day)  ·  Block \(nextBlockNumber) of \(day.blocks.count)")
+                    .font(.inter(fs(13), weight: .bold))
+                    .foregroundColor(.white.opacity(0.50))
+                    .kerning(0.8)
+                    .padding(.top, 8)
+                    .padding(.bottom, 32)
 
-                Text("TRACK \(day.day)  ·  BLOCK \(nextBlockNumber)")
-                    .font(.oswald(fs(18), weight: .semibold))
-                    .foregroundColor(Color(hex: "22C55E"))
-                    .tracking(2)
+                Text("UP NEXT")
+                    .font(.inter(fs(11), weight: .bold))
+                    .kerning(2.2)
+                    .foregroundColor(AppColors.accentGreen)
+                    .padding(.bottom, 10)
 
                 Text(nextBlock.name.uppercased())
-                    .font(.oswald(fs(32), weight: .bold))
+                    .font(.inter(fs(48)))
                     .foregroundColor(.white)
                     .multilineTextAlignment(.center)
-                    .minimumScaleFactor(0.5)
+                    .minimumScaleFactor(0.4)
                     .lineLimit(2)
                     .padding(.horizontal, 32)
-                    .padding(.top, 6)
 
-                if let desc = nextBlock.description {
-                    Text(desc)
-                        .font(.oswald(fs(16)))
-                        .foregroundColor(Color.white.opacity(0.55))
-                        .multilineTextAlignment(.center)
-                        .minimumScaleFactor(0.7)
-                        .lineLimit(3)
-                        .padding(.horizontal, 40)
-                        .padding(.top, 8)
+                Text("Track \(day.day) · Block \(nextBlockNumber) · \(nextBlock.putts ?? 0) Putts".uppercased())
+                    .font(.inter(fs(11), weight: .bold))
+                    .foregroundColor(.white.opacity(0.50))
+                    .kerning(0.8)
+                    .multilineTextAlignment(.center)
+                    .padding(.top, 10)
+                    .padding(.bottom, 36)
+
+                ZStack {
+                    Circle()
+                        .stroke(Color.white.opacity(0.12), lineWidth: 5)
+                        .frame(width: 80, height: 80)
+                    Circle()
+                        .trim(from: 0, to: CGFloat(countdown) / 3.0)
+                        .stroke(AppColors.accentGreen, style: StrokeStyle(lineWidth: 5, lineCap: .round))
+                        .frame(width: 80, height: 80)
+                        .rotationEffect(.degrees(-90))
+                    Text("\(countdown)")
+                        .font(.inter(fs(36)))
+                        .foregroundColor(.white)
                 }
+
+                Text("STARTING IN")
+                    .font(.inter(fs(11), weight: .bold))
+                    .kerning(2.0)
+                    .foregroundColor(.white.opacity(0.50))
+                    .padding(.top, 10)
 
                 Spacer()
             }
+        }
+        .onReceive(timer) { _ in
+            if countdown > 0 { countdown -= 1 }
         }
     }
 }
@@ -625,147 +769,86 @@ struct SessionCompleteView: View {
 struct DayCompleteView: View {
     let stats: DayCompleteStats
     @EnvironmentObject var trainingViewModel: TrainingViewModel
-    @Environment(\.isLandscapeOrientation) var isLandscape
 
     var body: some View {
-        if isLandscape {
-            landscapeLayout
-        } else {
-            portraitLayout
-        }
-    }
+        ZStack {
+            Color.black.ignoresSafeArea()
 
-    var portraitLayout: some View {
-        VStack(spacing: 0) {
-            VStack(spacing: 8) {
-                ZStack {
-                    Circle().fill(AppColors.accentLight).frame(width: 120, height: 120)
-                    Image(systemName: "star.fill")
-                        .font(.system(size: fs(64)))
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 0) {
+                    Spacer(minLength: 40)
+
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: fs(60), weight: .bold))
                         .foregroundColor(AppColors.accentGreen)
-                }
-                .padding(.top, 32)
+                        .padding(.bottom, 16)
 
-                Text("DAY \(stats.dayNumber) COMPLETE")
-                    .font(.system(size: fs(36), weight: .black, design: .rounded))
-                    .foregroundColor(AppColors.primaryBlack)
-                    .multilineTextAlignment(.center)
+                    Text("TRACK COMPLETE")
+                        .font(.inter(fs(32)))
+                        .foregroundColor(.white)
+                        .kerning(1.5)
 
-                Text("Great work!")
-                    .font(.system(size: fs(22), weight: .medium, design: .rounded))
-                    .foregroundColor(AppColors.textMuted)
-            }
-            .frame(maxWidth: .infinity)
+                    Text("Track \(stats.dayNumber)")
+                        .font(.inter(fs(16), weight: .regular))
+                        .foregroundColor(.white.opacity(0.60))
+                        .padding(.top, 6)
+                        .padding(.bottom, 24)
 
-            Spacer()
-
-            VStack(spacing: 0) {
-                DayStatRow(label: "PUTTS", value: "\(stats.totalPutts)")
-                Divider().padding(.horizontal, 8)
-                DayStatRow(label: "ACCURACY", value: "\(stats.accuracyPercent)%")
-                Divider().padding(.horizontal, 8)
-                DayStatRow(label: "TIME", value: practiceTimeString)
-
-                if let speed = stats.strongestSpeed {
-                    Divider().padding(.horizontal, 8)
-                    DayStatRow(label: "STRONGEST", value: "\(speed) MPH", valueColor: AppColors.accentGreen,
-                               detail: "\(Int(stats.strongestAccuracy * 100))%")
-                }
-                if let speed = stats.weakestSpeed {
-                    Divider().padding(.horizontal, 8)
-                    DayStatRow(label: "NEEDS WORK", value: "\(speed) MPH", valueColor: AppColors.error,
-                               detail: "\(Int(stats.weakestAccuracy * 100))%")
-                }
-                if let best = stats.bestBlock {
-                    Divider().padding(.horizontal, 8)
-                    DayStatRow(label: "BEST BLOCK", value: best, valueColor: AppColors.accentGreen)
-                }
-            }
-            .padding(.vertical, 8)
-            .background(Color.white)
-            .cornerRadius(24)
-            .overlay(RoundedRectangle(cornerRadius: 24).stroke(AppColors.border, lineWidth: 1))
-            .padding(.horizontal, 16)
-
-            Spacer()
-
-            Button {
-                trainingViewModel.endSession()
-                trainingViewModel.shouldNavigateHome = true
-            } label: {
-                Text("Done")
-                    .font(.system(size: fs(28), weight: .bold, design: .rounded))
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 20)
-                    .background(AppColors.accentGreen)
-                    .cornerRadius(18)
-            }
-            .padding(.horizontal, 16)
-            .padding(.bottom, 24)
-        }
-        .background(AppColors.backgroundAlt.ignoresSafeArea())
-    }
-
-    var landscapeLayout: some View {
-        GeometryReader { geo in
-            HStack(spacing: 16) {
-                VStack(spacing: 16) {
-                    Spacer()
-                    ZStack {
-                        Circle().fill(AppColors.accentLight).frame(width: 100, height: 100)
-                        Image(systemName: "star.fill").font(.system(size: fs(54))).foregroundColor(AppColors.accentGreen)
+                    HStack(alignment: .lastTextBaseline, spacing: 4) {
+                        Text(String(format: "%02d", stats.dayNumber))
+                            .font(.inter(fs(80)))
+                            .foregroundColor(.white)
+                        Text("/ 30")
+                            .font(.inter(fs(24), weight: .bold))
+                            .foregroundColor(.white.opacity(0.50))
                     }
-                    Text("DAY \(stats.dayNumber)\nCOMPLETE")
-                        .font(.system(size: fs(30), weight: .black, design: .rounded))
-                        .foregroundColor(AppColors.primaryBlack)
-                        .multilineTextAlignment(.center)
-                    Spacer()
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-                VStack(spacing: 10) {
-                    VStack(spacing: 0) {
-                        DayStatRowCompact(label: "PUTTS", value: "\(stats.totalPutts)")
-                        Divider()
-                        DayStatRowCompact(label: "ACCURACY", value: "\(stats.accuracyPercent)%")
-                        Divider()
-                        DayStatRowCompact(label: "TIME", value: practiceTimeString)
-                        if let speed = stats.strongestSpeed {
-                            Divider()
-                            DayStatRowCompact(label: "STRONGEST", value: "\(speed) MPH", valueColor: AppColors.accentGreen)
-                        }
-                        if let speed = stats.weakestSpeed {
-                            Divider()
-                            DayStatRowCompact(label: "NEEDS WORK", value: "\(speed) MPH", valueColor: AppColors.error)
-                        }
+                    Text("TRACKS COMPLETE")
+                        .font(.inter(fs(13), weight: .bold))
+                        .kerning(2.0)
+                        .foregroundColor(.white.opacity(0.50))
+                        .padding(.top, 4)
+                        .padding(.bottom, 32)
+
+                    HStack(spacing: 0) {
+                        trackStatCell(label: "PUTTS", value: "\(stats.totalPutts)")
+                        Rectangle().fill(Color.white.opacity(0.12)).frame(width: 1, height: 40)
+                        trackStatCell(label: "ACCURACY", value: "\(stats.accuracyPercent)%")
+                        Rectangle().fill(Color.white.opacity(0.12)).frame(width: 1, height: 40)
+                        trackStatCell(label: "TIME", value: practiceTimeString)
                     }
-                    .background(Color.white)
-                    .cornerRadius(20)
-                    .overlay(RoundedRectangle(cornerRadius: 20).stroke(AppColors.border, lineWidth: 1))
+                    .padding(.bottom, 40)
 
                     Button {
                         trainingViewModel.endSession()
                         trainingViewModel.shouldNavigateHome = true
                     } label: {
-                        Text("Done")
-                            .font(.system(size: fs(24), weight: .bold, design: .rounded))
+                        Text("Back to Tracks →")
+                            .font(.inter(fs(17), weight: .bold))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
-                            .padding(.vertical, 14)
+                            .padding(.vertical, 18)
                             .background(AppColors.accentGreen)
-                            .cornerRadius(16)
+                            .clipShape(Capsule())
                     }
+                    .padding(.horizontal, 32)
+                    .padding(.bottom, 40)
                 }
-                .frame(maxWidth: .infinity)
             }
-            .padding(.top, 12)
-            .padding(.bottom, max(12, geo.safeAreaInsets.bottom))
-            .padding(.leading, max(20, geo.safeAreaInsets.leading + 8))
-            .padding(.trailing, max(20, geo.safeAreaInsets.trailing + 8))
         }
-        .ignoresSafeArea(edges: .horizontal)
-        .background(AppColors.backgroundAlt.ignoresSafeArea())
+    }
+
+    private func trackStatCell(label: String, value: String) -> some View {
+        VStack(spacing: 4) {
+            Text(value)
+                .font(.inter(fs(22)))
+                .foregroundColor(.white)
+            Text(label)
+                .font(.inter(fs(10), weight: .bold))
+                .kerning(1.5)
+                .foregroundColor(.white.opacity(0.50))
+        }
+        .frame(maxWidth: .infinity)
     }
 
     var practiceTimeString: String {
@@ -980,8 +1063,17 @@ struct ProgressBarMinimal: View {
                     .font(.system(size: fs(28), weight: .black, design: .rounded))
                     .foregroundColor(AppColors.accentGreen)
             }
-            ProgressBarView(current: session.currentPutt, total: session.totalPutts, color: AppColors.accentGreen)
-                .frame(height: 14)
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    RoundedRectangle(cornerRadius: 7)
+                        .fill(AppColors.border)
+                        .frame(height: 14)
+                    RoundedRectangle(cornerRadius: 7)
+                        .fill(AppColors.accentGreen)
+                        .frame(width: session.totalPutts > 0 ? geo.size.width * CGFloat(session.currentPutt) / CGFloat(session.totalPutts) : 0, height: 14)
+                }
+            }
+            .frame(height: 14)
         }
         .padding(14)
         .background(Color.white).cornerRadius(16)

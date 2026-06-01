@@ -170,17 +170,17 @@ struct SportHeroCard: View {
             let tFont: CGFloat = tStr.count >= 2 ? fs(190) : fs(230)
             VStack(spacing: 2) {
                 Text("TARGET SPEED")
-                    .font(.oswald(fs(24), weight: .semibold))
+                    .font(.inter(fs(24), weight: .semibold))
                     .foregroundColor(tokens.sub)
                     .tracking(4)
                 Text(tStr)
-                    .font(.oswald(tFont))
+                    .font(.inter(tFont))
                     .foregroundColor(tokens.fg)
                     .lineLimit(1)
                     .minimumScaleFactor(0.25)
                     .monospacedDigit()
                 Text("MPH")
-                    .font(.oswald(fs(38), weight: .semibold))
+                    .font(.inter(fs(38), weight: .semibold))
                     .foregroundColor(tokens.sub)
                     .tracking(4)
             }
@@ -194,7 +194,7 @@ struct SportHeroCard: View {
 
                 VStack(spacing: 2) {
                     Text(pStr)
-                        .font(.oswald(pFont))
+                        .font(.inter(pFont))
                         .foregroundColor(col)
                         .lineLimit(1)
                         .minimumScaleFactor(0.25)
@@ -202,7 +202,7 @@ struct SportHeroCard: View {
                         // Only the number text glides to the readout
                         .matchedGeometryEffect(id: "puttValue", in: heroNS)
                     Text("MPH")
-                        .font(.oswald(fs(38), weight: .semibold))
+                        .font(.inter(fs(38), weight: .semibold))
                         .foregroundColor(tokens.sub)
                         .tracking(4)
                 }
@@ -247,7 +247,7 @@ private struct HeroReadout: View {
 
                 if let p = capturedPutt, isSettled {
                     Text(String(format: "%.1f", p.actualSpeed))
-                        .font(.oswald(fs(52)))
+                        .font(.inter(fs(52)))
                         .foregroundColor(resultColor)
                         .monospacedDigit()
                         // matchedGeometryEffect destination — number glides here
@@ -261,7 +261,7 @@ private struct HeroReadout: View {
             // Delta chip — pops in after glide
             if isSettled && chipVisible, capturedPutt != nil {
                 Text(deltaString)
-                    .font(.oswald(fs(34)))
+                    .font(.inter(fs(34)))
                     .foregroundColor(resultColor)
                     .monospacedDigit()
                     .padding(.horizontal, 12)
@@ -298,7 +298,7 @@ private struct CornerStat: View {
                 .foregroundColor(tokens.sub)
                 .tracking(3)
             Text(value)
-                .font(.oswald(fs(34)))
+                .font(.inter(fs(34)))
                 .foregroundColor(color)
                 .monospacedDigit()
         }

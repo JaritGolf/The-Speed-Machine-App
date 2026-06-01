@@ -1,114 +1,110 @@
+//
+//  SportLadder.swift
+//  SpeedMachine
+//
+//  Vertical tolerance ladder shown inside the hero card.
+//  Mirrors the Ladder component from variant-b3-ladder.jsx / variant-b1-tach.jsx.
+//
+//  Shows a ±2.5 MPH range around the current target speed.
+//  The tolerance band is highlighted in green.
+//  The last-putt position is marked with an arrow (or gold star if bullseye).
+//
+
 import SwiftUI
 
-// MARK: - Vertical Tolerance Ladder
-// Shows ±2.5 MPH range around target; last-putt indicator slides up/down.
-
 struct SportLadder: View {
-    @Environment(\.colorScheme) var colorScheme
-
     let targetSpeed: Int
+    let tolerance: Float
     let lastPutt: PuttResult?
     let tokens: SportTokens
-    let tolerance: Float = 0.5
 
-    @State private var triangleVisibleUntil: Date?
+    var pxHeight: CGFloat = 300
 
-    private let rangeHalf: Float = 2.5
+    private let range: Float = 2.5
 
-    private var minSpeed: Float { Float(targetSpeed) - rangeHalf }
-    private var maxSpeed: Float { Float(targetSpeed) + rangeHalf }
+    private var minSpeed: Float { Float(targetSpeed) - range }
+    private var maxSpeed: Float { Float(targetSpeed) + range }
 
-    private var lineColor: Color {
-        colorScheme == .dark ? .white : .black
+    private func yFor(_ mph: Float) -> CGFloat {
+        CGFloat((maxSpeed - mph) / (maxSpeed - minSpeed)) * pxHeight
     }
 
-    // Fraction along the ladder (0 = bottom/min, 1 = top/max)
-    private func fraction(for speed: Float) -> CGFloat {
-        CGFloat((speed - minSpeed) / (rangeHalf * 2))
+    private var ticks: [Int] {
+        let lo = Int(ceil(Double(minSpeed)))
+        let hi = Int(floor(Double(maxSpeed)))
+        return Array(lo...max(lo, hi))
     }
 
     var body: some View {
-        GeometryReader { geo in
-            let h = geo.size.height
-            let cx = geo.size.width / 2
-            let shouldShowTriangle = triangleVisibleUntil.map { Date() < $0 } ?? false
+        ZStack(alignment: .topLeading) {
+            // Track
+            Rectangle()
+                .fill(tokens.subtle)
+                .frame(width: 2)
+                .frame(height: pxHeight)
+                .position(x: 23, y: pxHeight / 2)
 
-            ZStack(alignment: .topLeading) {
-                // Track spine (thicker, color-aware)
-                Capsule()
-                    .fill(lineColor)
-                    .frame(width: 5, height: h)
-                    .position(x: cx, y: h / 2)
+            // Tolerance band
+            let tolMin = Float(targetSpeed) - tolerance
+            let tolMax = Float(targetSpeed) + tolerance
+            let bandTop = yFor(tolMax)
+            let bandH = yFor(tolMin) - yFor(tolMax)
+            Rectangle()
+                .fill(tokens.zone.opacity(0.2))
+                .overlay(Rectangle().stroke(tokens.zone, lineWidth: 1.5))
+                .cornerRadius(4)
+                .frame(width: 14, height: max(4, bandH))
+                .position(x: 16 + 7, y: bandTop + bandH / 2)
 
-                // Tolerance band (dynamic based on tolerance parameter)
-                let bandFrac = CGFloat(tolerance / (rangeHalf * 2))
-                let bandH = max(6, h * bandFrac * 2)
-                let bandY = h * (1 - fraction(for: Float(targetSpeed))) - bandH / 2
-
-                RoundedRectangle(cornerRadius: 3)
-                    .fill(tokens.zone.opacity(0.20))
-                    .frame(width: 14, height: bandH)
-                    .position(x: cx, y: bandY + bandH / 2)
-
-                RoundedRectangle(cornerRadius: 3)
-                    .stroke(tokens.zone.opacity(0.6), lineWidth: 1.5)
-                    .frame(width: 14, height: bandH)
-                    .position(x: cx, y: bandY + bandH / 2)
-
-                // Target center tick
-                Capsule()
-                    .fill(tokens.zone)
-                    .frame(width: 18, height: 2)
-                    .position(x: cx, y: h * (1 - fraction(for: Float(targetSpeed))))
-
-                // Last-putt indicator (triangle pointing up, shows for 3 seconds after putt)
-                if let putt = lastPutt {
-                    let frac = min(max(fraction(for: putt.actualSpeed), 0), 1)
-                    let dotY = h * (1 - frac)
-                    let isExact = abs(putt.difference) < 0.15
-
-                    Group {
-                        if shouldShowTriangle {
-                            if isExact {
-                                Image(systemName: "star.fill")
-                                    .font(.system(size: fs(11)))
-                                    .foregroundColor(.yellow)
-                            } else {
-                                Image(systemName: "arrowtriangle.up.fill")
-                                    .font(.system(size: fs(10)))
-                                    .foregroundColor(putt.isInZone ? tokens.zone : tokens.miss)
-                            }
-                        }
-                    }
-                    .position(x: cx, y: dotY - 14)
-                    .sportPopIn(trigger: putt.puttNumber)
+            // Ticks
+            ForEach(ticks, id: \.self) { mph in
+                let y = yFor(Float(mph))
+                let isTarget = mph == targetSpeed
+                HStack(spacing: 0) {
+                    Text("\(mph)")
+                        .font(.inter(isTarget ? fs(12) : fs(11), weight: isTarget ? .bold : .semibold))
+                        .foregroundColor(isTarget ? tokens.fg : tokens.sub)
+                        .monospacedDigit()
+                        .frame(width: 28, alignment: .trailing)
+                    Rectangle()
+                        .fill(isTarget ? tokens.fg : tokens.dim)
+                        .frame(width: isTarget ? 14 : 8, height: isTarget ? 2 : 1)
                 }
+                .position(x: (28 + (isTarget ? 14 : 8)) / 2, y: y)
+            }
 
-                // Speed labels on the left edge (larger, bolder)
-                VStack {
-                    Text(String(format: "%.0f", maxSpeed))
-                        .font(.oswald(fs(12), weight: .semibold))
-                        .foregroundColor(tokens.sub)
-                    Spacer()
-                    Text("\(targetSpeed)")
-                        .font(.oswald(fs(14), weight: .bold))
-                        .foregroundColor(tokens.zone)
-                    Spacer()
-                    Text(String(format: "%.0f", minSpeed))
-                        .font(.oswald(fs(12), weight: .semibold))
-                        .foregroundColor(tokens.sub)
-                }
-                .frame(width: geo.size.width, alignment: .leading)
-                .padding(.leading, 4)
-            }
-            .onChange(of: lastPutt?.puttNumber) { _ in
-                triangleVisibleUntil = Date().addingTimeInterval(3)
-            }
-            .onReceive(Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()) { _ in
-                if let deadline = triangleVisibleUntil, Date() > deadline {
-                    triangleVisibleUntil = nil
+            // Last putt indicator
+            if let putt = lastPutt {
+                let clampedMph = max(minSpeed, min(maxSpeed, putt.actualSpeed))
+                let y = yFor(clampedMph)
+                let isExact = abs(putt.actualSpeed - Float(targetSpeed)) < 0.05
+
+                if isExact {
+                    Image(systemName: "star.fill")
+                        .font(.system(size: 18))
+                        .foregroundColor(Color(hex: "FFC107"))
+                        .shadow(color: Color(hex: "FFC107").opacity(0.6), radius: 4)
+                        .position(x: 48, y: y)
+                } else {
+                    // Triangle pointing right
+                    Triangle()
+                        .fill(putt.isInZone ? tokens.zone : tokens.miss)
+                        .frame(width: 9, height: 14)
+                        .position(x: 48, y: y)
                 }
             }
+        }
+        .frame(width: 60, height: pxHeight)
+    }
+}
+
+private struct Triangle: Shape {
+    func path(in rect: CGRect) -> Path {
+        Path { p in
+            p.move(to: CGPoint(x: rect.minX, y: rect.minY))
+            p.addLine(to: CGPoint(x: rect.maxX, y: rect.midY))
+            p.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
+            p.closeSubpath()
         }
     }
 }

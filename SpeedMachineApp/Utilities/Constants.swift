@@ -20,22 +20,25 @@ struct BLEConstants {
 
 struct AppColors {
     // Primary colors
-    static let primaryBlack = Color(hex: "0a0a0a")
+    static let primaryBlack = Color(hex: "000000")
     static let background = Color(hex: "ffffff")
     static let backgroundAlt = Color(hex: "f5f5f5")
 
     // Accent colors
-    static let accentGreen = Color(hex: "15803d")
+    static let accentGreen = Color(hex: "22C55E")
     static let accentLight = Color(hex: "dcfce7")
-    static let accentBright = Color(hex: "22c55e")
+    static let accentBright = Color(hex: "22C55E")
 
     // Text colors
     static let textMuted = Color(hex: "525252")
-    static let border = Color(hex: "e5e5e5")
+    static let textSubdued = Color(hex: "a1a1a1")
+    static let border = Color(hex: "f0f0f0")
+    static let surfaceAlt = Color(hex: "f5f5f5")
 
     // Status colors
-    static let error = Color(hex: "EF4444")
-    static let bleBlue = Color(hex: "3B82F6")
+    static let error = Color(hex: "DC2626")
+    static let bleBlue = Color(hex: "1D4ED8")
+    static let accentAmber = Color(hex: "F59E0B")
 }
 
 struct DesignConstants {
@@ -46,7 +49,7 @@ struct DesignConstants {
 }
 
 struct TrainingConstants {
-    static let totalDays = 30
+    static let totalTracks = 30
     static let combineShots = 18
 }
 
@@ -59,11 +62,10 @@ struct SpeedZone {
     let multiplier: Float
 
     static let zones = [
-        SpeedZone(number: 1, name: "Zone 1", speedRange: 3...9, tolerance: 0.5, multiplier: 1.0),
-        SpeedZone(number: 2, name: "Zone 2", speedRange: 10...12, tolerance: 0.6, multiplier: 1.1),
-        SpeedZone(number: 3, name: "Zone 3", speedRange: 13...16, tolerance: 0.7, multiplier: 1.25),
-        SpeedZone(number: 4, name: "Zone 4", speedRange: 17...18, tolerance: 0.8, multiplier: 1.5),
-        SpeedZone(number: 5, name: "Zone 5", speedRange: 19...20, tolerance: 0.9, multiplier: 2.0)
+        SpeedZone(number: 1, name: "Touch",    speedRange: 3...6,   tolerance: 0.5, multiplier: 1.0),
+        SpeedZone(number: 2, name: "Moderate", speedRange: 7...9,   tolerance: 0.5, multiplier: 1.15),
+        SpeedZone(number: 3, name: "Firm",     speedRange: 10...12, tolerance: 0.6, multiplier: 1.35),
+        SpeedZone(number: 4, name: "Power",    speedRange: 13...15, tolerance: 0.7, multiplier: 1.6)
     ]
 
     static func getZone(for speed: Int) -> SpeedZone {

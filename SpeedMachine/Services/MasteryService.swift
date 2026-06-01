@@ -319,9 +319,11 @@ class MasteryService {
 
     // MARK: - Tier Summary (for Stats UI)
 
-    /// All 18 speeds (3–20) with their current mastery tier.
+    /// All 13 speeds (3–15) with their current mastery tier.
+    /// Legacy putt data at 16–20 remains in Core Data but is not surfaced in the tier grid
+    /// after the 3–15 MPH program rescope.
     var allTiers: [(speed: Int, tier: MasteryTier)] {
-        return (3...20).map { speed in
+        return (3...15).map { speed in
             (speed: speed, tier: tier(forSpeed: speed))
         }
     }

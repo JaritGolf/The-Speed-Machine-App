@@ -87,15 +87,15 @@ struct SportLadder: View {
                 // Speed labels on the left edge (larger, bolder)
                 VStack {
                     Text(String(format: "%.0f", maxSpeed))
-                        .font(.oswald(fs(12), weight: .semibold))
+                        .font(.inter(fs(12), weight: .semibold))
                         .foregroundColor(tokens.sub)
                     Spacer()
                     Text("\(targetSpeed)")
-                        .font(.oswald(fs(14), weight: .bold))
+                        .font(.inter(fs(14), weight: .bold))
                         .foregroundColor(tokens.zone)
                     Spacer()
                     Text(String(format: "%.0f", minSpeed))
-                        .font(.oswald(fs(12), weight: .semibold))
+                        .font(.inter(fs(12), weight: .semibold))
                         .foregroundColor(tokens.sub)
                 }
                 .frame(width: geo.size.width, alignment: .leading)

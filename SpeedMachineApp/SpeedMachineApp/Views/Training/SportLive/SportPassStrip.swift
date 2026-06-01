@@ -119,14 +119,14 @@ struct SportPassStrip: View {
     private func statColumn(label: String, value: Int, color: Color) -> some View {
         VStack(alignment: .center, spacing: 0) {
             Text(label)
-                .font(.oswald(fs(20)))
+                .font(.inter(fs(20)))
                 .foregroundColor(tokens.sub)
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
                 .fixedSize(horizontal: false, vertical: true)
                 .tracking(4)
             Text("\(value)")
-                .font(.oswald(fs(100)))
+                .font(.inter(fs(100)))
                 .foregroundColor(color)
                 .lineLimit(1)
                 .minimumScaleFactor(0.4)
@@ -139,13 +139,13 @@ struct SportPassStrip: View {
     private func singleStatColumn(label: String, value: String, color: Color) -> some View {
         VStack(alignment: .center, spacing: 0) {
             Text(label)
-                .font(.oswald(fs(22)))
+                .font(.inter(fs(22)))
                 .foregroundColor(tokens.sub)
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
                 .tracking(4)
             Text(value)
-                .font(.oswald(fs(100)))
+                .font(.inter(fs(100)))
                 .foregroundColor(color)
                 .lineLimit(1)
                 .minimumScaleFactor(0.4)

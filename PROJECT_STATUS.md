@@ -59,8 +59,10 @@ All Swift files, resources, and configuration files are here, organized by:
 - Utilities/ - Constants & extensions
 
 ### Xcode Project
+
+⚠️ Open the OUTER project (a renamed old duplicate sits one folder deeper — never open it):
 ```
-/Users/jaritgolf/Desktop/Traning Program App/SpeedMachineApp/SpeedMachineApp/SpeedMachineApp.xcodeproj
+/Users/jaritgolf/Desktop/Traning Program App/SpeedMachineApp/SpeedMachineApp.xcodeproj
 ```
 
 Double-click to open in Xcode.
@@ -78,9 +80,9 @@ Open in Arduino IDE to upload to ESP32.
 
 ### To Build the iOS App:
 
-1. **Open Xcode project:**
+1. **Open Xcode project** (the OUTER one — NOT the renamed `_OLD_DO_NOT_OPEN` duplicate one folder deeper):
    ```bash
-   open "/Users/jaritgolf/Desktop/Traning Program App/SpeedMachineApp/SpeedMachineApp/SpeedMachineApp.xcodeproj"
+   open "/Users/jaritgolf/Desktop/Traning Program App/SpeedMachineApp/SpeedMachineApp.xcodeproj"
    ```
 
 2. **Add all files to target** (critical step!)

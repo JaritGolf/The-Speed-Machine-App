@@ -378,13 +378,16 @@ class AdaptiveSpeedEngine {
         return constrainedShuffle(sequence)
     }
 
-    /// Generate a warmup sequence with light bias.
-    /// Warmups are structured: slower speeds first, faster speeds later (progressive).
+    /// Generate a warmup sequence with full adaptive bias toward weak speeds.
+    /// Speed *selection* is weighted (weaker speeds appear more often), then the
+    /// resulting putts are presented in ascending order so the user always warms up
+    /// slow → fast even when the pool is adaptive.
     private func generateWarmupSequence(pool: [Int], length: Int) -> [Int] {
         let sortedPool = pool.sorted()
 
-        // Calculate warmup-compressed weights
-        let weights = sortedPool.map { warmupWeight(for: $0) }
+        // Full adaptive weighting — warmup blocks now apply the same weak-speed
+        // emphasis as random/exploration blocks (previously compressed by warmupBiasFactor).
+        let weights = sortedPool.map { weight(for: $0) }
         let totalWeight = weights.reduce(0, +)
 
         guard totalWeight > 0 else {

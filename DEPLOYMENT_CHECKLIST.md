@@ -12,8 +12,10 @@ All Swift files, resources, and configuration files have been copied into your X
 ## 📋 Step-by-Step Deployment Instructions
 
 ### Step 1: Open the Project in Xcode
-1. Navigate to: `/Users/jaritgolf/Desktop/Traning Program App/SpeedMachineApp/SpeedMachineApp/`
+1. Navigate to: `/Users/jaritgolf/Desktop/Traning Program App/SpeedMachineApp/`
 2. Double-click `SpeedMachineApp.xcodeproj` to open in Xcode
+   - ⚠️ Open the project at **this** level. Do NOT open the renamed
+     `SpeedMachineApp_OLD_DO_NOT_OPEN.xcodeproj` one folder deeper — it's a stale duplicate.
 
 ### Step 2: Add Files to Xcode Target
 

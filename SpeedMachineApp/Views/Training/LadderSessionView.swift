@@ -1,7 +1,8 @@
 import SwiftUI
-import UIKit
 
-private var kLabelSize: CGFloat { fs(28) }
+// Ladder live session (mockup 10): header → 2-col pass strip (RUNG / PUTTS HIT)
+// → body (thin tick-track ladder graphic on the left + chromeless target on the
+// right) → LAST PUTT section → red outlined END SESSION. No bordered panels.
 
 struct LadderSessionView: View {
     @ObservedObject var session: SessionProgress
@@ -11,13 +12,12 @@ struct LadderSessionView: View {
     @EnvironmentObject var trainingViewModel: TrainingViewModel
     @EnvironmentObject var bluetoothService: BluetoothService
     @State private var showEndSessionAlert = false
-    @Environment(\.isLandscapeOrientation) var isLandscape
 
-    @AppStorage("liveViewTheme") private var themeRaw: String = LiveViewTheme.dark.rawValue
+    @AppStorage("liveViewTheme") private var themeRaw: String = LiveViewTheme.light.rawValue
     @Environment(\.colorScheme) private var colorScheme
 
     private var tokens: SportTokens {
-        let isDark = (LiveViewTheme(rawValue: themeRaw) ?? .dark).resolvedDark(scheme: colorScheme)
+        let isDark = (LiveViewTheme(rawValue: themeRaw) ?? .light).resolvedDark(scheme: colorScheme)
         return SportTokens.make(dark: isDark)
     }
 
@@ -39,25 +39,25 @@ struct LadderSessionView: View {
                 )
 
                 SportPassStrip(
-                    config: .ladder(currentRung: currentRung, totalRungs: totalRungs),
+                    config: .ladder(currentRung: currentRung,
+                                    totalRungs: totalRungs,
+                                    puttsHit: session.currentPutt),
                     tokens: tokens
                 )
 
-                if isLandscape {
-                    LadderLandscapeLayout(
-                        session: session,
-                        lastPutt: lastPutt,
-                        tokens: tokens,
-                        showEndSessionAlert: $showEndSessionAlert
-                    )
-                } else {
-                    LadderPortraitLayout(
-                        session: session,
-                        lastPutt: lastPutt,
-                        tokens: tokens,
-                        showEndSessionAlert: $showEndSessionAlert
-                    )
-                }
+                LadderBody(
+                    targetSpeed: session.getCurrentLadderSpeed(),
+                    lastPutt: lastPutt,
+                    tokens: tokens
+                )
+                .frame(maxHeight: .infinity)
+
+                SportLastPutt(lastPutt: lastPutt, tokens: tokens)
+
+                SportEndButton(tokens: tokens, showAlert: $showEndSessionAlert)
+                    .padding(.horizontal, 22)
+                    .padding(.top, 4)
+                    .padding(.bottom, 22)
             }
 
             SportEdgeFlash(
@@ -74,409 +74,105 @@ struct LadderSessionView: View {
     }
 }
 
-// MARK: - Landscape Layout
+// MARK: - Ladder body (graphic + chromeless target)
 
-private struct LadderLandscapeLayout: View {
-    @ObservedObject var session: SessionProgress
+private struct LadderBody: View {
+    let targetSpeed: Int
     let lastPutt: PuttResult?
     let tokens: SportTokens
-    @Binding var showEndSessionAlert: Bool
 
     var body: some View {
         GeometryReader { geo in
-            let insetLeading  = max(12, geo.safeAreaInsets.leading + 4)
-            let insetTrailing = max(12, geo.safeAreaInsets.trailing + 4)
-            let insetBottom   = max(8,  geo.safeAreaInsets.bottom)
-            let gap:    CGFloat = 8
-            let rungH:  CGFloat = isIPad ? 77 : 55
-            let rightW: CGFloat = max(isIPad ? 196 : 140, geo.size.width * 0.20)
+            let h = min(max(200, geo.size.height - 24), 360)
+            HStack(alignment: .center, spacing: 16) {
+                SportLadder(
+                    targetSpeed: targetSpeed,
+                    tolerance: 0.5,
+                    lastPutt: lastPutt,
+                    tokens: tokens,
+                    pxHeight: h
+                )
+                .frame(width: 72, height: h)
 
-            VStack(spacing: gap) {
-                HStack(spacing: gap) {
-                    LadderSpeedPanel(
-                        label: "TARGET",
-                        valueText: "\(session.getCurrentLadderSpeed())",
-                        tokens: tokens
-                    )
-                    LadderActualSpeedPanel(lastPutt: lastPutt, tokens: tokens)
-                    VStack(spacing: gap) {
-                        LadderPuttsHitPanel(count: session.currentPutt, tokens: tokens)
-                        Spacer()
-                        SportEndButton(tokens: tokens, showAlert: $showEndSessionAlert)
+                let tStr = "\(targetSpeed)"
+                VStack(spacing: fs(8)) {
+                    Text(tStr)
+                        .font(.inter(tStr.count >= 2 ? fs(150) : fs(180)))
+                        .foregroundColor(tokens.fg)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.3)
+                        .monospacedDigit()
+                    HStack(spacing: 14) {
+                        Text("MPH")
+                            .font(.inter(fs(24), weight: .heavy))
+                            .foregroundColor(tokens.fg)
+                            .tracking(fs(24) * 0.06)
+                        Rectangle().fill(tokens.subtle).frame(width: 1, height: fs(20))
+                        Text("TARGET")
+                            .font(.inter(fs(24), weight: .heavy))
+                            .foregroundColor(tokens.sub)
+                            .tracking(fs(24) * 0.22)
                     }
-                    .frame(width: rightW)
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-
-                HorizontalRungBlocks(
-                    ladderSpeeds: session.ladderSpeeds,
-                    currentRung: session.currentRung,
-                    tokens: tokens
-                )
-                .frame(height: rungH)
-                .padding(.vertical, 5)
-                .background(tokens.surface)
-                .cornerRadius(16)
-                .overlay(RoundedRectangle(cornerRadius: 16).stroke(tokens.subtle, lineWidth: 1))
+                .frame(maxWidth: .infinity)
             }
-            .padding(.top, 6)
-            .padding(.bottom, insetBottom)
-            .padding(.leading, insetLeading)
-            .padding(.trailing, insetTrailing)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .padding(.horizontal, 22)
         }
-        .ignoresSafeArea(edges: .horizontal)
     }
 }
 
-// MARK: - Portrait Layout
+// MARK: - Shared LAST PUTT section (mockup .last-putt, static)
 
-private struct LadderPortraitLayout: View {
-    @ObservedObject var session: SessionProgress
+struct SportLastPutt: View {
     let lastPutt: PuttResult?
     let tokens: SportTokens
-    @Binding var showEndSessionAlert: Bool
+    var label: String = "LAST PUTT"
 
-    var body: some View {
-        GeometryReader { geo in
-            let endBtnH: CGFloat = isIPad ? 70 : 52
-            let puttsH:  CGFloat = isIPad ? 180 : 130
-            let hPad:    CGFloat = 12
-            let vPad:    CGFloat = 8
-            let gap:     CGFloat = 8
-            let ladderW: CGFloat = isIPad ? 90 : 65
-
-            let totalV = max(0, geo.size.height - vPad * 2)
-            let fixedH = endBtnH + puttsH + gap * 3
-            let speedH = max(80, (totalV - fixedH) / 2)
-
-            HStack(alignment: .top, spacing: gap) {
-                VerticalRungLadder(
-                    ladderSpeeds: session.ladderSpeeds,
-                    currentRung: session.currentRung,
-                    tokens: tokens
-                )
-                .frame(width: ladderW, height: totalV)
-                .background(tokens.surface)
-                .cornerRadius(16)
-                .overlay(RoundedRectangle(cornerRadius: 16).stroke(tokens.subtle, lineWidth: 1))
-
-                VStack(spacing: gap) {
-                    LadderSpeedPanel(
-                        label: "TARGET",
-                        valueText: "\(session.getCurrentLadderSpeed())",
-                        tokens: tokens
-                    )
-                    .frame(height: speedH)
-
-                    LadderActualSpeedPanel(lastPutt: lastPutt, tokens: tokens)
-                        .frame(height: speedH)
-
-                    LadderPuttsHitPanel(count: session.currentPutt, tokens: tokens)
-                        .frame(height: puttsH)
-
-                    SportEndButton(tokens: tokens, showAlert: $showEndSessionAlert)
-                        .frame(height: endBtnH)
-                }
-            }
-            .padding(.horizontal, hPad)
-            .padding(.vertical, vPad)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-}
-
-// MARK: - Speed Panels
-
-private struct LadderSpeedPanel: View {
-    let label: String
-    let valueText: String
-    let tokens: SportTokens
-
-    var body: some View {
-        VStack(spacing: 0) {
-            Text(label)
-                .font(.oswald(kLabelSize, weight: .semibold))
-                .foregroundColor(tokens.sub)
-                .tracking(3)
-                .padding(.top, 12)
-
-            Spacer(minLength: 0)
-
-            Text(valueText)
-                .font(.oswald(fs(180)))
-                .foregroundColor(tokens.fg)
-                .minimumScaleFactor(0.1)
-                .lineLimit(1)
-                .monospacedDigit()
-                .padding(.horizontal, 8)
-
-            Text("MPH")
-                .font(.oswald(kLabelSize, weight: .semibold))
-                .foregroundColor(tokens.sub)
-
-            Spacer(minLength: 0)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(tokens.surface)
-        .cornerRadius(20)
-        .overlay(RoundedRectangle(cornerRadius: 20).stroke(tokens.subtle, lineWidth: 1))
-    }
-}
-
-private struct LadderActualSpeedPanel: View {
-    let lastPutt: PuttResult?
-    let tokens: SportTokens
-
-    var speedColor: Color {
-        guard let p = lastPutt else { return tokens.subtle }
+    private var resultColor: Color {
+        guard let p = lastPutt else { return tokens.sub }
         return p.isInZone ? tokens.zone : tokens.miss
     }
 
+    private var deltaString: String {
+        guard let p = lastPutt else { return "" }
+        let d = p.actualSpeed - Float(p.targetSpeed)
+        return String(format: "%@%.1f", d > 0 ? "+" : "", d)
+    }
+
     var body: some View {
-        VStack(spacing: 0) {
-            Text("ACTUAL")
-                .font(.oswald(kLabelSize, weight: .semibold))
+        VStack(spacing: fs(8)) {
+            Text(label)
+                .font(.inter(fs(20), weight: .heavy))
                 .foregroundColor(tokens.sub)
-                .tracking(3)
-                .padding(.top, 12)
+                .tracking(fs(20) * 0.22)
 
-            Spacer(minLength: 0)
-
-            if let putt = lastPutt {
-                Text(putt.actualSpeed.toSpeedString())
-                    .font(.oswald(fs(140)))
-                    .foregroundColor(speedColor)
-                    .minimumScaleFactor(0.1)
-                    .lineLimit(1)
-                    .monospacedDigit()
-                    .padding(.horizontal, 8)
-                    .sportPopIn(trigger: Int(putt.actualSpeed * 10))
-
-                Image(systemName: putt.isInZone ? "checkmark.circle.fill" : "xmark.circle.fill")
-                    .font(.system(size: kLabelSize))
-                    .foregroundColor(speedColor)
-            } else {
-                Text("— —")
-                    .font(.oswald(fs(100)))
-                    .foregroundColor(tokens.sub)
-                    .minimumScaleFactor(0.1)
-                    .lineLimit(1)
-            }
-
-            Spacer(minLength: 0)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(tokens.surface)
-        .cornerRadius(20)
-        .overlay(
-            RoundedRectangle(cornerRadius: 20)
-                .stroke(lastPutt != nil ? speedColor.opacity(0.5) : tokens.subtle, lineWidth: lastPutt != nil ? 2 : 1)
-        )
-    }
-}
-
-private struct LadderPuttsHitPanel: View {
-    let count: Int
-    let tokens: SportTokens
-
-    var body: some View {
-        VStack(spacing: 2) {
-            Spacer(minLength: 0)
-            Text("\(count)")
-                .font(.oswald(fs(72)))
-                .foregroundColor(tokens.fg)
-                .minimumScaleFactor(0.5)
-                .lineLimit(1)
-                .monospacedDigit()
-            Text("PUTTS HIT")
-                .font(.oswald(kLabelSize, weight: .semibold))
-                .foregroundColor(tokens.sub)
-                .tracking(2)
-            Spacer(minLength: 0)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(.horizontal, 16)
-        .background(tokens.surface)
-        .cornerRadius(16)
-        .overlay(RoundedRectangle(cornerRadius: 16).stroke(tokens.subtle, lineWidth: 1))
-    }
-}
-
-// MARK: - Horizontal Rung Blocks (Landscape bottom)
-
-struct HorizontalRungBlocks: View {
-    let ladderSpeeds: [Int]
-    let currentRung: Int
-    var tokens: SportTokens = SportTokens.make(dark: true)
-
-    private let connW: CGFloat = 8
-
-    var body: some View {
-        GeometryReader { geo in
-            let count     = ladderSpeeds.count
-            let totalConn = CGFloat(max(0, count - 1)) * connW
-            let blockW    = count > 0 ? max(40, (max(0, geo.size.width) - totalConn - 16) / CGFloat(count)) : 60
-            let blockH    = max(36, geo.size.height)
-
-            HStack(spacing: 0) {
-                ForEach(0..<count, id: \.self) { idx in
-                    LadderRungBlock(
-                        speed: ladderSpeeds[idx],
-                        state: idx < currentRung ? .completed : (idx == currentRung ? .current : .upcoming),
-                        blockH: blockH,
-                        connH: 0,
-                        isLastRung: true,
-                        tokens: tokens
-                    )
-                    .frame(width: blockW)
-
-                    if idx < count - 1 {
-                        Rectangle()
-                            .fill(tokens.subtle)
-                            .frame(width: connW, height: 2)
-                    }
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .center)
-            .padding(.horizontal, 8)
-        }
-    }
-}
-
-// MARK: - Vertical Rung Ladder (Portrait left card)
-
-struct VerticalRungLadder: View {
-    let ladderSpeeds: [Int]
-    let currentRung: Int
-    var tokens: SportTokens = SportTokens.make(dark: true)
-
-    private let maxBlockH: CGFloat = 200
-    private let minBlockH: CGFloat = 36
-    private let connH:     CGFloat = 6
-
-    var body: some View {
-        GeometryReader { geo in
-            let count     = ladderSpeeds.count
-            let totalConn = CGFloat(max(0, count - 1)) * connH
-            let rawH      = count > 0 ? (max(0, geo.size.height) - totalConn - 16) / CGFloat(count) : minBlockH
-            let blockH    = min(maxBlockH, max(minBlockH, rawH))
-            let usedH     = blockH * CGFloat(count) + totalConn
-            let extraPad  = max(0, geo.size.height - 16 - usedH) / 2
-
-            VStack(spacing: 0) {
-                Spacer().frame(height: max(0, extraPad + 8))
-
-                ForEach((0..<count).reversed(), id: \.self) { idx in
-                    LadderRungBlock(
-                        speed: ladderSpeeds[idx],
-                        state: idx < currentRung ? .completed : (idx == currentRung ? .current : .upcoming),
-                        blockH: blockH,
-                        connH: connH,
-                        isLastRung: idx == 0,
-                        tokens: tokens
-                    )
-                }
-
-                Spacer().frame(height: max(0, extraPad + 8))
-            }
-        }
-    }
-}
-
-// MARK: - Rung Block
-
-private enum RungState { case completed, current, upcoming }
-
-private struct LadderRungBlock: View {
-    let speed:      Int
-    let state:      RungState
-    let blockH:     CGFloat
-    let connH:      CGFloat
-    let isLastRung: Bool
-    var tokens:     SportTokens = SportTokens.make(dark: true)
-
-    private var numSize:  CGFloat { min(28, max(14, blockH * 0.32)) }
-    private var unitSize: CGFloat { min(13, max(9,  blockH * 0.15)) }
-    private var iconSize: CGFloat { min(13, max(8,  blockH * 0.15)) }
-
-    private var fill: Color {
-        switch state {
-        case .completed: return tokens.zone
-        case .current:   return tokens.zone.opacity(0.12)
-        case .upcoming:  return tokens.surface
-        }
-    }
-    private var stroke: Color {
-        switch state {
-        case .completed: return tokens.zone
-        case .current:   return tokens.zone
-        case .upcoming:  return tokens.subtle
-        }
-    }
-    private var numColor: Color {
-        switch state {
-        case .completed: return .white
-        case .current:   return tokens.zone
-        case .upcoming:  return tokens.sub
-        }
-    }
-
-    var body: some View {
-        VStack(spacing: 0) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 6).fill(fill)
-                RoundedRectangle(cornerRadius: 6)
-                    .stroke(stroke, lineWidth: state == .current ? 2 : 1)
-
-                VStack(spacing: 1) {
-                    Group {
-                        if state == .completed {
-                            Image(systemName: "checkmark")
-                                .font(.system(size: iconSize, weight: .bold))
-                                .foregroundColor(.white)
-                        } else if state == .current {
-                            Image(systemName: "arrow.right")
-                                .font(.system(size: iconSize, weight: .bold))
-                                .foregroundColor(tokens.zone)
-                        } else {
-                            Color.clear.frame(width: 1, height: iconSize + 2)
-                        }
-                    }
-
-                    Text("\(speed)")
-                        .font(.oswald(numSize))
-                        .foregroundColor(numColor)
-                        .minimumScaleFactor(0.6)
-                        .lineLimit(1)
-
+            HStack(alignment: .firstTextBaseline, spacing: 14) {
+                if let p = lastPutt {
+                    Text(String(format: "%.1f", p.actualSpeed))
+                        .font(.inter(fs(64)))
+                        .foregroundColor(resultColor)
+                        .monospacedDigit()
                     Text("MPH")
-                        .font(.oswald(unitSize, weight: .semibold))
-                        .foregroundColor(numColor.opacity(0.75))
+                        .font(.inter(fs(22), weight: .heavy))
+                        .foregroundColor(tokens.sub)
+                        .tracking(fs(22) * 0.04)
+                    Text(deltaString)
+                        .font(.inter(fs(48)))
+                        .foregroundColor(resultColor)
+                        .monospacedDigit()
+                } else {
+                    Text("—")
+                        .font(.inter(fs(64)))
+                        .foregroundColor(tokens.subtle)
                 }
             }
-            .frame(maxWidth: .infinity)
-            .frame(height: blockH)
-            .padding(.horizontal, 6)
-
-            if !isLastRung {
-                Rectangle()
-                    .fill(tokens.subtle)
-                    .frame(width: 2, height: connH)
-                    .frame(maxWidth: .infinity)
-            }
+            .frame(minHeight: fs(64))
         }
-    }
-}
-
-// MARK: - Legacy alias
-
-struct LadderRungIndicator: View {
-    let currentRung: Int
-
-    var body: some View {
-        VerticalRungLadder(
-            ladderSpeeds: Array(3...7),
-            currentRung: currentRung
-        )
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 24)
+        .padding(.top, 16)
+        .padding(.bottom, 14)
+        .overlay(Rectangle().fill(tokens.hairline).frame(height: 1), alignment: .top)
     }
 }

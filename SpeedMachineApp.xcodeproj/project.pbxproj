@@ -23,22 +23,20 @@
 		9EAD22D24BFC4D5B80D49728 /* SpeedMachineApp/Views/Settings/SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 477651E647ED4163A1277C35 /* SpeedMachineApp/Views/Settings/SettingsView.swift */; };
 		A1D4F501B2C34E8A9F123457 /* SpeedMachineApp/Utilities/AdaptiveLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1D4F500B2C34E8A9F123456 /* SpeedMachineApp/Utilities/AdaptiveLayout.swift */; };
 		A9D1E0A56AC64533AF78C41F /* SpeedMachineApp/Views/Connection/ConnectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F3446E8DE244A0B9A30410D /* SpeedMachineApp/Views/Connection/ConnectionView.swift */; };
+		EF9EC8210F20433CB3319A30 /* SpeedMachineApp/Views/Connection/WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CC2782DCF474D1E88CA33A3 /* SpeedMachineApp/Views/Connection/WelcomeView.swift */; };
 		B5AACD522D9545F199EDB3C1 /* SpeedMachineApp/Models/CombineGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 361930AC414E4DEC9CC80D39 /* SpeedMachineApp/Models/CombineGame.swift */; };
 		C79DC2A656004EB8A3D7EE6E /* SpeedMachineApp/Models/TrainingProgram.swift in Sources */ = {isa = PBXBuildFile; fileRef = 656F5BF67DF843788F5EC24F /* SpeedMachineApp/Models/TrainingProgram.swift */; };
-		CCC1E3775A2A42A6AAF2D2FF /* SpeedMachineApp/Views/Training/TrainingSessionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB0FA231D858463B8B697D17 /* SpeedMachineApp/Views/Training/TrainingSessionView.swift */; };
 		DC44730D4E2A47999A6FB972 /* SpeedMachineApp/Services/BluetoothService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EBF5222F81D445895D3C27E /* SpeedMachineApp/Services/BluetoothService.swift */; };
 		E60590CD75DB4806AFCEC463 /* SpeedMachineApp/Views/Combine/CombineModeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D7D703D7A09404AAD863588 /* SpeedMachineApp/Views/Combine/CombineModeView.swift */; };
-		67888C4481B44EFCBEDCEF86 /* SpeedMachineApp/Views/Training/SportLive/SportTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 062C2B7D40004197A7A7C650 /* SpeedMachineApp/Views/Training/SportLive/SportTokens.swift */; };
-		3A7ADC01E8014832A1D3EDC1 /* SpeedMachineApp/Views/Training/SportLive/SportAnimations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17ADA6B74D914313A8E926D4 /* SpeedMachineApp/Views/Training/SportLive/SportAnimations.swift */; };
-		5C78A9941E6C41CC8EEC8602 /* SpeedMachineApp/Views/Training/SportLive/SportRecHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = B82C6259B0734B0C9CA63EE5 /* SpeedMachineApp/Views/Training/SportLive/SportRecHeader.swift */; };
-		CB4D3EA16ED648188667BE05 /* SpeedMachineApp/Views/Training/SportLive/SportPassStrip.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BD074049C5A46C28790FFD0 /* SpeedMachineApp/Views/Training/SportLive/SportPassStrip.swift */; };
-		4C10E0CCE3DA4488A235CA74 /* SpeedMachineApp/Views/Training/SportLive/SportLadder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D0BB5A6D0484C238EB9EEEC /* SpeedMachineApp/Views/Training/SportLive/SportLadder.swift */; };
-		F2A9C5BC892F4CFEB83D7679 /* SpeedMachineApp/Views/Training/SportLive/SportHeroCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB84FD5E1D974258A8A46F92 /* SpeedMachineApp/Views/Training/SportLive/SportHeroCard.swift */; };
-		DE26BBEDD19D4B3BA73F27D2 /* SpeedMachineApp/Views/Training/SportLive/SportEndButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C85736F0AA480896B92799 /* SpeedMachineApp/Views/Training/SportLive/SportEndButton.swift */; };
-		AB9902C0907C45C5B0DE5C85 /* SpeedMachineApp/Views/Training/SportLive/SportLiveContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FE6FA830D7743D192E4753E /* SpeedMachineApp/Views/Training/SportLive/SportLiveContainer.swift */; };
 		D1349F5C7CF14FEA95C15492 /* SpeedMachineApp/Resources/Fonts/Oswald-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 03A96DE02C564C52B8CFB621 /* SpeedMachineApp/Resources/Fonts/Oswald-Regular.ttf */; };
 		380EA196A70A46C3B0CC84BF /* SpeedMachineApp/Resources/Fonts/Oswald-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 796F96BE31E94C7A8EB612FE /* SpeedMachineApp/Resources/Fonts/Oswald-SemiBold.ttf */; };
 		4E0DE8D805134380B5312C48 /* SpeedMachineApp/Resources/Fonts/Oswald-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 19711EFBEE754B999EE4E8CF /* SpeedMachineApp/Resources/Fonts/Oswald-Bold.ttf */; };
+		E194CEC86E4B41E0B5311281 /* SpeedMachineApp/Resources/Fonts/Inter-Black.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D9049462A7034495BF462A80 /* SpeedMachineApp/Resources/Fonts/Inter-Black.ttf */; };
+		9D615815840C418B96886936 /* SpeedMachineApp/Resources/Fonts/Inter-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 4F399B3679874A9686FE1D7B /* SpeedMachineApp/Resources/Fonts/Inter-ExtraBold.ttf */; };
+		7DE75F7588124EECBD35DCAD /* SpeedMachineApp/Resources/Fonts/Inter-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3B03BC36D2534B2F908D40BA /* SpeedMachineApp/Resources/Fonts/Inter-Bold.ttf */; };
+		DA224D52CB394C98B5073922 /* SpeedMachineApp/Resources/Fonts/Inter-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B0A8F49A4375407EBDBAF616 /* SpeedMachineApp/Resources/Fonts/Inter-SemiBold.ttf */; };
+		07F33C1C652245AE9D066CF1 /* SpeedMachineApp/Resources/Fonts/Inter-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1F35CAA4F56347269980547D /* SpeedMachineApp/Resources/Fonts/Inter-Medium.ttf */; };
+		439CF82D704C435A9FB0BF23 /* SpeedMachineApp/Resources/Fonts/Inter-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 7C50D6E3060A41B1B8804FC5 /* SpeedMachineApp/Resources/Fonts/Inter-Regular.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -62,6 +60,7 @@
 		071BBFACD7884C12B36C32FD /* SpeedMachineApp/App/SpeedMachineApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedMachineApp/App/SpeedMachineApp.swift; sourceTree = "<group>"; };
 		0AECCD983CA34AC2BE870B26 /* SpeedMachineApp/Views/Training/DaySelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedMachineApp/Views/Training/DaySelectionView.swift; sourceTree = "<group>"; };
 		0F3446E8DE244A0B9A30410D /* SpeedMachineApp/Views/Connection/ConnectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedMachineApp/Views/Connection/ConnectionView.swift; sourceTree = "<group>"; };
+		1CC2782DCF474D1E88CA33A3 /* SpeedMachineApp/Views/Connection/WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedMachineApp/Views/Connection/WelcomeView.swift; sourceTree = "<group>"; };
 		106B4047EF15452884D9FE11 /* SpeedMachineApp/ViewModels/CombineViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedMachineApp/ViewModels/CombineViewModel.swift; sourceTree = "<group>"; };
 		1D7D703D7A09404AAD863588 /* SpeedMachineApp/Views/Combine/CombineModeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedMachineApp/Views/Combine/CombineModeView.swift; sourceTree = "<group>"; };
 		22870230B1624289B2E4FA10 /* SpeedMachineApp/Views/Progress/ProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedMachineApp/Views/Progress/ProgressView.swift; sourceTree = "<group>"; };
@@ -94,6 +93,12 @@
 		03A96DE02C564C52B8CFB621 /* SpeedMachineApp/Resources/Fonts/Oswald-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SpeedMachineApp/Resources/Fonts/Oswald-Regular.ttf"; sourceTree = "<group>"; };
 		796F96BE31E94C7A8EB612FE /* SpeedMachineApp/Resources/Fonts/Oswald-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SpeedMachineApp/Resources/Fonts/Oswald-SemiBold.ttf"; sourceTree = "<group>"; };
 		19711EFBEE754B999EE4E8CF /* SpeedMachineApp/Resources/Fonts/Oswald-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SpeedMachineApp/Resources/Fonts/Oswald-Bold.ttf"; sourceTree = "<group>"; };
+		D9049462A7034495BF462A80 /* SpeedMachineApp/Resources/Fonts/Inter-Black.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SpeedMachineApp/Resources/Fonts/Inter-Black.ttf"; sourceTree = "<group>"; };
+		4F399B3679874A9686FE1D7B /* SpeedMachineApp/Resources/Fonts/Inter-ExtraBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SpeedMachineApp/Resources/Fonts/Inter-ExtraBold.ttf"; sourceTree = "<group>"; };
+		3B03BC36D2534B2F908D40BA /* SpeedMachineApp/Resources/Fonts/Inter-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SpeedMachineApp/Resources/Fonts/Inter-Bold.ttf"; sourceTree = "<group>"; };
+		B0A8F49A4375407EBDBAF616 /* SpeedMachineApp/Resources/Fonts/Inter-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SpeedMachineApp/Resources/Fonts/Inter-SemiBold.ttf"; sourceTree = "<group>"; };
+		1F35CAA4F56347269980547D /* SpeedMachineApp/Resources/Fonts/Inter-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SpeedMachineApp/Resources/Fonts/Inter-Medium.ttf"; sourceTree = "<group>"; };
+		7C50D6E3060A41B1B8804FC5 /* SpeedMachineApp/Resources/Fonts/Inter-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SpeedMachineApp/Resources/Fonts/Inter-Regular.ttf"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -346,6 +351,12 @@
 				D1349F5C7CF14FEA95C15492 /* SpeedMachineApp/Resources/Fonts/Oswald-Regular.ttf in Resources */,
 				380EA196A70A46C3B0CC84BF /* SpeedMachineApp/Resources/Fonts/Oswald-SemiBold.ttf in Resources */,
 				4E0DE8D805134380B5312C48 /* SpeedMachineApp/Resources/Fonts/Oswald-Bold.ttf in Resources */,
+				E194CEC86E4B41E0B5311281 /* SpeedMachineApp/Resources/Fonts/Inter-Black.ttf in Resources */,
+				9D615815840C418B96886936 /* SpeedMachineApp/Resources/Fonts/Inter-ExtraBold.ttf in Resources */,
+				7DE75F7588124EECBD35DCAD /* SpeedMachineApp/Resources/Fonts/Inter-Bold.ttf in Resources */,
+				DA224D52CB394C98B5073922 /* SpeedMachineApp/Resources/Fonts/Inter-SemiBold.ttf in Resources */,
+				07F33C1C652245AE9D066CF1 /* SpeedMachineApp/Resources/Fonts/Inter-Medium.ttf in Resources */,
+				439CF82D704C435A9FB0BF23 /* SpeedMachineApp/Resources/Fonts/Inter-Regular.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -381,21 +392,13 @@
 				6B7A9056CD4F4B11B6D5B6E7 /* SpeedMachineApp/ViewModels/CombineViewModel.swift in Sources */,
 				2BDAB5660EA149F3995B8BC8 /* SpeedMachineApp/ViewModels/TrainingViewModel.swift in Sources */,
 				A9D1E0A56AC64533AF78C41F /* SpeedMachineApp/Views/Connection/ConnectionView.swift in Sources */,
+				EF9EC8210F20433CB3319A30 /* SpeedMachineApp/Views/Connection/WelcomeView.swift in Sources */,
 				92DD61EF19344B158FE23D94 /* SpeedMachineApp/Views/Home/HomeView.swift in Sources */,
 				028E53DE49D7446381730FFF /* SpeedMachineApp/Views/Progress/ProgressView.swift in Sources */,
 				1AA530A70736444B9815725B /* SpeedMachineApp/Views/Training/DaySelectionView.swift in Sources */,
-				CCC1E3775A2A42A6AAF2D2FF /* SpeedMachineApp/Views/Training/TrainingSessionView.swift in Sources */,
 				E60590CD75DB4806AFCEC463 /* SpeedMachineApp/Views/Combine/CombineModeView.swift in Sources */,
 				9EAD22D24BFC4D5B80D49728 /* SpeedMachineApp/Views/Settings/SettingsView.swift in Sources */,
 				16E88B1F781944879A8B6F81 /* SpeedMachineApp/CoreData/SpeedMachine.xcdatamodeld in Sources */,
-				67888C4481B44EFCBEDCEF86 /* SpeedMachineApp/Views/Training/SportLive/SportTokens.swift in Sources */,
-				3A7ADC01E8014832A1D3EDC1 /* SpeedMachineApp/Views/Training/SportLive/SportAnimations.swift in Sources */,
-				5C78A9941E6C41CC8EEC8602 /* SpeedMachineApp/Views/Training/SportLive/SportRecHeader.swift in Sources */,
-				CB4D3EA16ED648188667BE05 /* SpeedMachineApp/Views/Training/SportLive/SportPassStrip.swift in Sources */,
-				4C10E0CCE3DA4488A235CA74 /* SpeedMachineApp/Views/Training/SportLive/SportLadder.swift in Sources */,
-				F2A9C5BC892F4CFEB83D7679 /* SpeedMachineApp/Views/Training/SportLive/SportHeroCard.swift in Sources */,
-				DE26BBEDD19D4B3BA73F27D2 /* SpeedMachineApp/Views/Training/SportLive/SportEndButton.swift in Sources */,
-				AB9902C0907C45C5B0DE5C85 /* SpeedMachineApp/Views/Training/SportLive/SportLiveContainer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -470,9 +470,11 @@ class StatsService: ObservableObject {
         }
     }
 
-    /// Sorted speed profiles for display (3 MPH to 20 MPH)
+    /// Sorted speed profiles for display (3 MPH to 15 MPH).
+    /// Historical putt data at 16–20 MPH remains in Core Data but is hidden from the UI
+    /// after the 3–15 MPH program rescope.
     var sortedProfiles: [SpeedProfileData] {
-        return (3...20).compactMap { speedProfiles[$0] }
+        return (3...15).compactMap { speedProfiles[$0] }
     }
 
     /// Speed profiles that have been practiced

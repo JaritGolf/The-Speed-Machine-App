@@ -9,7 +9,7 @@ struct SportEndButton: View {
             showAlert = true
         } label: {
             Text("END SESSION")
-                .font(.oswald(fs(15), weight: .semibold))
+                .font(.inter(fs(15), weight: .semibold))
                 .foregroundColor(tokens.miss)
                 .tracking(2)
                 .frame(maxWidth: .infinity)

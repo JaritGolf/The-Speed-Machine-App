@@ -42,3 +42,4 @@ Carthage/Build/
 *.a
 *.dylib
 *.framework
+.gstack/

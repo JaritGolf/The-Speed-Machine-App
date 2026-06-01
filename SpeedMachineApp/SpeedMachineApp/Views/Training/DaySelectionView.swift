@@ -15,55 +15,76 @@ struct TrackSelectionView: View {
     @State private var selectedTrack: TrainingTrack?
 
     var columns: [GridItem] {
-        // iPad: 5 columns in both orientations — more room for day cards
-        // iPhone landscape: 6 columns (verticalSizeClass == .compact)
-        // iPhone portrait: 3 columns
         let count: Int
         if isIPad {
             count = 5
         } else if verticalSizeClass == .compact {
             count = 6
         } else {
-            count = 3
+            count = 5
         }
-        return Array(repeating: GridItem(.flexible()), count: count)
+        return Array(repeating: GridItem(.flexible(), spacing: 8), count: count)
     }
 
     var body: some View {
-        NavigationView {
-            ZStack {
-                AppColors.backgroundAlt.ignoresSafeArea()
+        ZStack(alignment: .top) {
+            Color.white.ignoresSafeArea()
 
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 24) {
-                        // Phase Headers
-                        ForEach(1...3, id: \.self) { phase in
-                            PhaseSection(phase: phase)
+            VStack(spacing: 0) {
+                // Whoop-style top bar
+                HStack {
+                    Button { dismiss() } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(.black)
+                    }
+                    Spacer()
+                    Text("TRACKS")
+                        .font(.custom("Inter-Bold", size: 13))
+                        .kerning(2.5)
+                        .foregroundColor(.black)
+                    Spacer()
+                    // Balance the X button
+                    Color.clear.frame(width: 28, height: 28)
+                }
+                .padding(.horizontal, 22)
+                .padding(.top, 12)
+                .padding(.bottom, 12)
+
+                Divider().overlay(AppColors.border)
+
+                let allTracks = trainingViewModel.getAllTracks()
+                if allTracks.isEmpty {
+                    Spacer()
+                    ProgressView()
+                    Text("Loading program…")
+                        .font(.custom("Inter-Regular", size: 14))
+                        .foregroundColor(AppColors.textMuted)
+                        .padding(.top, 8)
+                    Spacer()
+                } else {
+                    ScrollView(showsIndicators: false) {
+                        VStack(alignment: .leading, spacing: 24) {
+                            let phases = Array(Set(allTracks.map { $0.phase })).sorted()
+                            ForEach(phases, id: \.self) { phase in
+                                PhaseSection(phase: phase)
+                            }
                         }
-                    }
-                    .padding()
-                    .adaptiveContentFrame()
-                }
-            }
-            .navigationTitle("Training Program")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
-                        dismiss()
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 20)
+                        .adaptiveContentFrame()
                     }
                 }
-            }
-            .fullScreenCover(item: $selectedTrack) { track in
-                BlockSelectionView(track: track)
             }
         }
-        .navigationViewStyle(.stack)
+        .fullScreenCover(item: $selectedTrack) { track in
+            BlockSelectionView(track: track)
+        }
         .onChange(of: trainingViewModel.shouldNavigateHome) { _, shouldGo in
             if shouldGo {
                 trainingViewModel.shouldNavigateHome = false
-                selectedTrack = nil   // dismiss BlockSelectionView
-                dismiss()           // dismiss TrackSelectionView back to HomeView
+                selectedTrack = nil
+                dismiss()
             }
         }
     }
@@ -74,21 +95,23 @@ struct TrackSelectionView: View {
         let phaseInfo = trainingViewModel.getPhase(phase)
 
         if !tracks.isEmpty {
-            VStack(alignment: .leading, spacing: 16) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Phase \(phase): \(phaseInfo?.name ?? "")")
-                        .font(.title3)
-                        .fontWeight(.bold)
-                        .foregroundColor(AppColors.primaryBlack)
-
+            VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("PHASE \(phase)")
+                        .font(.custom("Inter-Bold", size: 10))
+                        .kerning(2.5)
+                        .foregroundColor(AppColors.textSubdued)
                     if let phaseInfo = phaseInfo {
+                        Text(phaseInfo.name)
+                            .font(.custom("Inter-Bold", size: 15))
+                            .foregroundColor(.black)
                         Text(phaseInfo.focus)
-                            .font(.caption)
+                            .font(.custom("Inter-Regular", size: 12))
                             .foregroundColor(AppColors.textMuted)
                     }
                 }
 
-                LazyVGrid(columns: columns, spacing: 12) {
+                LazyVGrid(columns: columns, spacing: 8) {
                     ForEach(tracks) { track in
                         TrackCard(track: track) {
                             selectedTrack = track
@@ -106,90 +129,88 @@ struct TrackCard: View {
 
     @EnvironmentObject var trainingViewModel: TrainingViewModel
 
-    var status: TrackStatus {
-        trainingViewModel.getTrackStatus(track.number)
-    }
-
-    var isGateTest: Bool {
-        trainingViewModel.isGateTestTrack(track.number)
-    }
+    var status: TrackStatus { trainingViewModel.getTrackStatus(track.number) }
+    var isGateTest: Bool { trainingViewModel.isGateTestTrack(track.number) }
 
     var body: some View {
-        Button(action: {
-            if status != .locked {
-                action()
-            }
-        }) {
-            VStack(spacing: 8) {
-                ZStack {
-                    Circle()
-                        .fill(backgroundColor)
-                        .frame(width: 50, height: 50)
-
+        Button(action: { if status != .locked { action() } }) {
+            ZStack(alignment: .topTrailing) {
+                VStack(spacing: 6) {
+                    // Status indicator
                     if status == .completed {
                         Image(systemName: "checkmark")
-                            .font(.title3)
-                            .fontWeight(.bold)
+                            .font(.system(size: 16, weight: .bold))
                             .foregroundColor(.white)
                     } else if status == .locked {
                         Image(systemName: "lock.fill")
-                            .font(.title3)
-                            .foregroundColor(.white)
+                            .font(.system(size: 13))
+                            .foregroundColor(AppColors.textSubdued)
+                    } else if status == .current {
+                        Circle()
+                            .fill(AppColors.accentGreen)
+                            .frame(width: 8, height: 8)
                     } else {
-                        Text("\(track.number)")
-                            .font(.system(.title3, design: .rounded).weight(.bold))
-                            .foregroundColor(.white)
+                        Spacer().frame(height: 8)
                     }
+
+                    Text("\(track.number)")
+                        .font(.custom("Inter-Black", size: 18))
+                        .foregroundColor(numberColor)
+                        .lineLimit(1)
                 }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+                .background(cardBg)
+                .cornerRadius(10)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(borderColor, lineWidth: borderWidth)
+                )
 
-                Text("Track \(track.number)")
-                    .font(.caption)
-                    .fontWeight(.medium)
-                    .foregroundColor(AppColors.primaryBlack)
-
+                // GATE badge
                 if isGateTest {
-                    Text("Gate Test")
-                        .font(.system(size: 8))
-                        .fontWeight(.bold)
-                        .foregroundColor(AppColors.accentGreen)
-                        .padding(.horizontal, 6)
+                    Text("GATE")
+                        .font(.custom("Inter-Bold", size: 7))
+                        .kerning(0.5)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 4)
                         .padding(.vertical, 2)
-                        .background(AppColors.accentLight)
-                        .cornerRadius(4)
+                        .background(AppColors.bleBlue)
+                        .cornerRadius(3)
+                        .offset(x: -4, y: 4)
                 }
             }
-            .padding(.vertical, 12)
-            .frame(maxWidth: .infinity)
-            .background(Color.white)
-            .cornerRadius(12)
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(borderColor, lineWidth: status == .current ? 3 : 1)
-            )
         }
         .disabled(status == .locked)
     }
 
-    var backgroundColor: Color {
+    private var cardBg: Color {
         switch status {
-        case .locked:
-            return AppColors.textMuted
-        case .available:
-            return AppColors.accentGreen
-        case .current:
-            return AppColors.accentBright
-        case .completed:
-            return AppColors.accentGreen
+        case .completed: return .black
+        case .locked:    return AppColors.surfaceAlt
+        default:         return .white
         }
     }
 
-    var borderColor: Color {
+    private var numberColor: Color {
         switch status {
-        case .current:
-            return AppColors.accentBright
-        default:
-            return AppColors.border
+        case .completed: return .white
+        case .locked:    return AppColors.textSubdued
+        case .current:   return .black
+        case .available: return AppColors.textMuted
         }
+    }
+
+    private var borderColor: Color {
+        switch status {
+        case .current:  return AppColors.accentGreen
+        case .locked:   return AppColors.border
+        default:        return AppColors.border
+        }
+    }
+
+    private var borderWidth: CGFloat {
+        status == .current ? 2 : 1
     }
 }
 
@@ -204,45 +225,93 @@ struct BlockSelectionView: View {
     @State private var showCoaching = false
 
     var body: some View {
-        NavigationView {
-            ZStack {
-                AppColors.backgroundAlt.ignoresSafeArea()
+        ZStack(alignment: .top) {
+            Color.white.ignoresSafeArea()
 
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 16) {
-                        // Day Info Header
-                        VStack(alignment: .leading, spacing: 12) {
+            VStack(spacing: 0) {
+                // Whoop-style top bar
+                HStack {
+                    Button { dismiss() } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "chevron.left")
+                                .font(.system(size: 14, weight: .semibold))
+                            Text("TRACKS")
+                                .font(.custom("Inter-Bold", size: 12))
+                                .kerning(1.5)
+                        }
+                        .foregroundColor(.black)
+                    }
+                    Spacer()
+                    Text("TRACK \(track.number)")
+                        .font(.custom("Inter-Bold", size: 13))
+                        .kerning(2.5)
+                        .foregroundColor(.black)
+                    Spacer()
+                    Color.clear.frame(width: 60, height: 24)
+                }
+                .padding(.horizontal, 22)
+                .padding(.top, 12)
+                .padding(.bottom, 12)
+
+                Divider().overlay(AppColors.border)
+
+                ScrollView(showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: 0) {
+                        // Track title + objective
+                        VStack(alignment: .leading, spacing: 8) {
                             Text(track.title)
-                                .font(.title2)
-                                .fontWeight(.bold)
-                                .foregroundColor(AppColors.primaryBlack)
+                                .font(.custom("Inter-Black", size: 22))
+                                .foregroundColor(.black)
 
                             Text(track.objective)
-                                .font(.subheadline)
+                                .font(.custom("Inter-Regular", size: 13))
                                 .foregroundColor(AppColors.textMuted)
+                                .fixedSize(horizontal: false, vertical: true)
 
                             HStack(spacing: 16) {
                                 Label(track.duration, systemImage: "clock")
                                 Label("\(track.targetPutts) putts", systemImage: "figure.golf")
                                 Label(track.speedRange, systemImage: "speedometer")
                             }
-                            .font(.caption)
-                            .foregroundColor(AppColors.textMuted)
+                            .font(.custom("Inter-Regular", size: 11))
+                            .foregroundColor(AppColors.textSubdued)
                         }
-                        .padding()
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(Color.white)
-                        .cornerRadius(12)
+                        .padding(.horizontal, 22)
+                        .padding(.vertical, 20)
 
-                        // Warnings if any
+                        Divider().overlay(AppColors.border)
+
+                        // Warnings
                         if !track.warnings.isEmpty {
                             ForEach(track.warnings, id: \.message) { warning in
                                 WarningBanner(warning: warning)
+                                    .padding(.horizontal, 22)
+                                    .padding(.top, 12)
                             }
+                        }
+
+                        // Training Blocks
+                        VStack(alignment: .leading, spacing: 0) {
+                            Text("BLOCKS")
+                                .font(.custom("Inter-Bold", size: 10))
+                                .kerning(2.5)
+                                .foregroundColor(AppColors.textSubdued)
+                                .padding(.horizontal, 22)
+                                .padding(.top, 20)
+                                .padding(.bottom, 10)
+
+                            VStack(spacing: 8) {
+                                ForEach(track.blocks) { block in
+                                    BlockRow(block: block, track: track)
+                                }
+                            }
+                            .padding(.horizontal, 22)
+                            .padding(.bottom, 24)
                         }
 
                         // Science Section (Expandable)
                         if let science = track.science {
+                            Divider().overlay(AppColors.border)
                             ExpandableSection(
                                 title: "Science",
                                 icon: "brain.head.profile",
@@ -250,92 +319,37 @@ struct BlockSelectionView: View {
                             ) {
                                 VStack(alignment: .leading, spacing: 8) {
                                     Text(science.principle)
-                                        .font(.subheadline)
-                                        .fontWeight(.semibold)
-                                        .foregroundColor(AppColors.primaryBlack)
-
+                                        .font(.custom("Inter-SemiBold", size: 13))
+                                        .foregroundColor(.black)
                                     Text(science.explanation)
-                                        .font(.caption)
+                                        .font(.custom("Inter-Regular", size: 12))
                                         .foregroundColor(AppColors.textMuted)
-
                                     Text("— \(science.citation)")
-                                        .font(.caption2)
+                                        .font(.custom("Inter-Regular", size: 11))
                                         .italic()
-                                        .foregroundColor(AppColors.textMuted)
+                                        .foregroundColor(AppColors.textSubdued)
                                 }
                             }
                         }
 
-                        // Coaching Notes (Expandable)
+                        // Coaching Notes
                         if let coachingNotes = track.coachingNotes, !coachingNotes.isEmpty {
+                            Divider().overlay(AppColors.border)
                             ExpandableSection(
                                 title: "Coaching Notes",
                                 icon: "lightbulb",
                                 isExpanded: $showCoaching
                             ) {
                                 Text(coachingNotes)
-                                    .font(.caption)
+                                    .font(.custom("Inter-Regular", size: 12))
                                     .foregroundColor(AppColors.textMuted)
                             }
                         }
-
-                        // Success Metrics
-                        if !track.successMetrics.isEmpty {
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text("Success Metrics")
-                                    .font(.headline)
-                                    .foregroundColor(AppColors.primaryBlack)
-
-                                ForEach(track.successMetrics, id: \.metric) { metric in
-                                    HStack {
-                                        Image(systemName: "target")
-                                            .foregroundColor(AppColors.accentGreen)
-                                            .frame(width: 20)
-
-                                        Text(metric.metric)
-                                            .font(.subheadline)
-                                            .foregroundColor(AppColors.primaryBlack)
-
-                                        Spacer()
-
-                                        Text(metric.target)
-                                            .font(.subheadline)
-                                            .fontWeight(.semibold)
-                                            .foregroundColor(AppColors.accentGreen)
-                                    }
-                                }
-                            }
-                            .padding()
-                            .background(Color.white)
-                            .cornerRadius(12)
-                        }
-
-                        // Training Blocks
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("Training Blocks")
-                                .font(.headline)
-                                .foregroundColor(AppColors.primaryBlack)
-
-                            ForEach(track.blocks) { block in
-                                BlockRow(block: block, track: track)
-                            }
-                        }
                     }
-                    .padding()
                     .adaptiveContentFrame(maxWidth: 680)
                 }
             }
-            .navigationTitle("Track \(track.number)")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
-                        dismiss()
-                    }
-                }
-            }
         }
-        .navigationViewStyle(.stack)
         .fullScreenCover(isPresented: Binding(
             get: { trainingViewModel.isSessionActive },
             set: { if !$0 { trainingViewModel.endSession() } }
@@ -487,115 +501,103 @@ struct BlockRow: View {
 
     var body: some View {
         Button {
-            if !isLocked {
-                trainingViewModel.startBlock(block, for: track)
-            }
+            if !isLocked { trainingViewModel.startBlock(block, for: track) }
         } label: {
-            VStack(alignment: .leading, spacing: 12) {
-                HStack(spacing: 12) {
-                    // Speed indicator or block type icon
-                    ZStack {
-                        Circle()
-                            .fill(isLocked ? AppColors.textMuted.opacity(0.15) : blockTypeColor.opacity(0.15))
-                            .frame(width: 50, height: 50)
+            HStack(spacing: 14) {
+                // Left: status dot or lock
+                if isCompleted {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundColor(.white)
+                        .frame(width: 28, height: 28)
+                        .background(AppColors.accentGreen)
+                        .clipShape(Circle())
+                } else if isLocked {
+                    Image(systemName: "lock.fill")
+                        .font(.system(size: 12))
+                        .foregroundColor(AppColors.textSubdued)
+                        .frame(width: 28, height: 28)
+                } else {
+                    Circle()
+                        .fill(blockTypeColor)
+                        .frame(width: 8, height: 8)
+                        .frame(width: 28, height: 28)
+                }
 
-                        if isLocked {
-                            Image(systemName: "lock.fill")
-                                .font(.title3)
-                                .foregroundColor(AppColors.textMuted)
-                        } else if let targetSpeed = block.targetSpeed {
-                            Text("\(targetSpeed)")
-                                .font(.system(.headline, design: .rounded).weight(.bold))
-                                .foregroundColor(blockTypeColor)
-                        } else {
-                            Image(systemName: blockTypeIcon)
-                                .font(.title3)
-                                .foregroundColor(blockTypeColor)
+                // Center: name + type badge
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(block.name)
+                        .font(.custom("Inter-Bold", size: 15))
+                        .foregroundColor(rowFg)
+                        .lineLimit(1)
+
+                    HStack(spacing: 8) {
+                        Text(blockTypeLabel.uppercased())
+                            .font(.custom("Inter-Bold", size: 9))
+                            .kerning(0.8)
+                            .foregroundColor(isCompleted ? .white.opacity(0.60) : (isLocked ? AppColors.textSubdued : blockTypeColor))
+                            .padding(.horizontal, 5)
+                            .padding(.vertical, 2)
+                            .background(isCompleted ? Color.white.opacity(0.10) : (isLocked ? AppColors.surfaceAlt : blockTypeColor.opacity(0.12)))
+                            .cornerRadius(3)
+
+                        if let putts = block.putts {
+                            Text("\(putts) PUTTS")
+                                .font(.custom("Inter-Bold", size: 10))
+                                .kerning(0.5)
+                                .foregroundColor(isCompleted ? .white.opacity(0.45) : AppColors.textSubdued)
                         }
-                    }
-
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(block.name)
-                            .font(.headline)
-                            .foregroundColor(isLocked ? AppColors.textMuted : AppColors.primaryBlack)
-                            .lineLimit(1)
-
-                        HStack(spacing: 8) {
-                            Text(blockTypeLabel)
-                                .font(.caption2)
-                                .fontWeight(.medium)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 2)
-                                .background(isLocked ? AppColors.textMuted.opacity(0.1) : blockTypeColor.opacity(0.15))
-                                .foregroundColor(isLocked ? AppColors.textMuted : blockTypeColor)
-                                .cornerRadius(4)
-
-                            Text(block.duration)
-                                .font(.caption)
-                                .foregroundColor(AppColors.textMuted)
-
-                            if let putts = block.putts {
-                                Text("\(putts) putts")
-                                    .font(.caption)
-                                    .foregroundColor(AppColors.textMuted)
-                            }
-                        }
-                    }
-
-                    Spacer()
-
-                    if isCompleted {
-                        Image(systemName: "checkmark.circle.fill")
-                            .foregroundColor(AppColors.accentGreen)
-                    } else if isLocked {
-                        Image(systemName: "lock.fill")
-                            .foregroundColor(AppColors.textMuted)
-                    } else {
-                        Image(systemName: "chevron.right")
-                            .foregroundColor(AppColors.textMuted)
                     }
                 }
 
-                // Gate test requirements
-                if block.type == .gateTest, let requirements = block.passRequirements {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Pass Requirement:")
-                            .font(.caption)
-                            .fontWeight(.semibold)
-                            .foregroundColor(AppColors.primaryBlack)
+                Spacer()
 
-                        HStack(spacing: 16) {
-                            Label({
-                                let minInZone = requirements.minOverallInZone ?? requirements.zoneAccuracy?.minimum ?? 0
-                                let pct = requirements.zoneAccuracy?.percentage ?? Int((Float(minInZone) / Float(block.putts ?? 1)) * 100)
-                                return "\(minInZone)/\(block.putts ?? 0) in zone (\(pct)%)"
-                            }(), systemImage: "circle.circle")
-                            .font(.caption2)
-                            .foregroundColor(AppColors.textMuted)
-                        }
-                    }
-                    .padding(.top, 4)
-                }
-
-                // Block description
-                if let description = block.description {
-                    Text(description)
-                        .font(.caption)
-                        .foregroundColor(AppColors.textMuted)
-                        .lineLimit(2)
+                // Right indicator
+                if isCompleted {
+                    // checkmark already on left, nothing on right
+                } else if isLocked {
+                    Image(systemName: "lock.fill")
+                        .font(.system(size: 11))
+                        .foregroundColor(AppColors.textSubdued)
+                } else {
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundColor(AppColors.textSubdued)
                 }
             }
-            .padding()
-            .background(isLocked ? AppColors.backgroundAlt : Color.white)
-            .cornerRadius(12)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+            .background(rowBg)
+            .cornerRadius(10)
             .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(isLocked ? AppColors.border : (block.type == .gateTest ? AppColors.bleBlue : AppColors.border),
-                            lineWidth: isLocked ? 1 : (block.type == .gateTest ? 2 : 1))
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(rowBorder, lineWidth: rowBorderWidth)
             )
-            .opacity(isLocked ? 0.7 : 1.0)
         }
         .disabled(isLocked)
+    }
+
+    private var rowBg: Color {
+        if isCompleted { return .black }
+        if isLocked { return AppColors.surfaceAlt }
+        return .white
+    }
+
+    private var rowFg: Color {
+        if isCompleted { return .white }
+        if isLocked { return AppColors.textSubdued }
+        return .black
+    }
+
+    private var rowBorder: Color {
+        if isCompleted { return .black }
+        if isLocked { return AppColors.border }
+        if block.type == .gateTest { return AppColors.bleBlue }
+        return AppColors.border
+    }
+
+    private var rowBorderWidth: CGFloat {
+        block.type == .gateTest && !isLocked ? 1.5 : 1
     }
 
     var blockTypeIcon: String {

@@ -15,12 +15,12 @@ struct SportLiveContainer: View {
     @EnvironmentObject var trainingViewModel: TrainingViewModel
     @EnvironmentObject var bluetoothService: BluetoothService
 
-    @AppStorage("liveViewTheme") private var themeRaw: String = LiveViewTheme.dark.rawValue
+    @AppStorage("liveViewTheme") private var themeRaw: String = LiveViewTheme.light.rawValue
     @Environment(\.colorScheme) private var colorScheme
     @State private var showEndSessionAlert = false
 
     private var tokens: SportTokens {
-        let isDark = (LiveViewTheme(rawValue: themeRaw) ?? .dark).resolvedDark(scheme: colorScheme)
+        let isDark = (LiveViewTheme(rawValue: themeRaw) ?? .light).resolvedDark(scheme: colorScheme)
         return SportTokens.make(dark: isDark)
     }
 

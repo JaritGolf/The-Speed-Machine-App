@@ -24,6 +24,8 @@ class TrainingViewModel: ObservableObject {
     /// Context label shown in the session header when a block uses adaptive interleaved selection.
     /// e.g. "Your optimal challenge · Zone 2" — nil for non-adaptive blocks.
     @Published var adaptiveBlockContext: String? = nil
+    /// Incremented whenever completion data is repaired — triggers DaySelectionView re-render.
+    @Published var repairVersion: Int = 0
 
     private let dataService = DataService.shared
     private let statsService = StatsService.shared
@@ -63,6 +65,21 @@ class TrainingViewModel: ObservableObject {
         // Check if previous day is completed
         let previousDayCompleted = dataService.isDayCompleted(dayNumber - 1)
 
+        // Recovery path: all blocks of the previous day may be complete in Core Data
+        // even though DayCompletionData was never written (session ended before completeBlock fired).
+        // If so, treat the previous day as complete.
+        let effectivePreviousDayCompleted: Bool
+        if !previousDayCompleted, let prevDay = programLoader.getDay(dayNumber - 1) {
+            let prevBlockIds = prevDay.blocks.map { $0.blockId }
+            let completedCount = dataService.getCompletedBlockCount(
+                dayNumber: dayNumber - 1,
+                blockIds: prevBlockIds
+            )
+            effectivePreviousDayCompleted = completedCount >= prevDay.blocks.count
+        } else {
+            effectivePreviousDayCompleted = previousDayCompleted
+        }
+
         // Also check if there's a gate test required before this day
         // Gate test days: 5, 9, 12, 19, 25, 30
         // Gate test on day X must be passed to proceed past that day
@@ -73,7 +90,7 @@ class TrainingViewModel: ObservableObject {
             }
         }
 
-        return previousDayCompleted
+        return effectivePreviousDayCompleted
     }
 
     func isDayCompleted(_ dayNumber: Int) -> Bool {
@@ -161,7 +178,7 @@ class TrainingViewModel: ObservableObject {
         }
 
         // Standard putt recording FIRST
-        session.recordPutt(actualSpeed: speed)
+        session.recordPutt(actualSpeed: roundedSpeed)
 
         // Apply block-specific logic AFTER putt is recorded
         switch session.blockSessionType {
@@ -195,7 +212,7 @@ class TrainingViewModel: ObservableObject {
         // Update lifetime stats (independent of training program)
         statsService.recordPutt(
             targetSpeed: targetSpeed,
-            actualSpeed: speed,
+            actualSpeed: roundedSpeed,
             tolerance: tolerance
         )
 
@@ -288,13 +305,7 @@ class TrainingViewModel: ObservableObject {
             return
         }
 
-        // Check if all blocks in the day are complete
         let blockIds = day.blocks.map { $0.blockId }
-        let completedBlockCount = dataService.getCompletedBlockCount(
-            dayNumber: day.day,
-            blockIds: blockIds
-        )
-
         blockCompletionPending = true
 
         // Find the next block in this day
@@ -321,7 +332,7 @@ class TrainingViewModel: ObservableObject {
         }
 
         // Last block of the day — save progress then show DayCompleteView
-        if completedBlockCount >= day.blocks.count && !dataService.isDayCompleted(day.day) {
+        if !dataService.isDayCompleted(day.day) {
             dataService.markDayComplete(
                 dayNumber: day.day,
                 accuracy: session.zoneAccuracy,
@@ -483,6 +494,28 @@ class TrainingViewModel: ObservableObject {
     }
 
     func endSession() {
+        // Safety net: if all blocks of the current day are complete but the day
+        // wasn't marked complete yet (e.g. session was dismissed during the 3-second
+        // completeBlock delay), mark it now before clearing state.
+        if let day = selectedDay, !dataService.isDayCompleted(day.day) {
+            let blockIds = day.blocks.map { $0.blockId }
+            let completedCount = dataService.getCompletedBlockCount(
+                dayNumber: day.day,
+                blockIds: blockIds
+            )
+            if completedCount >= day.blocks.count {
+                dataService.markDayComplete(
+                    dayNumber: day.day,
+                    accuracy: currentSession?.zoneAccuracy ?? 0,
+                    totalPutts: currentSession?.currentPutt ?? 0,
+                    onTargetPutts: currentSession?.inZonePutts ?? 0
+                )
+                if day.day < 30 {
+                    dataService.updateProgress(currentDay: day.day + 1, phase: day.phase)
+                }
+            }
+        }
+
         // Track practice time using day-level start so the full multi-block
         // session duration is recorded, not just the last block.
         if let startTime = daySessionStartTime {
@@ -507,6 +540,48 @@ class TrainingViewModel: ObservableObject {
         sessionStartTime = nil
         daySessionStartTime = nil
         UIApplication.shared.isIdleTimerDisabled = false
+    }
+
+    /// Scans completed-block data and writes any missing DayCompletionData records.
+    /// Call from DaySelectionView.onAppear to recover from sessions that ended before
+    /// completeBlock() had a chance to write the completion marker.
+    func repairMissingCompletions() {
+        guard let days = programLoader.program?.days else { return }
+        var anyRepaired = false
+        var maxRepairedDay = 0
+
+        for day in days.sorted(by: { $0.day < $1.day }) {
+            // Already properly recorded — keep track of the highest complete day.
+            if dataService.isDayCompleted(day.day) {
+                maxRepairedDay = day.day
+                continue
+            }
+            // Check whether all blocks are done in SessionData.
+            let blockIds = day.blocks.map { $0.blockId }
+            guard !blockIds.isEmpty else { continue }
+            let count = dataService.getCompletedBlockCount(dayNumber: day.day, blockIds: blockIds)
+            guard count >= day.blocks.count else { break } // Not done — stop scanning.
+
+            // Write the missing DayCompletionData record.
+            dataService.markDayComplete(
+                dayNumber: day.day,
+                accuracy: 0,
+                totalPutts: 0,
+                onTargetPutts: 0
+            )
+            maxRepairedDay = day.day
+            anyRepaired = true
+        }
+
+        if anyRepaired {
+            // Advance currentDay to the first track after the last repaired one.
+            let nextDay = maxRepairedDay + 1
+            if nextDay <= 30 && currentDay <= maxRepairedDay,
+               let completedDay = programLoader.getDay(maxRepairedDay) {
+                dataService.updateProgress(currentDay: nextDay, phase: completedDay.phase)
+            }
+            repairVersion += 1 // Trigger re-render of DaySelectionView.
+        }
     }
 
     func getAllDays() -> [TrainingDay] {

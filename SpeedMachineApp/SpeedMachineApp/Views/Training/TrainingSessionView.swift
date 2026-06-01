@@ -16,6 +16,7 @@
 
 import SwiftUI
 import UIKit
+import Combine
 
 // MARK: - Main Session Router
 
@@ -590,12 +591,8 @@ struct BlockTransitionView: View {
     let track: TrainingTrack
     let nextBlock: TrainingBlock
 
-    @AppStorage("liveViewTheme") private var themeRaw: String = LiveViewTheme.dark.rawValue
-    @Environment(\.colorScheme) private var colorScheme
-
-    private var theme: LiveViewTheme { LiveViewTheme(rawValue: themeRaw) ?? .dark }
-    private var isDark: Bool { theme.resolvedDark(scheme: colorScheme) }
-    private var tokens: SportTokens { SportTokens.make(dark: isDark) }
+    @State private var countdown: Int = 3
+    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var nextBlockNumber: Int {
         (track.blocks.firstIndex(where: { $0.id == nextBlock.id }) ?? 0) + 1
@@ -603,53 +600,86 @@ struct BlockTransitionView: View {
 
     var body: some View {
         ZStack {
-            tokens.bg.ignoresSafeArea()
+            Color.black.ignoresSafeArea()
 
             VStack(spacing: 0) {
                 Spacer()
 
-                // BLOCK COMPLETE — 72pt, readable at 6 feet
+                // Green checkmark
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: fs(60), weight: .bold))
+                    .foregroundColor(AppColors.accentGreen)
+                    .padding(.bottom, 20)
+
+                // BLOCK COMPLETE
                 Text("BLOCK COMPLETE")
-                    .font(.oswald(fs(72)))
-                    .foregroundColor(tokens.fg)
+                    .font(.inter(fs(32)))
+                    .foregroundColor(.white)
                     .tracking(2)
                     .multilineTextAlignment(.center)
                     .minimumScaleFactor(0.75)
                     .lineLimit(1)
                     .padding(.horizontal, 24)
 
-                Spacer().frame(height: 48)
+                Spacer().frame(height: 44)
 
-                // "MOVING TO" label — 52pt
-                Text("MOVING TO")
-                    .font(.oswald(fs(52), weight: .semibold))
-                    .foregroundColor(tokens.sub)
-                    .tracking(3)
-                    .minimumScaleFactor(0.75)
-                    .lineLimit(1)
+                // UP NEXT label
+                Text("UP NEXT")
+                    .font(.inter(fs(11), weight: .bold))
+                    .kerning(2.2)
+                    .foregroundColor(AppColors.accentGreen)
 
-                Spacer().frame(height: 20)
+                Spacer().frame(height: 14)
 
-                // Track & block number — 52pt
-                Text("Track \(track.number)  ·  Block \(nextBlockNumber)")
-                    .font(.oswald(fs(52)))
-                    .foregroundColor(tokens.sub)
-                    .minimumScaleFactor(0.75)
-                    .lineLimit(1)
-
-                Spacer().frame(height: 16)
-
-                // Block name — 56pt bold
+                // Next block name
                 Text(nextBlock.name.uppercased())
-                    .font(.oswald(fs(56)))
-                    .foregroundColor(tokens.fg)
+                    .font(.inter(fs(48)))
+                    .foregroundColor(.white)
                     .multilineTextAlignment(.center)
-                    .minimumScaleFactor(0.75)
+                    .minimumScaleFactor(0.6)
                     .lineLimit(2)
-                    .padding(.horizontal, 24)
+                    .padding(.horizontal, 32)
+
+                Spacer().frame(height: 10)
+
+                // Block metadata
+                Text("TRACK \(track.number)  ·  BLOCK \(nextBlockNumber)  ·  \(nextBlock.putts ?? 0) PUTTS")
+                    .font(.inter(fs(13), weight: .bold))
+                    .foregroundColor(.white.opacity(0.50))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+                    .padding(.horizontal, 32)
+
+                Spacer().frame(height: 40)
+
+                // Countdown circle
+                ZStack {
+                    Circle()
+                        .stroke(Color.white.opacity(0.12), lineWidth: 5)
+                        .frame(width: 80, height: 80)
+                    Circle()
+                        .trim(from: 0, to: CGFloat(countdown) / 3.0)
+                        .stroke(AppColors.accentGreen, style: StrokeStyle(lineWidth: 5, lineCap: .round))
+                        .frame(width: 80, height: 80)
+                        .rotationEffect(.degrees(-90))
+                        .animation(.linear(duration: 0.9), value: countdown)
+                    Text("\(countdown)")
+                        .font(.inter(fs(36)))
+                        .foregroundColor(.white)
+                }
+
+                Spacer().frame(height: 10)
+
+                Text("STARTING IN")
+                    .font(.inter(fs(11), weight: .bold))
+                    .kerning(2.0)
+                    .foregroundColor(.white.opacity(0.50))
 
                 Spacer()
             }
+        }
+        .onReceive(timer) { _ in
+            if countdown > 0 { countdown -= 1 }
         }
     }
 }
@@ -754,203 +784,104 @@ struct DayCompleteView: View {
     @Environment(\.isLandscapeOrientation) var isLandscape
 
     var body: some View {
-        if isLandscape {
-            landscapeLayout
-        } else {
-            portraitLayout
-        }
-    }
-
-    var portraitLayout: some View {
-        VStack(spacing: 0) {
-            VStack(spacing: 8) {
-                ZStack {
-                    Circle().fill(AppColors.accentLight).frame(width: 120, height: 120)
-                    Image(systemName: "star.fill")
-                        .font(.system(size: fs(64)))
-                        .foregroundColor(AppColors.accentGreen)
-                }
-                .padding(.top, 32)
-
-                Text("TRACK \(stats.trackNumber) COMPLETE")
-                    .font(.system(size: fs(36), weight: .black, design: .rounded))
-                    .foregroundColor(AppColors.primaryBlack)
-                    .multilineTextAlignment(.center)
-
-                Text("Great work!")
-                    .font(.system(size: fs(22), weight: .medium, design: .rounded))
-                    .foregroundColor(AppColors.textMuted)
-            }
-            .frame(maxWidth: .infinity)
-
-            Spacer()
+        ZStack {
+            Color.black.ignoresSafeArea()
 
             VStack(spacing: 0) {
-                DayStatRow(label: "PUTTS", value: "\(stats.totalPutts)")
-                Divider().padding(.horizontal, 8)
-                DayStatRow(label: "ACCURACY", value: "\(stats.accuracyPercent)%")
-                Divider().padding(.horizontal, 8)
-                DayStatRow(label: "TIME", value: practiceTimeString)
+                Spacer()
 
-                if let speed = stats.strongestSpeed {
-                    Divider().padding(.horizontal, 8)
-                    DayStatRow(label: "STRONGEST", value: "\(speed) MPH", valueColor: AppColors.accentGreen,
-                               detail: "\(Int(stats.strongestAccuracy * 100))%")
-                }
-                if let speed = stats.weakestSpeed {
-                    Divider().padding(.horizontal, 8)
-                    DayStatRow(label: "NEEDS WORK", value: "\(speed) MPH", valueColor: AppColors.error,
-                               detail: "\(Int(stats.weakestAccuracy * 100))%")
-                }
-                if let best = stats.bestBlock {
-                    Divider().padding(.horizontal, 8)
-                    DayStatRow(label: "BEST BLOCK", value: best, valueColor: AppColors.accentGreen)
-                }
-            }
-            .padding(.vertical, 8)
-            .background(Color.white)
-            .cornerRadius(24)
-            .overlay(RoundedRectangle(cornerRadius: 24).stroke(AppColors.border, lineWidth: 1))
-            .padding(.horizontal, 16)
+                // Green checkmark
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: fs(60)))
+                    .foregroundColor(AppColors.accentGreen)
+                    .padding(.bottom, 20)
 
-            Spacer()
-
-            Button {
-                trainingViewModel.endSession()
-                trainingViewModel.shouldNavigateHome = true
-            } label: {
-                Text("Done")
-                    .font(.system(size: fs(28), weight: .bold, design: .rounded))
+                // TRACK COMPLETE
+                Text("TRACK COMPLETE")
+                    .font(.inter(fs(32)))
                     .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 20)
-                    .background(AppColors.accentGreen)
-                    .cornerRadius(18)
+                    .tracking(2)
+                    .multilineTextAlignment(.center)
+                    .minimumScaleFactor(0.75)
+
+                Text(String(format: "Track %d · Great work!", stats.trackNumber))
+                    .font(.inter(fs(14), weight: .medium))
+                    .foregroundColor(.white.opacity(0.60))
+                    .padding(.top, 6)
+
+                Spacer().frame(height: 36)
+
+                // Hero number: track / 30
+                HStack(alignment: .bottom, spacing: 8) {
+                    Text(String(format: "%02d", stats.trackNumber))
+                        .font(.inter(fs(80)))
+                        .foregroundColor(.white)
+                        .tracking(-2)
+                    Text("/ \(TrainingConstants.totalTracks)")
+                        .font(.inter(fs(22), weight: .bold))
+                        .foregroundColor(.white.opacity(0.50))
+                        .padding(.bottom, 10)
+                }
+
+                Text("TRACKS COMPLETE")
+                    .font(.inter(fs(11), weight: .bold))
+                    .kerning(2.2)
+                    .foregroundColor(.white.opacity(0.50))
+
+                Spacer().frame(height: 36)
+
+                // Stats row
+                HStack(spacing: 0) {
+                    trackStatCell(value: "\(stats.totalPutts)", label: "PUTTS")
+                    Rectangle().fill(Color.white.opacity(0.10)).frame(width: 1, height: 36)
+                    trackStatCell(value: "\(stats.accuracyPercent)%", label: "ACCURACY")
+                    Rectangle().fill(Color.white.opacity(0.10)).frame(width: 1, height: 36)
+                    trackStatCell(value: practiceTimeString, label: "TIME")
+                }
+                .padding(.horizontal, 24)
+
+                Spacer()
+
+                // CTA
+                Button {
+                    trainingViewModel.endSession()
+                    trainingViewModel.shouldNavigateHome = true
+                } label: {
+                    Text("Back to Tracks →")
+                        .font(.inter(fs(17), weight: .bold))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 18)
+                        .background(AppColors.accentGreen)
+                        .clipShape(Capsule())
+                }
+                .padding(.horizontal, 32)
+                .padding(.bottom, 32)
             }
-            .padding(.horizontal, 16)
-            .padding(.bottom, 24)
         }
-        .background(AppColors.backgroundAlt.ignoresSafeArea())
     }
 
-    var landscapeLayout: some View {
-        GeometryReader { geo in
-            HStack(spacing: 16) {
-                VStack(spacing: 16) {
-                    Spacer()
-                    ZStack {
-                        Circle().fill(AppColors.accentLight).frame(width: 100, height: 100)
-                        Image(systemName: "star.fill").font(.system(size: fs(54))).foregroundColor(AppColors.accentGreen)
-                    }
-                    Text("TRACK \(stats.trackNumber)\nCOMPLETE")
-                        .font(.system(size: fs(30), weight: .black, design: .rounded))
-                        .foregroundColor(AppColors.primaryBlack)
-                        .multilineTextAlignment(.center)
-                    Spacer()
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-
-                VStack(spacing: 10) {
-                    VStack(spacing: 0) {
-                        DayStatRowCompact(label: "PUTTS", value: "\(stats.totalPutts)")
-                        Divider()
-                        DayStatRowCompact(label: "ACCURACY", value: "\(stats.accuracyPercent)%")
-                        Divider()
-                        DayStatRowCompact(label: "TIME", value: practiceTimeString)
-                        if let speed = stats.strongestSpeed {
-                            Divider()
-                            DayStatRowCompact(label: "STRONGEST", value: "\(speed) MPH", valueColor: AppColors.accentGreen)
-                        }
-                        if let speed = stats.weakestSpeed {
-                            Divider()
-                            DayStatRowCompact(label: "NEEDS WORK", value: "\(speed) MPH", valueColor: AppColors.error)
-                        }
-                    }
-                    .background(Color.white)
-                    .cornerRadius(20)
-                    .overlay(RoundedRectangle(cornerRadius: 20).stroke(AppColors.border, lineWidth: 1))
-
-                    Button {
-                        trainingViewModel.endSession()
-                        trainingViewModel.shouldNavigateHome = true
-                    } label: {
-                        Text("Done")
-                            .font(.system(size: fs(24), weight: .bold, design: .rounded))
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 14)
-                            .background(AppColors.accentGreen)
-                            .cornerRadius(16)
-                    }
-                }
-                .frame(maxWidth: .infinity)
-            }
-            .padding(.top, 12)
-            .padding(.bottom, max(12, geo.safeAreaInsets.bottom))
-            .padding(.leading, max(20, geo.safeAreaInsets.leading + 8))
-            .padding(.trailing, max(20, geo.safeAreaInsets.trailing + 8))
+    private func trackStatCell(value: String, label: String) -> some View {
+        VStack(spacing: 4) {
+            Text(value)
+                .font(.inter(fs(24)))
+                .foregroundColor(.white)
+                .minimumScaleFactor(0.6)
+                .lineLimit(1)
+            Text(label)
+                .font(.inter(fs(10), weight: .bold))
+                .kerning(1.5)
+                .foregroundColor(.white.opacity(0.50))
         }
-        .ignoresSafeArea(edges: .horizontal)
-        .background(AppColors.backgroundAlt.ignoresSafeArea())
+        .frame(maxWidth: .infinity)
     }
 
     var practiceTimeString: String {
         if stats.practiceMinutes > 0 {
-            return "\(stats.practiceMinutes)m \(stats.practiceSecondsRemainder)s"
+            return "\(stats.practiceMinutes)m"
         } else {
             return "\(stats.practiceSecondsRemainder)s"
         }
-    }
-}
-
-// MARK: - Track Complete Stat Rows
-
-struct DayStatRow: View {
-    let label: String
-    let value: String
-    var valueColor: Color = AppColors.primaryBlack
-    var detail: String? = nil
-
-    var body: some View {
-        HStack {
-            Text(label)
-                .font(.system(size: fs(20), weight: .bold, design: .rounded))
-                .foregroundColor(AppColors.textMuted)
-                .tracking(1)
-            Spacer()
-            if let detail = detail {
-                Text(detail)
-                    .font(.system(size: fs(20), weight: .bold, design: .rounded))
-                    .foregroundColor(valueColor.opacity(0.7))
-                    .padding(.trailing, 6)
-            }
-            Text(value)
-                .font(.system(size: fs(28), weight: .black, design: .rounded))
-                .foregroundColor(valueColor)
-        }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 14)
-    }
-}
-
-struct DayStatRowCompact: View {
-    let label: String
-    let value: String
-    var valueColor: Color = AppColors.primaryBlack
-
-    var body: some View {
-        HStack {
-            Text(label)
-                .font(.system(size: fs(16), weight: .bold, design: .rounded))
-                .foregroundColor(AppColors.textMuted)
-                .tracking(1)
-            Spacer()
-            Text(value)
-                .font(.system(size: fs(22), weight: .black, design: .rounded))
-                .foregroundColor(valueColor)
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
     }
 }
 

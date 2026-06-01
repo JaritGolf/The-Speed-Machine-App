@@ -13,6 +13,8 @@ struct CombineStatsView: View {
     @Environment(\.dismiss) var dismiss
 
     @State private var games: [CombineGameData] = []
+    @State private var showTrends = false
+    @State private var showHistory = false
 
     private var highScore: Int {
         Int(dataService.userProgress.combineHighScore)
@@ -25,11 +27,31 @@ struct CombineStatsView: View {
     }
 
     var body: some View {
-        NavigationView {
-            ZStack {
-                AppColors.backgroundAlt.ignoresSafeArea()
+        ZStack(alignment: .top) {
+            Color.white.ignoresSafeArea()
 
-                ScrollView {
+            VStack(spacing: 0) {
+                HStack {
+                    Button { dismiss() } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(.black)
+                    }
+                    Spacer()
+                    Text("COMBINE")
+                        .font(.custom("Inter-Bold", size: 13))
+                        .kerning(2.5)
+                        .foregroundColor(.black)
+                    Spacer()
+                    Color.clear.frame(width: 28, height: 28)
+                }
+                .padding(.horizontal, 22)
+                .padding(.top, 12)
+                .padding(.bottom, 12)
+
+                Divider().overlay(AppColors.border)
+
+                ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 20) {
                         if games.isEmpty {
                             // Empty state
@@ -113,18 +135,20 @@ struct CombineStatsView: View {
                     .padding()
                 }
             }
-            .navigationTitle("Combine Stats")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") { dismiss() }
+        }
+        .safeAreaInset(edge: .bottom) {
+            StatsTabBar(active: .combine) { tab in
+                switch tab {
+                case .stats:   dismiss()
+                case .trends:  showTrends = true
+                case .history: showHistory = true
+                case .combine: break
                 }
             }
-            .onAppear {
-                games = statsService.getAllCombineGames()
-            }
         }
-        .navigationViewStyle(.stack)
+        .fullScreenCover(isPresented: $showTrends) { TrendsView() }
+        .fullScreenCover(isPresented: $showHistory) { SessionHistoryView() }
+        .onAppear { games = statsService.getAllCombineGames() }
     }
 }
 
@@ -133,43 +157,38 @@ struct CombineGameRow: View {
     let isHighScore: Bool
 
     var body: some View {
-        HStack(spacing: 14) {
-            if isHighScore {
-                Image(systemName: "trophy.fill")
-                    .foregroundColor(.orange)
-                    .font(.headline)
-            } else {
-                Image(systemName: "target")
-                    .foregroundColor(AppColors.textMuted)
-                    .font(.headline)
-            }
+        HStack(spacing: 12) {
+            Text("\(game.totalScore)")
+                .font(.custom("Inter-Black", size: 22))
+                .foregroundColor(.black)
+                .tracking(-0.5)
+                .frame(width: 64, alignment: .leading)
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Score: \(game.totalScore)")
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                    .foregroundColor(AppColors.primaryBlack)
-
+            VStack(alignment: .leading, spacing: 2) {
                 if let date = game.playedAt {
-                    Text(date.toDisplayString())
-                        .font(.caption)
-                        .foregroundColor(AppColors.textMuted)
+                    Text(date.toDisplayString().uppercased())
+                        .font(.custom("Inter-Bold", size: 11))
+                        .kerning(1.0)
+                        .foregroundColor(AppColors.textSubdued)
                 }
             }
 
             Spacer()
 
             if isHighScore {
-                Text("Best")
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.orange)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(Color.orange.opacity(0.1))
-                    .cornerRadius(6)
+                Text("BEST")
+                    .font(.custom("Inter-Bold", size: 9))
+                    .kerning(1.0)
+                    .foregroundColor(AppColors.accentAmber)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 3)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 4)
+                            .stroke(AppColors.accentAmber, lineWidth: 1)
+                    )
             }
         }
-        .padding(.vertical, 8)
+        .padding(.horizontal, 22)
+        .padding(.vertical, 14)
     }
 }

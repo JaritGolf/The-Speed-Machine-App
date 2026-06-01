@@ -20,79 +20,78 @@ struct StatsDashboardView: View {
     @State private var selectedSpeedProfile: SpeedProfileData?
 
     var body: some View {
-        NavigationView {
-            ZStack {
-                AppColors.backgroundAlt.ignoresSafeArea()
+        ZStack(alignment: .top) {
+            Color.white.ignoresSafeArea()
 
-                ScrollView {
+            VStack(spacing: 0) {
+                // Whoop-style top bar
+                HStack {
+                    Button { dismiss() } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(.black)
+                    }
+                    Spacer()
+                    Text("STATS")
+                        .font(.custom("Inter-Bold", size: 13))
+                        .kerning(2.5)
+                        .foregroundColor(.black)
+                    Spacer()
+                    Color.clear.frame(width: 28, height: 28)
+                }
+                .padding(.horizontal, 22)
+                .padding(.top, 12)
+                .padding(.bottom, 12)
+
+                Divider().overlay(AppColors.border)
+
+                ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 20) {
-                        // Key Metrics Row
                         KeyMetricsSection()
-
-                        // Needs Work Callout
                         if !statsService.weakestSpeeds.isEmpty {
                             NeedsWorkCard()
                         }
-
-                        // Speed Ladder — the hero visual
                         SpeedLadderSection(selectedProfile: $selectedSpeedProfile)
-
-                        // Quick Links
                         VStack(spacing: 12) {
                             QuickLinkButton(
                                 title: "Trends Over Time",
                                 subtitle: "Accuracy, consistency & practice charts",
                                 icon: "chart.line.uptrend.xyaxis",
                                 color: AppColors.accentGreen
-                            ) {
-                                showTrends = true
-                            }
-
+                            ) { showTrends = true }
                             QuickLinkButton(
                                 title: "Session History",
                                 subtitle: "Putt-by-putt deep dives",
                                 icon: "list.bullet.rectangle",
                                 color: AppColors.bleBlue
-                            ) {
-                                showSessionHistory = true
-                            }
-
+                            ) { showSessionHistory = true }
                             QuickLinkButton(
                                 title: "Combine Stats",
                                 subtitle: "Game scores & zone breakdown",
                                 icon: "target",
                                 color: .orange
-                            ) {
-                                showCombineStats = true
-                            }
+                            ) { showCombineStats = true }
                         }
                     }
                     .padding()
-                    // On iPad, centre the content so cards don't stretch edge-to-edge
                     .adaptiveContentFrame(maxWidth: 700)
                 }
             }
-            .navigationTitle("Stats")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") { dismiss() }
+        }
+        .safeAreaInset(edge: .bottom) {
+            StatsTabBar(active: .stats) { tab in
+                switch tab {
+                case .trends:  showTrends = true
+                case .history: showSessionHistory = true
+                case .combine: showCombineStats = true
+                case .stats:   break
                 }
             }
-            .fullScreenCover(isPresented: $showTrends) {
-                TrendsView()
-            }
-            .fullScreenCover(isPresented: $showSessionHistory) {
-                SessionHistoryView()
-            }
-            .fullScreenCover(isPresented: $showCombineStats) {
-                CombineStatsView()
-            }
-            .sheet(item: $selectedSpeedProfile) { profile in
-                SpeedDetailView(profile: profile)
-            }
         }
-        .navigationViewStyle(.stack)
+        .fullScreenCover(isPresented: $showTrends) { TrendsView() }
+        .fullScreenCover(isPresented: $showSessionHistory) { SessionHistoryView() }
+        .fullScreenCover(isPresented: $showCombineStats) { CombineStatsView() }
+        .sheet(item: $selectedSpeedProfile) { profile in SpeedDetailView(profile: profile) }
     }
 }
 
@@ -402,4 +401,50 @@ struct QuickLinkButton: View {
 
 extension SpeedProfileData: Identifiable {
     public var id: Int16 { targetSpeed }
+}
+
+// MARK: - Stats Tab Bar
+
+enum StatsTab {
+    case stats, trends, history, combine
+}
+
+struct StatsTabBar: View {
+    let active: StatsTab
+    let onTap: (StatsTab) -> Void
+
+    private let tabs: [(StatsTab, String)] = [
+        (.stats,   "STATS"),
+        (.trends,  "TRENDS"),
+        (.history, "HISTORY"),
+        (.combine, "COMBINE")
+    ]
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Rectangle()
+                .fill(AppColors.border)
+                .frame(height: 1)
+
+            HStack(spacing: 0) {
+                ForEach(tabs, id: \.1) { tab, label in
+                    Button { onTap(tab) } label: {
+                        VStack(spacing: 6) {
+                            Text(label)
+                                .font(.custom("Inter-Bold", size: 11))
+                                .kerning(1.0)
+                                .foregroundColor(active == tab ? .black : AppColors.textSubdued)
+                            Rectangle()
+                                .fill(active == tab ? Color.black : Color.clear)
+                                .frame(height: 2)
+                        }
+                        .padding(.vertical, 10)
+                        .frame(maxWidth: .infinity)
+                    }
+                }
+            }
+            .padding(.horizontal, 22)
+            .background(Color.white)
+        }
+    }
 }

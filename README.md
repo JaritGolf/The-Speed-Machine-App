@@ -114,9 +114,10 @@ Final score = Base Points × Zone Multiplier
 ## Setup Instructions
 
 ### iOS App
-1. Open `SpeedMachineApp.xcodeproj` in Xcode
+1. Open the **outer** project: `Traning Program App/SpeedMachineApp/SpeedMachineApp.xcodeproj` in Xcode.
+   - ⚠️ Do NOT open the renamed `SpeedMachineApp_OLD_DO_NOT_OPEN.xcodeproj` nested one folder deeper — it's a stale duplicate that ships an old UI under the same bundle id.
 2. Ensure deployment target is iOS 15.0+
-3. Build and run on device or simulator
+3. Build and run on device or simulator (Clean Build Folder first if a screen looks cached)
 4. Grant Bluetooth permissions when prompted
 
 ### Firmware

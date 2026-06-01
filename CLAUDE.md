@@ -37,11 +37,47 @@ iOS SwiftUI app for the **Speed Machine** putting training device by Jarit Golf.
 | `SessionHistoryView.swift` | Session list + putt-by-putt detail view |
 | `CombineStatsView.swift` | Combine game score history and trend chart |
 
-### Two Code Targets
+### ⚠️ Xcode Project & Build/Deploy — READ THIS FIRST
 
-There are two parallel directories:
-- `SpeedMachineApp/SpeedMachineApp/` — the **primary active target** (this is what gets built)
-- `SpeedMachine/` — an older/secondary target. Keep in sync when making changes.
+**There is exactly ONE project to open and build:**
+
+```
+Traning Program App/SpeedMachineApp/SpeedMachineApp.xcodeproj      ← THE ONE (outer)
+```
+
+It compiles the source under `SpeedMachineApp/SpeedMachineApp/` (`App/`, `Models/`, `Views/`, `ViewModels/`, `Services/`, `Utilities/`, `Resources/`), scheme `SpeedMachineApp`, bundle id `Jarit-Golf.SpeedMachineApp`. This is the only actively-maintained app.
+
+**Historical trap (now defused):** a *duplicate* project used to sit one folder deeper at
+`SpeedMachineApp/SpeedMachineApp/SpeedMachineApp.xcodeproj`, compiling a **stale, divergent copy** of the
+source in `SpeedMachineApp/SpeedMachineApp/SpeedMachineApp/…`. Both produced the **same bundle id**, so
+building the wrong one silently shipped an *old UI* to the phone while the simulator (built from the correct
+project) looked correct. That duplicate has been **renamed to `SpeedMachineApp_OLD_DO_NOT_OPEN.xcodeproj`** —
+never open or build it. Rule of thumb: if you ever see two `SpeedMachineApp.xcodeproj`, the correct one is the
+**shallower** path.
+
+Also present but **NOT used** (do not edit/sync): the older `SpeedMachine/` directory, and a separate legacy
+project `Training Program App/Training Program App.xcodeproj` (different bundle id `Jarit-Golf.Training-Program-App`).
+
+**Deploy to the phone:** open the outer project → select the iPhone → Product ▸ Clean Build Folder
+(Shift+Cmd+K) → Run. Same bundle id means the new build replaces the installed app. If a screen looks cached,
+delete the app from the phone once and Run again.
+
+**Build to verify (Claude runs this — Arthur does not use Terminal):**
+```
+xcodebuild -project SpeedMachineApp.xcodeproj -scheme SpeedMachineApp \
+  -destination 'platform=iOS Simulator,name=iPhone 16e' build
+```
+
+### Design System & Fonts (Whoop)
+
+The UI follows the "Whoop minimal athletic" system: white screens, `#22C55E` green accent, `#DC2626` pressure
+red, `#1D4ED8` gate blue, `#f0f0f0` hairlines, full-black transition/complete screens, and the **Inter**
+typeface. Tokens live in `Utilities/Constants.swift` (`AppColors`) and `Views/Training/SportLive/SportTokens.swift`.
+
+⚠️ **Font bundling gotcha:** Inter `.ttf` files live in `Resources/Fonts/`, but `Info.plist` `UIAppFonts` MUST
+list **bare filenames** (`Inter-Black.ttf`), NOT `Fonts/Inter-Black.ttf`. The build flattens `Resources/`
+into the bundle root, so a `Fonts/…` path fails to register and **every custom font silently falls back to
+SF Pro app-wide** (this was a real, hard-to-spot bug). Use `Font.inter(_:weight:)` or `.custom("Inter-…")`.
 
 ---
 
@@ -104,28 +140,30 @@ All zones use a **uniform ±0.5 MPH tolerance** — this was intentionally set e
 | 4 | Power | 15–18 MPH | ±0.5 MPH |
 | 5 | Maximum | 19–20 MPH | ±0.5 MPH |
 
-Tolerance is stored in three places — keep all in sync when changing:
-1. `Constants.swift` (both targets) — `SpeedZone.zones` array
-2. `speed-machine-training-program.json` (both locations) — `speedZones` array
-3. `SpeedMachine/Resources/speed-machine-training-program.json` — `zones` array + per-block `tolerance` fields
+Tolerance is stored in two places in the shipped app — keep them in sync when changing:
+1. `Utilities/Constants.swift` — `SpeedZone.zones` array
+2. `Resources/speed-machine-training-program.json` — `speedZones[].tolerance`
+
+(The unused root-level and `SpeedMachine/` JSON copies are not built — ignore them.)
 
 ---
 
 ## Training Program Data
 
-The JSON is the source of truth for all training content. Two copies exist:
-- `SpeedMachineApp/SpeedMachineApp/Resources/speed-machine-training-program.json` — used by the active build target
-- `speed-machine-training-program.json` (root) — master/reference copy
+The JSON is the source of truth for training content. The build ships exactly one copy:
+- `SpeedMachineApp/SpeedMachineApp/Resources/speed-machine-training-program.json` — **the only copy that ships.**
 
-Keep both in sync. The `SpeedMachine/Resources/` JSON has a slightly different schema (uses `zones` instead of `speedZones`, snake_case keys, per-block `tolerance` fields).
+A root-level `speed-machine-training-program.json` and a `SpeedMachine/Resources/` copy exist but are **NOT built** — ignore them unless deliberately maintaining them.
 
-### Terminology: Tracks not Days
+### ⚠️ JSON ↔ model schema contract: keys are `day` / `days` / `unlockDay`
 
-The 30 structured program elements are called **Tracks** (not Days). This reflects that some tracks may take more than one calendar day to complete. The terminology throughout the codebase, UI, and JSON uses "Track/Tracks":
-- UI: "Track 1", "Track 7: Block 3: ..."
-- Swift model: `TrainingTrack` struct, `track.number`, `selectedTrack`
-- JSON key: `"track"` (the number), top-level `"tracks"` array
-- Calendar-based stats (streaks, DailySnapshot, trend charts) still use "day" internally since they measure calendar-day activity, not track completion.
+Although the UI *labels* the 30 elements "Track N", the **Swift model and the shipped JSON keys use `day`** — NOT `track`:
+- Model: `TrainingDay` struct (`day: Int`), loaded via `program.days` in `TrainingProgramLoader` (decodes `TrainingProgram`). `SpeedZoneInfo.unlockDay: Int` is **required (non-optional)**.
+- Shipped JSON: top-level array `"days"`; each element has `"day"`; each speed zone has `"unlockDay"`.
+
+**Do NOT rename JSON keys to `tracks` / `track` / `unlockTrack` unless you also change the model's `CodingKeys` in `TrainingProgram.swift`.** A prior edit renamed only the JSON → `JSONDecoder` threw `keyNotFound("day")` / `keyNotFound("unlockDay")` → `program` stayed `nil` → the **entire training flow died on a fresh install** (Tracks screen stuck on a loading spinner). The JSON and the model are a matched pair — keep their key names in sync. After any JSON edit, verify it decodes (console prints `Training program loaded successfully with 30 days`).
+
+Calendar-based stats (streaks, DailySnapshot, trend charts) also use "day" internally.
 
 ### Target Accuracy
 
@@ -133,15 +171,15 @@ The 30 structured program elements are called **Tracks** (not Days). This reflec
 
 ---
 
-## Block Header Format
+## Block Header Format (live sessions)
 
-All live session headers display: `"Track X: Block Y: Block Name"`
+Live session headers render via **`SportRecHeader`** (`Views/Training/SportLive/SportRecHeader.swift`) as a compact single line:
+`"T{day} · BLOCK {n} · {BLOCK NAME}"` — uppercase, Inter ExtraBold, colored by type:
+- standard / exploration / ladder / make-in-row → black text + green BLE dot (`.rec`)
+- pressure → red (`AppColors.error`) + ⚡ (`.bolt`)
+- gate test → blue (`AppColors.bleBlue`) + 🏁 (`.flag`)
 
-- `SessionHeaderCompact` — standard/exploration/ladder/make-in-row blocks (BLE dot + text)
-- `PressureHeaderCompact` — pressure blocks (⚡ bolt icon + text in red)
-- `GateTestHeaderCompact` — gate test blocks (🏁 flag icon + text in blue)
-
-Block number is always computed from the block's index in `track.blocks`, not stored directly.
+Block number is computed from the block's index in the day's `blocks`, not stored directly. (The legacy `SessionHeaderCompact` / `PressureHeaderCompact` / `GateTestHeaderCompact` structs still exist but no longer drive live sessions.)
 
 ---
 

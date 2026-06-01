@@ -11,16 +11,18 @@ struct SportLiveContainer: View {
     let day: TrainingDay
     let stripConfig: SportPassStripConfig
     var headerIcon: SportHeaderIcon = .rec
+    var endTitle: String = "END SESSION"
+    var endAccent: Color? = nil
 
     @EnvironmentObject var trainingViewModel: TrainingViewModel
     @EnvironmentObject var bluetoothService: BluetoothService
 
-    @AppStorage("liveViewTheme") private var themeRaw: String = LiveViewTheme.dark.rawValue
+    @AppStorage("liveViewTheme") private var themeRaw: String = LiveViewTheme.light.rawValue
     @Environment(\.colorScheme) private var colorScheme
     @State private var showEndSessionAlert = false
 
     private var tokens: SportTokens {
-        let isDark = (LiveViewTheme(rawValue: themeRaw) ?? .dark).resolvedDark(scheme: colorScheme)
+        let isDark = (LiveViewTheme(rawValue: themeRaw) ?? .light).resolvedDark(scheme: colorScheme)
         return SportTokens.make(dark: isDark)
     }
 
@@ -38,23 +40,24 @@ struct SportLiveContainer: View {
                     adaptiveContext: trainingViewModel.adaptiveBlockContext
                 )
 
-                SportPassStrip(config: stripConfig, tokens: tokens)
+                SportPassStrip(
+                    config: stripConfig,
+                    tokens: tokens,
+                    puttHistory: session.puttRecords,
+                    totalPutts: session.totalPutts,
+                    target: session.currentTargetSpeed,
+                    tolerance: 0.5
+                )
 
-                // Hero + end button fill remaining space
-                VStack(spacing: 8) {
-                    if block.type == .exploration {
-                        SportExplorationHero(session: session, tokens: tokens)
-                            .frame(maxHeight: .infinity)
-                    } else {
-                        SportHeroCard(session: session, tokens: tokens)
-                            .frame(maxHeight: .infinity)
-                    }
+                // Chromeless hero fills remaining space; end button pinned below
+                SportHeroCard(session: session, tokens: tokens, tolerance: 0.5)
+                    .frame(maxHeight: .infinity)
 
-                    SportEndButton(tokens: tokens, showAlert: $showEndSessionAlert)
-                }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-                .frame(maxHeight: .infinity)
+                SportEndButton(tokens: tokens, showAlert: $showEndSessionAlert,
+                               title: endTitle, accent: endAccent)
+                    .padding(.horizontal, 22)
+                    .padding(.top, 4)
+                    .padding(.bottom, 22)
             }
 
             SportEdgeFlash(

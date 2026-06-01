@@ -21,6 +21,14 @@ struct SportRecHeader: View {
         (track.blocks.firstIndex(where: { $0.id == block.id }) ?? 0) + 1
     }
 
+    private var headerColor: Color {
+        switch icon {
+        case .bolt: return Color(hex: "DC2626")
+        case .flag: return Color(hex: "1D4ED8")
+        case .rec:  return tokens.fg
+        }
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 10) {
@@ -28,16 +36,16 @@ struct SportRecHeader: View {
                     .frame(width: 16, height: 16)
 
                 Text("TRACK \(track.number) / BLOCK \(blockNumber)")
-                    .font(.oswald(fs(18)))
-                    .foregroundColor(tokens.fg)
+                    .font(.inter(fs(18)))
+                    .foregroundColor(headerColor)
                     .lineLimit(1)
                     .minimumScaleFactor(0.6)
 
                 Spacer()
 
                 Text(block.name.uppercased())
-                    .font(.oswald(fs(16), weight: .semibold))
-                    .foregroundColor(tokens.sub)
+                    .font(.inter(fs(16), weight: .semibold))
+                    .foregroundColor(headerColor.opacity(0.6))
                     .lineLimit(1)
                     .minimumScaleFactor(0.6)
             }
@@ -67,15 +75,15 @@ struct SportRecHeader: View {
     private var iconView: some View {
         switch icon {
         case .rec:
-            SportPulsingDot(color: tokens.miss)
+            SportPulsingDot(color: tokens.zone)
         case .flag:
             Image(systemName: "flag.checkered")
                 .font(.system(size: 16, weight: .bold))
-                .foregroundColor(Color(hex: "3B82F6"))
+                .foregroundColor(Color(hex: "1D4ED8"))
         case .bolt:
             Image(systemName: "bolt.fill")
                 .font(.system(size: 16, weight: .bold))
-                .foregroundColor(tokens.miss)
+                .foregroundColor(Color(hex: "DC2626"))
         }
     }
 }

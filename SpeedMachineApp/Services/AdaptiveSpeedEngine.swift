@@ -143,6 +143,24 @@ class AdaptiveSpeedEngine {
         return strongWeight
     }
 
+    /// Inverse of `weight(for:)` — features the user's STRONGEST speeds most often.
+    /// Used by recovery mode (confidence builder) while still keeping the full pool in play.
+    func strengthWeight(for speed: Int) -> Double {
+        guard let profile = statsService.speedProfiles[speed] else {
+            return unpracticedWeight
+        }
+
+        if profile.totalPutts < 5 {
+            return unpracticedWeight
+        }
+
+        let accuracy = profile.accuracy
+        if accuracy < weakThreshold { return strongWeight }       // weak speeds appear least
+        if accuracy < moderateThreshold { return baselineWeight }
+        if accuracy < strongThreshold { return moderateWeight }
+        return weakWeight                                          // strongest speeds appear most
+    }
+
     /// Calculate warmup-compressed weight (closer to 1.0)
     func warmupWeight(for speed: Int) -> Double {
         let fullWeight = weight(for: speed)
@@ -220,11 +238,21 @@ class AdaptiveSpeedEngine {
               let pool = block.adaptivePool, !pool.isEmpty else { return nil }
         let length = block.putts ?? 15
 
+        // Single-speed gate: only drill one speed when the block explicitly asks for it
+        // (adaptiveSingleSpeed flag) or its mechanic requires it (make-in-row / consecutive).
+        // Everything else features the relevant speeds more often across the FULL pool.
+        let wantsSingleSpeed = block.adaptiveSingleSpeed == true
+            || block.challengeType == "make-in-row"
+            || block.challengeType == "consecutive"
+        if wantsSingleSpeed {
+            return generateSingleSpeed(mode: mode, pool: pool, length: length)
+        }
+
         switch mode {
         case "recovery":
             return generateRecoveryInterleaved(pool: pool, length: length)
         case "challenge":
-            return generateChallengeInterleaved(block: block, pool: pool, length: length)
+            return generateChallengeInterleaved(pool: pool, length: length)
         case "predictive":
             return generatePredictiveInterleaved(pool: pool, length: length)
         default:
@@ -232,111 +260,74 @@ class AdaptiveSpeedEngine {
         }
     }
 
+    /// Build a deliberate single-speed (exclusive drill) sequence. The speed is chosen by the
+    /// mode's intent: recovery → strongest; challenge → optimal challenge point (~70%);
+    /// predictive → weakest. Used only when a block opts in via `adaptiveSingleSpeed` or
+    /// carries a make-in-row / consecutive mechanic.
+    private func generateSingleSpeed(mode: String, pool: [Int], length: Int) -> AdaptiveInterleavedResult {
+        let profiles = pool.compactMap { speed -> (speed: Int, accuracy: Double)? in
+            guard let p = statsService.speedProfiles[speed], p.totalPutts >= 3 else { return nil }
+            return (speed, p.accuracy)
+        }
+
+        // No data yet — fall back to the middle of the pool with a neutral label
+        guard !profiles.isEmpty else {
+            let speed = pool[pool.count / 2]
+            return AdaptiveInterleavedResult(sequence: Array(repeating: speed, count: length),
+                                             context: "Focused drill: \(speed) MPH")
+        }
+
+        let chosen: Int
+        let label: String
+        switch mode {
+        case "recovery":
+            chosen = profiles.max(by: { $0.accuracy < $1.accuracy })!.speed
+            label = "Strength: \(chosen) MPH (\(SpeedZone.getZone(for: chosen).name))"
+        case "predictive":
+            chosen = profiles.min(by: { $0.accuracy < $1.accuracy })!.speed
+            label = "Weak-spot drill: \(chosen) MPH"
+        default: // challenge — speed closest to the ~70% optimal challenge point
+            let target = profiles.min(by: { abs($0.accuracy - 70.0) < abs($1.accuracy - 70.0) })!
+            chosen = target.speed
+            label = target.accuracy < 60.0 ? "Weak-zone drill: \(chosen) MPH" : "Optimal challenge: \(chosen) MPH"
+        }
+        return AdaptiveInterleavedResult(sequence: Array(repeating: chosen, count: length), context: label)
+    }
+
     /// Recovery mode — confidence builder.
-    /// Selects the top 2 highest-accuracy speeds from the pool (65/35 split).
-    /// Goal: end on a positive note while maintaining practiced zones.
+    /// Features the user's STRONGEST speeds most often while keeping the whole pool in play,
+    /// so it stays varied instead of collapsing into single-speed block practice.
     private func generateRecoveryInterleaved(pool: [Int], length: Int) -> AdaptiveInterleavedResult {
-        let profiles = pool.compactMap { speed -> (speed: Int, accuracy: Double)? in
-            guard let p = statsService.speedProfiles[speed], p.totalPutts >= 3 else { return nil }
-            return (speed, p.accuracy)
-        }.sorted { $0.accuracy > $1.accuracy }  // highest accuracy first
-
-        // No data yet — equal distribution, neutral label
-        guard !profiles.isEmpty else {
-            let seq = generateEqualDistribution(pool: pool, length: length)
-            return AdaptiveInterleavedResult(sequence: seq, context: "Building confidence")
-        }
-
-        let primary = profiles[0].speed
-        let primaryZone = SpeedZone.getZone(for: primary)
-
-        guard profiles.count > 1 else {
-            let seq = Array(repeating: primary, count: length)
-            return AdaptiveInterleavedResult(
-                sequence: seq,
-                context: "Strength: \(primary) MPH (\(primaryZone.name))"
-            )
-        }
-
-        let secondary = profiles[1].speed
-        let primaryCount = Int(round(Double(length) * 0.65))
-        let secondaryCount = length - primaryCount
-        let flat = Array(repeating: primary, count: primaryCount)
-                 + Array(repeating: secondary, count: secondaryCount)
-        return AdaptiveInterleavedResult(
-            sequence: constrainedShuffle(flat),
-            context: "Strength focus: \(primaryZone.name)"
-        )
+        let seq = generateWeightedSequence(pool: pool, length: length, weightFunction: strengthWeight(for:))
+        return AdaptiveInterleavedResult(sequence: seq, context: "Building confidence")
     }
 
-    /// Challenge mode — optimal challenge point (targeting ~70% accuracy).
-    /// Selects the speed closest to 70% zone accuracy + one high-accuracy anchor (60/40).
-    /// For consecutive-challenge blocks, picks a single optimal speed (no interleaving).
-    private func generateChallengeInterleaved(
-        block: TrainingBlock,
-        pool: [Int],
-        length: Int
-    ) -> AdaptiveInterleavedResult {
+    /// Challenge mode — optimal challenge point.
+    /// Features weaker speeds more often across the FULL pool (every pool speed still appears);
+    /// the label reflects the speed nearest the ~70% optimal challenge point.
+    private func generateChallengeInterleaved(pool: [Int], length: Int) -> AdaptiveInterleavedResult {
+        let seq = generateWeightedSequence(pool: pool, length: length, weightFunction: weight(for:))
+
+        // Context label only — derived from the speed closest to the 70% challenge point.
         let profiles = pool.compactMap { speed -> (speed: Int, accuracy: Double)? in
             guard let p = statsService.speedProfiles[speed], p.totalPutts >= 3 else { return nil }
             return (speed, p.accuracy)
         }
-
-        // No data — equal distribution across pool
-        guard !profiles.isEmpty else {
-            let seq = generateEqualDistribution(pool: pool, length: length)
-            return AdaptiveInterleavedResult(sequence: seq, context: "Your optimal challenge")
-        }
-
-        // Target: speed closest to 70% accuracy (optimal challenge point)
-        let target = profiles.min(by: {
-            abs($0.accuracy - 70.0) < abs($1.accuracy - 70.0)
-        })!
-        let targetZone = SpeedZone.getZone(for: target.speed)
-        let context = target.accuracy < 60.0 ? "Targeting your weak zone" : "Your optimal challenge"
-
-        // Consecutive-challenge blocks need one consistent speed for the make-in-row mechanic
-        let isConsecutive = block.challengeType == "consecutive"
-        if isConsecutive {
-            let seq = Array(repeating: target.speed, count: length)
-            return AdaptiveInterleavedResult(sequence: seq, context: context)
-        }
-
-        // Anchor: highest-accuracy speed above 80% (confidence reference)
-        let anchor = profiles
-            .filter { $0.accuracy > 80.0 && $0.speed != target.speed }
-            .max(by: { $0.accuracy < $1.accuracy })
-
-        if let anchor = anchor {
-            let targetCount = Int(round(Double(length) * 0.60))
-            let anchorCount = length - targetCount
-            let flat = Array(repeating: target.speed, count: targetCount)
-                     + Array(repeating: anchor.speed, count: anchorCount)
-            return AdaptiveInterleavedResult(
-                sequence: constrainedShuffle(flat),
-                context: "\(context) · \(targetZone.name)"
-            )
+        let context: String
+        if let target = profiles.min(by: { abs($0.accuracy - 70.0) < abs($1.accuracy - 70.0) }) {
+            let zone = SpeedZone.getZone(for: target.speed)
+            context = (target.accuracy < 60.0 ? "Targeting your weak zone" : "Your optimal challenge") + " · \(zone.name)"
         } else {
-            // No strong anchor available — deliver target speed solo
-            let seq = Array(repeating: target.speed, count: length)
-            return AdaptiveInterleavedResult(
-                sequence: seq,
-                context: "\(context) · \(targetZone.name)"
-            )
+            context = "Your optimal challenge"
         }
+        return AdaptiveInterleavedResult(sequence: seq, context: context)
     }
 
-    /// Predictive mode — full adaptive weighting across Zone 1 (or specified pool).
+    /// Predictive mode — full adaptive weighting across the specified pool.
     /// Weakest speeds in pool appear most; builds contextual interference from early days.
     private func generatePredictiveInterleaved(pool: [Int], length: Int) -> AdaptiveInterleavedResult {
         let seq = generateWeightedSequence(pool: pool, length: length, weightFunction: weight(for:))
         return AdaptiveInterleavedResult(sequence: seq, context: "Targeting your weak spots")
-    }
-
-    /// Equal distribution fallback — used when no SpeedProfile data exists yet.
-    private func generateEqualDistribution(pool: [Int], length: Int) -> [Int] {
-        let seq = (0..<length).map { pool[$0 % pool.count] }
-        return constrainedShuffle(seq)
     }
 
     /// Generate a weighted random sequence.

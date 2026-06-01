@@ -22,12 +22,12 @@ struct SportLiveContainer: View {
     let bluetoothService: BluetoothService
     var adaptiveContext: String? = nil
 
-    @AppStorage("liveViewTheme") private var themeRaw: String = LiveViewTheme.dark.rawValue
+    @AppStorage("liveViewTheme") private var themeRaw: String = LiveViewTheme.light.rawValue
     @Environment(\.colorScheme) private var colorScheme
     @State private var showEndAlert = false
     @EnvironmentObject var trainingViewModel: TrainingViewModel
 
-    private var theme: LiveViewTheme { LiveViewTheme(rawValue: themeRaw) ?? .dark }
+    private var theme: LiveViewTheme { LiveViewTheme(rawValue: themeRaw) ?? .light }
     private var isDark: Bool { theme.resolvedDark(scheme: colorScheme) }
     private var tokens: SportTokens { SportTokens.make(dark: isDark) }
 
@@ -127,13 +127,13 @@ private struct ExplorationHero: View {
 
             VStack(spacing: 12) {
                 Text("YOUR SPEED")
-                    .font(.oswald(fs(22), weight: .semibold))
+                    .font(.inter(fs(22), weight: .semibold))
                     .foregroundColor(tokens.sub)
                     .tracking(4)
 
                 let isLong = mphString.count >= 4
                 Text(mphString)
-                    .font(.oswald(isLong ? fs(160) : fs(200)))
+                    .font(.inter(isLong ? fs(160) : fs(200)))
                     .foregroundColor(isReady ? tokens.sub : liveColor)
                     .lineLimit(1)
                     .minimumScaleFactor(0.3)
@@ -141,7 +141,7 @@ private struct ExplorationHero: View {
                     .sportPopIn(trigger: session.puttRecords.count)
 
                 Text("MPH")
-                    .font(.oswald(fs(22), weight: .semibold))
+                    .font(.inter(fs(22), weight: .semibold))
                     .foregroundColor(tokens.sub)
                     .tracking(4)
             }
