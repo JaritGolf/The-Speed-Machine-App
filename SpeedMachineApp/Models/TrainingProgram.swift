@@ -211,6 +211,48 @@ struct TrainingBlock: Codable, Identifiable {
     }
 }
 
+extension TrainingBlock {
+    /// True for "make N in a row" pressure challenges. The admin/remote source of truth
+    /// emits `challengeType == "consecutive"`; the bundled fallback JSON historically used
+    /// `"make-in-row"`. Accept both so the block is never silently misclassified as standard.
+    var isConsecutiveChallenge: Bool {
+        challengeType == "consecutive" || challengeType == "make-in-row"
+    }
+
+    /// In-zone putts required to pass this block. 0 == not pass-gated (always passes).
+    /// This is the ONE source of truth for the "PUTTS NEEDED" display and for the
+    /// completion pass/fail gate in TrainingViewModel — they must never diverge.
+    func requiredInZonePutts(day: Int, totalPutts: Int) -> Int {
+        if let explicit = passRequirements?.zoneAccuracy.minimum { return explicit }
+        if skipGating == true { return 0 }
+        switch type {
+        // Non-gated block families: self-defined completion or no pass concept.
+        case .combine, .recovery, .pressure, .assessment, .warmup, .celebration: return 0
+        default: break
+        }
+        let fraction = blockPassThreshold ?? TrainingBlock.phaseFloor(day)
+        return Int(ceil(fraction * Float(totalPutts)))
+    }
+
+    static func phaseFloor(_ track: Int) -> Float {
+        switch track {
+        case 1...4:   return 0.40
+        case 5...9:   return 0.50
+        case 10...12: return 0.60
+        case 13...18: return 0.65
+        case 19...24: return 0.70
+        default:      return 0.75
+        }
+    }
+}
+
+/// Outcome payload for a failed standard block — drives BlockFailedView.
+struct BlockFailResult {
+    let inZone: Int
+    let required: Int
+    let totalPutts: Int
+}
+
 enum BlockType: String, Codable {
     case exploration
     case blocked
@@ -243,7 +285,7 @@ enum BlockSessionType: String, Codable {
             self = .warmup
         } else if blockType == .recovery {
             self = .recovery
-        } else if blockType == .pressure && challengeType == "consecutive" {
+        } else if blockType == .pressure && (challengeType == "consecutive" || challengeType == "make-in-row") {
             self = .makeInRow
         } else if blockType == .pressure && challengeType == "ladder" {
             self = .eliminationLadder
@@ -449,7 +491,7 @@ class TrainingProgramLoader {
                         } else if let s = block.startSpeed, let e = block.endSpeed, e <= s {
                             print("⚠️ [TrainingProgram] Track \(t) Block \(b): pressure/ladder endSpeed (\(e)) must be > startSpeed (\(s))")
                         }
-                    } else if block.challengeType == "consecutive" && block.consecutiveRequired == nil {
+                    } else if block.isConsecutiveChallenge && block.consecutiveRequired == nil {
                         print("⚠️ [TrainingProgram] Track \(t) Block \(b): pressure/consecutive missing consecutiveRequired")
                     } else if block.challengeType == "elimination" && block.lives == nil {
                         print("⚠️ [TrainingProgram] Track \(t) Block \(b): pressure/elimination missing lives")
@@ -620,18 +662,6 @@ class SessionProgress: ObservableObject {
         ladderCompleted = true
     }
 
-    /// Record a successful consecutive hit (for make-N-in-a-row challenges)
-    func recordConsecutiveSuccess() {
-        guard blockSessionType == .makeInRow else { return }
-        consecutiveSuccesses += 1
-    }
-
-    /// Reset the consecutive counter (for make-N-in-a-row challenges)
-    func resetConsecutiveCount() {
-        guard blockSessionType == .makeInRow else { return }
-        consecutiveSuccesses = 0
-    }
-
     func recordPutt(actualSpeed: Float) {
         // Ladder blocks must use the current rung speed, not currentTargetSpeed.
         // currentTargetSpeed returns 0 for ladder blocks (block.targetSpeed is null in JSON),
@@ -720,7 +750,7 @@ class SessionProgress: ObservableObject {
     var isComplete: Bool {
         // For pressure challenges
         if block.type == .pressure {
-            if block.challengeType == "consecutive" && pressureChallengeComplete {
+            if block.isConsecutiveChallenge && pressureChallengeComplete {
                 return true
             }
             if block.challengeType == "elimination" && livesRemaining <= 0 {

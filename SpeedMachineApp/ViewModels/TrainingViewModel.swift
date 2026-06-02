@@ -20,6 +20,12 @@ class TrainingViewModel: ObservableObject {
     @Published var shouldNavigateHome = false
     @Published var gateTestResult: GateTestResult?
     @Published var showGateTestFailedAlert = false
+    /// Set when a standard block fails its in-zone threshold — drives BlockFailedView.
+    @Published var blockFailedResult: BlockFailResult? = nil
+    /// Next track queued for auto-advance after a track completes. nil = no next (track 30).
+    @Published var nextTrackForAutoAdvance: TrainingDay? = nil
+    /// Guards the pending 5s auto-advance Task so Exit cancels it.
+    private var autoAdvanceToken: UUID?
     @Published var dayCompleteStats: DayCompleteStats? = nil
     /// Context label shown in the session header when a block uses adaptive interleaved selection.
     /// e.g. "Your optimal challenge · Zone 2" — nil for non-adaptive blocks.
@@ -139,6 +145,9 @@ class TrainingViewModel: ObservableObject {
         currentSession = session
         isSessionActive = true
         gateTestResult = nil
+        blockFailedResult = nil
+        nextTrackForAutoAdvance = nil
+        autoAdvanceToken = nil
         sessionStartTime = Date()
         // Only record the day-level start time on the first block — preserve it through auto-advances.
         if daySessionStartTime == nil {
@@ -220,12 +229,27 @@ class TrainingViewModel: ObservableObject {
         // is visible on screen before the block advances or transitions.
         // blockJustCompleted drives the "✓ BLOCK COMPLETE" banner overlay.
         if session.isComplete || session.isLadderComplete {
-            blockJustCompleted = true
+            // Only show the green "BLOCK COMPLETE" banner if the block actually passes —
+            // otherwise it would flash misleadingly for 3s before the FAILED screen.
+            blockJustCompleted = blockIsPassed(session, block, day)
             Task {
                 try? await Task.sleep(for: .seconds(3))
                 await MainActor.run { completeBlock() }
             }
         }
+    }
+
+    /// Decides whether a completed block passed. Special self-completing session types
+    /// (warmup / make-in-row / elimination ladder / recovery) are never in-zone-count
+    /// gated; standard blocks are gated by `requiredInZonePutts`.
+    func blockIsPassed(_ session: SessionProgress, _ block: TrainingBlock, _ day: TrainingDay) -> Bool {
+        switch session.blockSessionType {
+        case .warmup, .makeInRow, .eliminationLadder, .recovery: return true
+        case .standard: break
+        }
+        let required = block.requiredInZonePutts(day: day.day, totalPutts: session.totalPutts)
+        if required == 0 { return true }
+        return session.inZonePutts >= required
     }
 
     // MARK: - Block-Specific Putt Handlers
@@ -265,14 +289,14 @@ class TrainingViewModel: ObservableObject {
     }
 
     private func handleMakeInRowPutt(session: SessionProgress, isInZone: Bool) {
+        // The consecutive counter and pressureChallengeComplete are fully maintained by
+        // SessionProgress.recordPutt (increment on in-zone, reset to 0 on miss). Do NOT
+        // mutate the counter again here — doing so double-counts every in-zone putt and
+        // makes the block "pass" after ~half the required streak. This handler is haptics only.
         if isInZone {
-            session.recordConsecutiveSuccess()
-            let impact = UIImpactFeedbackGenerator(style: .medium)
-            impact.impactOccurred()
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         } else {
-            session.resetConsecutiveCount()
-            let impact = UIImpactFeedbackGenerator(style: .light)
-            impact.impactOccurred()
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
         }
     }
 
@@ -302,6 +326,27 @@ class TrainingViewModel: ObservableObject {
         // Check if this is a gate test block with pass criteria
         if block.type == .gateTest && block.passRequirements != nil {
             evaluateGateTest()
+            return
+        }
+
+        // Standard-block pass/fail gate. A failed block must NOT advance or complete the
+        // day — show BlockFailedView and keep the block uncompleted so the next block /
+        // day stay locked (same mechanism gate-test failures use: isComplete: false).
+        if !blockIsPassed(session, block, day) {
+            if let sessionData = activeSessionData {
+                dataService.updateSession(
+                    sessionData,
+                    completedPutts: session.currentPutt,
+                    onTargetPutts: session.inZonePutts,
+                    isComplete: false
+                )
+            }
+            blockCompletionPending = false
+            blockFailedResult = BlockFailResult(
+                inZone: session.inZonePutts,
+                required: block.requiredInZonePutts(day: day.day, totalPutts: session.totalPutts),
+                totalPutts: session.currentPutt
+            )
             return
         }
 
@@ -348,6 +393,50 @@ class TrainingViewModel: ObservableObject {
 
         // Compute day stats and hand off to DayCompleteView (user taps Done to go home).
         dayCompleteStats = computeDayCompleteStats(day: day)
+
+        // Queue the 5s auto-advance into the next track's first block (no-op on track 30).
+        scheduleTrackAutoAdvance(after: day)
+    }
+
+    /// Queues a 5-second auto-advance into the first block of the next track. Shows the
+    /// countdown wheel on the completion screen; if no next track exists (track 30) it is a
+    /// no-op and the screen keeps its plain "Back to Tracks" exit.
+    private func scheduleTrackAutoAdvance(after completedDay: TrainingDay) {
+        guard let nextDay = programLoader.getDay(completedDay.day + 1),
+              let firstBlock = nextDay.blocks.first else {
+            nextTrackForAutoAdvance = nil   // track 30 → stop, no wheel
+            return
+        }
+        nextTrackForAutoAdvance = nextDay
+        let token = UUID()
+        autoAdvanceToken = token
+        Task {
+            try? await Task.sleep(for: .seconds(5))
+            await MainActor.run {
+                guard self.autoAdvanceToken == token else { return }  // exited → cancelled
+                self.startNextTrack(nextDay, firstBlock: firstBlock)
+            }
+        }
+    }
+
+    /// Resets session state and starts the next track's first block (mirrors the
+    /// between-block reset but for a fresh track, finalizing the prior track's time).
+    private func startNextTrack(_ nextDay: TrainingDay, firstBlock: TrainingBlock) {
+        // Finalize the just-finished track's practice time, then time the new track fresh.
+        if let start = daySessionStartTime {
+            statsService.addPracticeTime(seconds: Date().timeIntervalSince(start))
+        }
+        daySessionStartTime = nil
+        autoAdvanceToken = nil
+        nextTrackForAutoAdvance = nil
+        dayCompleteStats = nil
+        blockCompletionPending = false
+        nextBlockForTransition = nil
+        gateTestResult = nil
+        currentSession = nil
+        selectedBlock = nil
+        activeSessionData = nil
+        startBlock(firstBlock, for: nextDay)   // startBlock re-inits daySessionStartTime
     }
 
     /// Builds the summary stat block shown on DayCompleteView.
@@ -473,6 +562,10 @@ class TrainingViewModel: ObservableObject {
                     if day.day < 30 {
                         dataService.updateProgress(currentDay: day.day + 1, phase: day.phase)
                     }
+
+                    // Passing the gate completed the track — queue the same 5s auto-advance
+                    // into the next track that normal track completion uses.
+                    scheduleTrackAutoAdvance(after: day)
                 }
             }
         } else {
@@ -491,6 +584,15 @@ class TrainingViewModel: ObservableObject {
             }
             showGateTestFailedAlert = true
         }
+    }
+
+    /// Restarts the just-failed block in place (Try Again on BlockFailedView).
+    func retryBlock() {
+        guard let day = selectedDay, let block = selectedBlock else { return }
+        blockFailedResult = nil
+        activeSessionData = nil   // force a fresh SessionData record on the next putt
+        currentSession = nil
+        startBlock(block, for: day)
     }
 
     func endSession() {
@@ -537,6 +639,9 @@ class TrainingViewModel: ObservableObject {
         selectedBlock = nil
         selectedDay = nil
         gateTestResult = nil
+        blockFailedResult = nil
+        nextTrackForAutoAdvance = nil
+        autoAdvanceToken = nil
         sessionStartTime = nil
         daySessionStartTime = nil
         UIApplication.shared.isIdleTimerDisabled = false

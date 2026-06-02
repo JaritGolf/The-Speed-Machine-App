@@ -242,8 +242,7 @@ class AdaptiveSpeedEngine {
         // (adaptiveSingleSpeed flag) or its mechanic requires it (make-in-row / consecutive).
         // Everything else features the relevant speeds more often across the FULL pool.
         let wantsSingleSpeed = block.adaptiveSingleSpeed == true
-            || block.challengeType == "make-in-row"
-            || block.challengeType == "consecutive"
+            || block.isConsecutiveChallenge
         if wantsSingleSpeed {
             return generateSingleSpeed(mode: mode, pool: pool, length: length)
         }

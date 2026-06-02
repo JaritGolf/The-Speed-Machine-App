@@ -1128,7 +1128,7 @@
           ],
           "description": "Hit 3 consecutive in-zone putts at 7, 8, and 9. Reset on miss.",
           "consecutiveRequired": 3,
-          "challengeType": "make-in-row"
+          "challengeType": "consecutive"
         },
         {
           "id": "10C",
@@ -2062,7 +2062,7 @@
           ],
           "description": "Adaptive engine selects your weakest learned speed. Hit 3 in a row in-zone. Reset on miss.",
           "consecutiveRequired": 3,
-          "challengeType": "make-in-row"
+          "challengeType": "consecutive"
         },
         {
           "id": "18C",
@@ -3060,7 +3060,7 @@
           ],
           "description": "Adaptive engine selects weakest learned speed. Hit 3 in a row in-zone.",
           "consecutiveRequired": 3,
-          "challengeType": "make-in-row"
+          "challengeType": "consecutive"
         },
         {
           "id": "26C",
@@ -3324,7 +3324,7 @@
           ],
           "description": "Random speed across full pool, but you must make 3 in-zone consecutively. Reset on miss.",
           "consecutiveRequired": 3,
-          "challengeType": "make-in-row"
+          "challengeType": "consecutive"
         },
         {
           "id": "28C",
