@@ -104,6 +104,8 @@ struct HomeView: View {
 
             Spacer()
 
+            cloudSyncBadge
+
             Button { showSettingsView = true } label: {
                 Image(systemName: "gearshape.fill")
                     .font(.system(size: 18))
@@ -114,6 +116,32 @@ struct HomeView: View {
         .padding(.top, 8)
         .padding(.bottom, 10)
         .background(Color.white)
+    }
+
+    @ViewBuilder
+    private var cloudSyncBadge: some View {
+        switch dataService.cloudKitSyncStatus {
+        case .idle:
+            Image(systemName: "icloud.fill")
+                .font(.system(size: 15))
+                .foregroundColor(AppColors.textMuted)
+                .padding(.trailing, 4)
+        case .syncing:
+            ProgressView()
+                .scaleEffect(0.75)
+                .tint(AppColors.accentGreen)
+                .padding(.trailing, 4)
+        case .synced:
+            Image(systemName: "checkmark.icloud.fill")
+                .font(.system(size: 15))
+                .foregroundColor(AppColors.accentGreen)
+                .padding(.trailing, 4)
+        case .error:
+            Image(systemName: "exclamationmark.icloud.fill")
+                .font(.system(size: 15))
+                .foregroundColor(AppColors.error)
+                .padding(.trailing, 4)
+        }
     }
 
     // MARK: - BLE Device Strip

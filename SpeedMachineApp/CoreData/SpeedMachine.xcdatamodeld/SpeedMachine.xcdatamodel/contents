@@ -65,7 +65,7 @@
         <attribute name="lastPracticedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
     </entity>
     <entity name="DailySnapshotData" representedClassName="DailySnapshotData" syncable="YES">
-        <attribute name="date" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="date" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="totalPutts" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="onTargetPutts" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="totalDeviation" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>

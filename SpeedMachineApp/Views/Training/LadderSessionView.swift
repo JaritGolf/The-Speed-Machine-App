@@ -92,7 +92,7 @@ private struct LadderBody: View {
                     tokens: tokens,
                     pxHeight: h
                 )
-                .frame(width: 72, height: h)
+                .frame(width: 90, height: h)
 
                 let tStr = "\(targetSpeed)"
                 VStack(spacing: fs(8)) {

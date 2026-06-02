@@ -60,17 +60,19 @@ struct SportLadder: View {
             ForEach(ticks, id: \.self) { mph in
                 let y = yFor(Float(mph))
                 let isTarget = mph == targetSpeed
-                HStack(spacing: 0) {
+                HStack(spacing: 4) {
                     Text("\(mph)")
-                        .font(.inter(isTarget ? fs(12) : fs(11), weight: isTarget ? .bold : .semibold))
+                        .font(.inter(fs(30), weight: isTarget ? .bold : .semibold))
                         .foregroundColor(isTarget ? tokens.fg : tokens.sub)
                         .monospacedDigit()
-                        .frame(width: 28, alignment: .trailing)
+                        .lineLimit(1)
+                        .fixedSize()
+                        .frame(minWidth: 48, alignment: .trailing)
                     Rectangle()
                         .fill(isTarget ? tokens.fg : tokens.dim)
                         .frame(width: isTarget ? 14 : 8, height: isTarget ? 2 : 1)
                 }
-                .position(x: (28 + (isTarget ? 14 : 8)) / 2, y: y)
+                .position(x: (48 + 4 + (isTarget ? 14 : 8)) / 2, y: y)
             }
 
             // Last putt indicator
@@ -85,26 +87,9 @@ struct SportLadder: View {
                         .foregroundColor(Color(hex: "FFC107"))
                         .shadow(color: Color(hex: "FFC107").opacity(0.6), radius: 4)
                         .position(x: 48, y: y)
-                } else {
-                    // Triangle pointing right
-                    Triangle()
-                        .fill(putt.isInZone ? tokens.zone : tokens.miss)
-                        .frame(width: 9, height: 14)
-                        .position(x: 48, y: y)
                 }
             }
         }
-        .frame(width: 60, height: pxHeight)
-    }
-}
-
-private struct Triangle: Shape {
-    func path(in rect: CGRect) -> Path {
-        Path { p in
-            p.move(to: CGPoint(x: rect.minX, y: rect.minY))
-            p.addLine(to: CGPoint(x: rect.maxX, y: rect.midY))
-            p.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
-            p.closeSubpath()
-        }
+        .frame(width: 90, height: pxHeight)
     }
 }

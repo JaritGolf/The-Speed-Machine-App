@@ -158,6 +158,9 @@ class TrainingViewModel: ObservableObject {
 
     func recordPutt(_ speed: Float) {
         guard let session = currentSession, let block = selectedBlock, let track = selectedTrack else { return }
+        // Once the block is complete, stop recording — prevents post-completion BLE readings
+        // from mutating zoneAccuracy and flipping a failed gate evaluation to a pass.
+        guard !session.isComplete && !session.isLadderComplete else { return }
 
         // Get the target speed (may differ based on block type)
         let targetSpeed: Int

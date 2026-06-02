@@ -11,11 +11,14 @@ struct SettingsView: View {
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var bluetoothService: BluetoothService
     @EnvironmentObject var statsService: StatsService
+    @EnvironmentObject var dataService: DataService
     @AppStorage("audioFeedbackEnabled") private var audioFeedbackEnabled = true
     @AppStorage("hapticFeedbackEnabled") private var hapticFeedbackEnabled = true
     @AppStorage("liveViewTheme") private var liveViewThemeRaw: String = LiveViewTheme.light.rawValue
     @State private var showResetConfirm = false
     @State private var showBluetooth = false
+    @State private var debugTrack: Int = 1
+    @State private var showTrackSaved = false
 
     private var liveViewTheme: Binding<LiveViewTheme> {
         Binding(
@@ -175,6 +178,55 @@ struct SettingsView: View {
                         .padding(.horizontal, 22)
                         .padding(.vertical, 14)
 
+                        Divider().overlay(AppColors.border).padding(.leading, 22)
+
+                        HStack {
+                            Text("ICLOUD SYNC")
+                                .font(.custom("Inter-SemiBold", size: 13))
+                                .foregroundColor(.black)
+                            Spacer()
+                            iCloudSyncStatusView
+                        }
+                        .padding(.horizontal, 22)
+                        .padding(.vertical, 14)
+
+                        Divider().overlay(AppColors.border)
+
+                        // DEBUG section
+                        settingsHeader("DEBUG")
+
+                        HStack {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("CURRENT TRACK")
+                                    .font(.custom("Inter-SemiBold", size: 13))
+                                    .foregroundColor(.black)
+                                if showTrackSaved {
+                                    Text("Saved")
+                                        .font(.custom("Inter-Regular", size: 11))
+                                        .foregroundColor(AppColors.accentGreen)
+                                        .transition(.opacity)
+                                }
+                            }
+                            Spacer()
+                            Stepper(value: $debugTrack, in: 1...30) {
+                                Text("\(debugTrack)")
+                                    .font(.custom("Inter-Bold", size: 15))
+                                    .foregroundColor(.black)
+                                    .frame(minWidth: 28, alignment: .center)
+                            }
+                            .onChange(of: debugTrack) { _, newValue in
+                                dataService.updateProgress(currentTrack: newValue, phase: 1)
+                                withAnimation(.easeInOut(duration: 0.2)) { showTrackSaved = true }
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                    withAnimation(.easeInOut(duration: 0.2)) { showTrackSaved = false }
+                                }
+                            }
+                        }
+                        .padding(.horizontal, 22)
+                        .padding(.vertical, 14)
+
+                        settingsFooter("Override current track for testing. Does not affect completed track history.")
+
                         Spacer(minLength: 40)
                     }
                 }
@@ -183,12 +235,52 @@ struct SettingsView: View {
         .fullScreenCover(isPresented: $showBluetooth) {
             BluetoothSettingsView()
         }
+        .onAppear {
+            debugTrack = Int(dataService.userProgress.currentDay)
+        }
         // Reset confirmation overlay
         .overlay {
             if showResetConfirm {
                 ResetStatsModal(isPresented: $showResetConfirm) {
                     statsService.resetAllStats()
                 }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var iCloudSyncStatusView: some View {
+        switch dataService.cloudKitSyncStatus {
+        case .idle:
+            Text("Ready")
+                .font(.custom("Inter-Regular", size: 11))
+                .foregroundColor(AppColors.textSubdued)
+        case .syncing:
+            HStack(spacing: 5) {
+                ProgressView()
+                    .scaleEffect(0.7)
+                    .tint(AppColors.textSubdued)
+                Text("Syncing…")
+                    .font(.custom("Inter-Regular", size: 11))
+                    .foregroundColor(AppColors.textSubdued)
+            }
+        case .synced:
+            HStack(spacing: 5) {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 11))
+                    .foregroundColor(AppColors.accentGreen)
+                Text("Synced")
+                    .font(.custom("Inter-Bold", size: 11))
+                    .foregroundColor(AppColors.accentGreen)
+            }
+        case .error:
+            HStack(spacing: 5) {
+                Image(systemName: "exclamationmark.circle.fill")
+                    .font(.system(size: 11))
+                    .foregroundColor(AppColors.error)
+                Text("Error")
+                    .font(.custom("Inter-Bold", size: 11))
+                    .foregroundColor(AppColors.error)
             }
         }
     }

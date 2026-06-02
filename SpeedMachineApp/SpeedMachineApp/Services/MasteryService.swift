@@ -162,10 +162,13 @@ class MasteryService {
     /// Whether a block is soft or hard gated.
     /// Hard if any target speed ≥ 11 MPH; soft for ≤ 10 MPH; none for skipGating/pressure/combine.
     func gateForce(for block: TrainingBlock) -> GateForce {
-        // Never gate these block types (built-in completion logic)
+        // Never gate these block types (built-in completion logic or free-practice intent)
         if block.skipGating == true { return .none }
         if block.type == .combine    { return .none }
         if block.type == .recovery   { return .none }
+        // Warmup blocks are free-practice warm-ups — always advance regardless of accuracy
+        if block.type == .warmup     { return .none }
+        // Exploration blocks are ungated unless explicitly given skipGating:false
         if block.type == .exploration && block.skipGating != false { return .none }
 
         // Pressure blocks use built-in pass/fail — no external gate

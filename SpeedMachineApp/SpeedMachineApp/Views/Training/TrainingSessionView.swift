@@ -43,8 +43,8 @@ struct TrainingSessionView: View {
                     DayCompleteView(stats: dayStats)
                 } else if let session = session, let block = block, let track = track {
                     if let nextBlock = trainingViewModel.nextBlockForTransition {
-                        // Inter-block transition screen
-                        BlockTransitionView(track: track, nextBlock: nextBlock)
+                        // Inter-block transition screen — pass completed session so we can show accuracy
+                        BlockTransitionView(track: track, nextBlock: nextBlock, completedSession: session, completedBlock: block)
                     } else if let gateResult = trainingViewModel.gateTestResult {
                         GateTestResultView(result: gateResult, session: session, block: block, track: track)
                     } else if let skillCheck = trainingViewModel.pendingSkillCheck {
@@ -108,6 +108,15 @@ struct TrainingSessionView: View {
             }
             .environment(\.isLandscapeOrientation, geo.size.width > geo.size.height)
             .onChange(of: bluetoothService.currentSpeed) { _, newSpeed in
+                // Gate: ignore BLE readings once the block is finishing or transitioning.
+                // blockJustCompleted = true: 3-second completion window (completeBlock pending).
+                // blockCompletionPending = true: 4-second transition window (next block loading).
+                // pendingSkillCheck != nil: SkillCheckResultView is visible.
+                // These guards plus the isComplete guard in TrainingViewModel.recordPutt() provide
+                // layered protection against post-completion putts flipping a failed evaluation to pass.
+                guard !trainingViewModel.blockJustCompleted,
+                      !trainingViewModel.blockCompletionPending,
+                      trainingViewModel.pendingSkillCheck == nil else { return }
                 if newSpeed > 0 && newSpeed != lastRecordedSpeed {
                     recordPutt(newSpeed)
                     lastRecordedSpeed = newSpeed
@@ -590,12 +599,25 @@ private struct GateFailureReasonsView: View {
 struct BlockTransitionView: View {
     let track: TrainingTrack
     let nextBlock: TrainingBlock
+    /// The session that just completed — used to show the user their accuracy vs threshold.
+    var completedSession: SessionProgress? = nil
+    /// The block that just completed — used to look up the pass threshold.
+    var completedBlock: TrainingBlock? = nil
 
     @State private var countdown: Int = 3
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var nextBlockNumber: Int {
         (track.blocks.firstIndex(where: { $0.id == nextBlock.id }) ?? 0) + 1
+    }
+
+    /// Returns "X%  /  NEEDED Y%" when threshold data is available.
+    private var accuracyCaption: String? {
+        guard let session = completedSession, let block = completedBlock else { return nil }
+        let achieved = Int(session.zoneAccuracy * 100)
+        guard let threshold = MasteryService.shared.blockThreshold(for: block, track: track.number) else { return nil }
+        let needed = Int(threshold * 100)
+        return "\(achieved)%  ·  NEEDED \(needed)%"
     }
 
     var body: some View {
@@ -620,6 +642,18 @@ struct BlockTransitionView: View {
                     .minimumScaleFactor(0.75)
                     .lineLimit(1)
                     .padding(.horizontal, 24)
+
+                // Accuracy vs threshold — helps user understand why the block passed
+                if let caption = accuracyCaption {
+                    Spacer().frame(height: 10)
+                    Text(caption)
+                        .font(.inter(fs(20), weight: .bold))
+                        .foregroundColor(.white.opacity(0.60))
+                        .tracking(1.5)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
+                        .padding(.horizontal, 24)
+                }
 
                 Spacer().frame(height: 44)
 

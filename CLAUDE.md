@@ -6,6 +6,12 @@
 
 ---
 
+## Admin Panel (`speed-machine-admin`)
+
+The admin panel lives at `/Users/jaritgolf/Documents/Traning Program App/speed-machine-admin` and is deployed via Vercel. **After every change to the admin panel, always `git add`, `git commit`, and `git push` immediately so Vercel picks up the change and Arthur can see it live right away. Never leave admin panel edits uncommitted.**
+
+---
+
 ## Project Overview
 
 iOS SwiftUI app for the **Speed Machine** putting training device by Jarit Golf. Connects via Bluetooth Low Energy (BLE) to receive real-time putt speed measurements and guides users through a structured 30-track training program across 5 speed zones (3–20 MPH).

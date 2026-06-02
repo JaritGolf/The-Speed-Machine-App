@@ -174,6 +174,7 @@ class StatsService: ObservableObject {
         let snapshot = getOrCreateDailySnapshot(for: today)
         snapshot.practiceSeconds += seconds
         saveContext()
+        snapshotStatsToKV()
     }
 
     // MARK: - Trend Queries
@@ -356,9 +357,68 @@ class StatsService: ObservableObject {
             speedProfiles = [:]
             loadSpeedProfiles()
             recalculateOverallStats()
+            snapshotStatsToKV()
         } catch {
             print("Failed to reset stats: \(error)")
         }
+    }
+
+    // MARK: - iCloud KV Stats Backup
+
+    private let kvSpeedProfileKey   = "speedProfileSnapshot"
+    private let kvDailySnapshotsKey = "dailySnapshotsSnapshot"
+    private let kvSnapshotDailyWindow = 90
+
+    func snapshotStatsToKV() {
+        let practicedProfiles = speedProfiles.values.filter { $0.totalPutts > 0 }
+        let profileDicts: [[String: Any]] = practicedProfiles.map { p in
+            var d: [String: Any] = [
+                "targetSpeed":          Int(p.targetSpeed),
+                "totalPutts":           Int(p.totalPutts),
+                "onTargetPutts":        Int(p.onTargetPutts),
+                "totalDeviation":       p.totalDeviation,
+                "totalSignedDeviation": p.totalSignedDeviation,
+                "sumSquaredDeviation":  p.sumSquaredDeviation,
+                "sumActualSpeed":       p.sumActualSpeed,
+                "bestStreak":           Int(p.bestStreak),
+                "currentStreak":        Int(p.currentStreak),
+                "recentPutts":          Int(p.recentPutts),
+                "recentOnTargetPutts":  Int(p.recentOnTargetPutts),
+                "tierOverride":         Int(p.tierOverride),
+            ]
+            if let lp = p.lastPracticedAt {
+                d["lastPracticedAt"] = lp.timeIntervalSince1970
+            }
+            return d
+        }
+        if let data = try? JSONSerialization.data(withJSONObject: profileDicts),
+           let json = String(data: data, encoding: .utf8) {
+            NSUbiquitousKeyValueStore.default.set(json, forKey: kvSpeedProfileKey)
+        }
+
+        let cutoff = Calendar.current.date(byAdding: .day, value: -kvSnapshotDailyWindow, to: Date())!
+        let request: NSFetchRequest<DailySnapshotData> = DailySnapshotData.fetchRequest()
+        request.predicate = NSPredicate(format: "date >= %@ AND totalPutts > 0", cutoff as NSDate)
+        if let snapshots = try? context.fetch(request) {
+            let snapshotDicts: [[String: Any]] = snapshots.compactMap { s in
+                guard let d = s.date else { return nil }
+                return [
+                    "date":                d.timeIntervalSince1970,
+                    "totalPutts":          Int(s.totalPutts),
+                    "onTargetPutts":       Int(s.onTargetPutts),
+                    "totalDeviation":      s.totalDeviation,
+                    "sumSquaredDeviation": s.sumSquaredDeviation,
+                    "practiceSeconds":     s.practiceSeconds,
+                ]
+            }
+            if let data = try? JSONSerialization.data(withJSONObject: snapshotDicts),
+               let json = String(data: data, encoding: .utf8) {
+                NSUbiquitousKeyValueStore.default.set(json, forKey: kvDailySnapshotsKey)
+            }
+        }
+
+        NSUbiquitousKeyValueStore.default.synchronize()
+        print("Stats snapshot written to iCloud KV (\(practicedProfiles.count) speeds).")
     }
 
     // MARK: - Migration: Backfill from existing PuttRecordData

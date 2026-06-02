@@ -12,11 +12,14 @@ struct SettingsView: View {
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var statsService: StatsService
     @EnvironmentObject var bluetoothService: BluetoothService
+    @EnvironmentObject var dataService: DataService
 
     @AppStorage("audioFeedbackEnabled") private var audioFeedbackEnabled = true
     @AppStorage("hapticFeedbackEnabled") private var hapticFeedbackEnabled = true
     @AppStorage("liveViewTheme") private var liveViewThemeRaw: String = LiveViewTheme.light.rawValue
     @State private var showResetModal = false
+    @State private var debugTrack: Int = 1
+    @State private var showTrackSaved = false
     @StateObject private var adminVersion = AdminVersionService()
 
     private var themeBinding: Binding<LiveViewTheme> {
@@ -76,7 +79,47 @@ struct SettingsView: View {
                                 Spacer()
                                 Text(adminVersion.display).modifier(SettingsValue())
                             }
+                            SettingsRow {
+                                Text("ICLOUD SYNC").modifier(RowLabel())
+                                Spacer()
+                                iCloudSyncValue
+                            }
                             SettingsFooter("Program Version is the latest training program published from the Speed Machine admin panel. The Speed Machine Training App · Jarit Golf · © 2026 Jarit Golf. All rights reserved.")
+
+                            SettingsSectionLabel("DEBUG")
+                            SettingsRow {
+                                Text("ICLOUD ACCOUNT").modifier(RowLabel())
+                                Spacer()
+                                Text(dataService.cloudKitAccountStatus)
+                                    .font(.custom("Inter-Medium", size: 12))
+                                    .foregroundColor(dataService.cloudKitAccountStatus.contains("✓") ? AppColors.accentGreen : AppColors.error)
+                                    .multilineTextAlignment(.trailing)
+                            }
+                            SettingsRow {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("CURRENT TRACK").modifier(RowLabel())
+                                    if showTrackSaved {
+                                        Text("Saved")
+                                            .font(.custom("Inter-Bold", size: 11))
+                                            .foregroundColor(AppColors.accentGreen)
+                                            .transition(.opacity)
+                                    }
+                                }
+                                Spacer()
+                                Stepper(value: $debugTrack, in: 1...30) {
+                                    Text("\(debugTrack)")
+                                        .font(.custom("Inter-Bold", size: 15))
+                                        .foregroundColor(.black)
+                                }
+                                .onChange(of: debugTrack) { _, newValue in
+                                    dataService.updateProgress(currentDay: newValue, phase: 1)
+                                    withAnimation(.easeInOut(duration: 0.2)) { showTrackSaved = true }
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                        withAnimation(.easeInOut(duration: 0.2)) { showTrackSaved = false }
+                                    }
+                                }
+                            }
+                            SettingsFooter("Override current track for testing. Does not affect completed track history.")
                         }
                         .padding(.bottom, 24)
                     }
@@ -91,6 +134,34 @@ struct SettingsView: View {
             }
             .navigationBarHidden(true)
             .task { await adminVersion.fetch() }
+            .onAppear { debugTrack = Int(dataService.userProgress.currentDay) }
+        }
+    }
+
+    @ViewBuilder
+    private var iCloudSyncValue: some View {
+        switch dataService.cloudKitSyncStatus {
+        case .idle:
+            Text("Ready").modifier(SettingsValue())
+        case .syncing:
+            HStack(spacing: 5) {
+                ProgressView().scaleEffect(0.7).tint(AppColors.textSubdued)
+                Text("Syncing…").modifier(SettingsValue())
+            }
+        case .synced:
+            HStack(spacing: 5) {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 11)).foregroundColor(AppColors.accentGreen)
+                Text("Synced")
+                    .font(.custom("Inter-Bold", size: 11)).foregroundColor(AppColors.accentGreen)
+            }
+        case .error:
+            HStack(spacing: 5) {
+                Image(systemName: "exclamationmark.circle.fill")
+                    .font(.system(size: 11)).foregroundColor(AppColors.error)
+                Text("Error")
+                    .font(.custom("Inter-Bold", size: 11)).foregroundColor(AppColors.error)
+            }
         }
     }
 

@@ -8,26 +8,130 @@
 import Foundation
 import CoreData
 import Combine
+import CloudKit
+
+enum CloudKitSyncStatus: Equatable {
+    case idle, syncing, synced, error
+}
 
 class DataService: ObservableObject {
     static let shared = DataService()
 
+    // NSPersistentContainer (base class) so the fallback path can use a plain local store.
     let container: NSPersistentContainer
 
     @Published var userProgress: UserProgressData
     @Published var combineHighScore: Int = 0
+    @Published var cloudKitSyncStatus: CloudKitSyncStatus = .idle
+    @Published var cloudKitAccountStatus: String = "Checking…"
 
     private init() {
-        container = NSPersistentContainer(name: "SpeedMachine")
-        container.loadPersistentStores { description, error in
-            if let error = error {
-                print("Core Data failed to load: \(error.localizedDescription)")
+        // Attempt 1: CloudKit-backed store.
+        let cloudContainer = NSPersistentCloudKitContainer(name: "SpeedMachine")
+        if let description = cloudContainer.persistentStoreDescriptions.first {
+            description.shouldMigrateStoreAutomatically = true
+            description.shouldInferMappingModelAutomatically = true
+            description.cloudKitContainerOptions = NSPersistentCloudKitContainerOptions(
+                containerIdentifier: "iCloud.Jarit-Golf.SpeedMachineApp"
+            )
+            description.setOption(true as NSNumber,
+                forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
+        }
+        var cloudKitLoadError: Error?
+        cloudContainer.loadPersistentStores { _, error in
+            if let error {
+                let nsErr = error as NSError
+                print("CloudKit store failed: [\(nsErr.domain) \(nsErr.code)] \(nsErr.localizedDescription)")
+                if let under = nsErr.userInfo[NSUnderlyingErrorKey] as? NSError {
+                    print("  Underlying: [\(under.domain) \(under.code)] \(under.localizedDescription)")
+                }
+                cloudKitLoadError = error
             }
         }
 
-        // Load or create user progress
-        userProgress = Self.loadUserProgress(context: container.viewContext)
-        combineHighScore = Int(userProgress.combineHighScore)
+        if cloudKitLoadError == nil {
+            print("CloudKit store loaded successfully.")
+            container = cloudContainer
+            container.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+            container.viewContext.automaticallyMergesChangesFromParent = true
+
+            userProgress = Self.loadUserProgress(context: container.viewContext)
+            combineHighScore = Int(userProgress.combineHighScore)
+
+            migrateGateTestsToICloudKV()
+            restoreProgressFromKVIfNeeded()
+            restoreStatsFromKVIfNeeded()
+
+            NotificationCenter.default.addObserver(
+                forName: NSPersistentCloudKitContainer.eventChangedNotification,
+                object: cloudContainer,
+                queue: .main
+            ) { [weak self] notification in
+                self?.handleCloudKitEvent(notification)
+            }
+
+            checkCloudKitAccountStatus()
+        } else {
+            // Attempt 2: plain local SQLite store (data won't sync but app stays functional).
+            print("Falling back to local-only Core Data store.")
+            let localContainer = NSPersistentContainer(name: "SpeedMachine")
+            if let description = localContainer.persistentStoreDescriptions.first {
+                description.shouldMigrateStoreAutomatically = true
+                description.shouldInferMappingModelAutomatically = true
+            }
+            localContainer.loadPersistentStores { _, error in
+                if let error {
+                    print("Local fallback failed: \(error.localizedDescription)")
+                }
+            }
+            container = localContainer
+            container.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+            container.viewContext.automaticallyMergesChangesFromParent = true
+
+            userProgress = Self.loadUserProgress(context: container.viewContext)
+            combineHighScore = Int(userProgress.combineHighScore)
+
+            migrateGateTestsToICloudKV()
+            restoreProgressFromKVIfNeeded()
+            restoreStatsFromKVIfNeeded()
+            checkCloudKitAccountStatus()
+        }
+    }
+
+    private func handleCloudKitEvent(_ notification: Notification) {
+        guard let event = notification.userInfo?[NSPersistentCloudKitContainer.eventNotificationUserInfoKey]
+                as? NSPersistentCloudKitContainer.Event else { return }
+        let typeLabel = event.type == .setup ? "setup" : event.type == .import ? "import" : "export"
+        print("CloudKit event: \(typeLabel) ended=\(event.endDate != nil) succeeded=\(event.succeeded)")
+        if event.endDate == nil {
+            cloudKitSyncStatus = .syncing
+        } else if event.succeeded {
+            cloudKitSyncStatus = .synced
+        } else {
+            cloudKitSyncStatus = .error
+        }
+    }
+
+    func checkCloudKitAccountStatus() {
+        CKContainer(identifier: "iCloud.Jarit-Golf.SpeedMachineApp").accountStatus { [weak self] status, error in
+            DispatchQueue.main.async {
+                switch status {
+                case .available:
+                    self?.cloudKitAccountStatus = "iCloud Available ✓"
+                case .noAccount:
+                    self?.cloudKitAccountStatus = "No iCloud Account"
+                case .restricted:
+                    self?.cloudKitAccountStatus = "iCloud Restricted"
+                case .temporarilyUnavailable:
+                    self?.cloudKitAccountStatus = "Temporarily Unavailable"
+                case .couldNotDetermine:
+                    self?.cloudKitAccountStatus = "Error: \(error?.localizedDescription ?? "unknown")"
+                @unknown default:
+                    self?.cloudKitAccountStatus = "Unknown"
+                }
+                print("CloudKit account status: \(self?.cloudKitAccountStatus ?? "")")
+            }
+        }
     }
 
     // MARK: - User Progress
@@ -67,6 +171,9 @@ class DataService: ObservableObject {
         userProgress.currentPhase = Int16(phase)
         userProgress.updatedAt = Date()
         saveContext()
+        // Mirror to iCloud KV so track position survives reinstalls even without CloudKit.
+        NSUbiquitousKeyValueStore.default.set(Int64(currentDay), forKey: kvCurrentDayKey)
+        NSUbiquitousKeyValueStore.default.synchronize()
     }
 
     func unlockZone(_ zone: Int) {
@@ -92,18 +199,112 @@ class DataService: ObservableObject {
     private let passedGateTestsKey = "passedGateTests"
 
     func getPassedGateTests() -> Set<String> {
-        let array = UserDefaults.standard.stringArray(forKey: passedGateTestsKey) ?? []
+        let array = NSUbiquitousKeyValueStore.default.array(forKey: passedGateTestsKey) as? [String] ?? []
         return Set(array)
     }
 
     func recordGateTestPassed(gateId: String) {
         var passed = getPassedGateTests()
         passed.insert(gateId)
-        UserDefaults.standard.set(Array(passed), forKey: passedGateTestsKey)
+        NSUbiquitousKeyValueStore.default.set(Array(passed), forKey: passedGateTestsKey)
+        NSUbiquitousKeyValueStore.default.synchronize()
     }
 
     func hasPassedGateTest(gateId: String) -> Bool {
         return getPassedGateTests().contains(gateId)
+    }
+
+    private func migrateGateTestsToICloudKV() {
+        let migrationDoneKey = "gateTestsKVMigrated_v1"
+        guard !UserDefaults.standard.bool(forKey: migrationDoneKey) else { return }
+        let localArray = UserDefaults.standard.stringArray(forKey: passedGateTestsKey) ?? []
+        if !localArray.isEmpty {
+            let cloudArray = NSUbiquitousKeyValueStore.default.array(forKey: passedGateTestsKey) as? [String] ?? []
+            let merged = Array(Set(localArray).union(Set(cloudArray)))
+            NSUbiquitousKeyValueStore.default.set(merged, forKey: passedGateTestsKey)
+            NSUbiquitousKeyValueStore.default.synchronize()
+        }
+        UserDefaults.standard.set(true, forKey: migrationDoneKey)
+    }
+
+    // MARK: - iCloud KV Progress Backup
+    // Mirrors critical progress to NSUbiquitousKeyValueStore so it survives reinstalls
+    // even when NSPersistentCloudKitContainer is unavailable.
+
+    private let kvCurrentDayKey = "userCurrentDay"
+    private let kvCompletedDaysKey = "completedDayNumbers"
+
+    private func restoreProgressFromKVIfNeeded() {
+        // Only restore on a fresh install (no progress recorded yet).
+        guard userProgress.currentDay <= 1 else { return }
+        let savedDay = NSUbiquitousKeyValueStore.default.longLong(forKey: kvCurrentDayKey)
+        guard savedDay > 1 else { return }
+        print("Restoring track \(savedDay) from iCloud KV backup.")
+        userProgress.currentDay = Int16(savedDay)
+        userProgress.updatedAt = Date()
+        saveContext()
+    }
+
+    private let kvSpeedProfileKey   = "speedProfileSnapshot"
+    private let kvDailySnapshotsKey = "dailySnapshotsSnapshot"
+
+    func restoreStatsFromKVIfNeeded() {
+        // Only restore on a fresh install (no practiced speed profiles exist yet).
+        let profileRequest: NSFetchRequest<SpeedProfileData> = SpeedProfileData.fetchRequest()
+        profileRequest.predicate = NSPredicate(format: "totalPutts > 0")
+        profileRequest.fetchLimit = 1
+        let hasExistingStats = (try? container.viewContext.count(for: profileRequest)) ?? 0
+        guard hasExistingStats == 0 else { return }
+
+        let kv = NSUbiquitousKeyValueStore.default
+        var restored = false
+
+        if let json = kv.string(forKey: kvSpeedProfileKey),
+           let data = json.data(using: .utf8),
+           let array = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] {
+            for dict in array {
+                guard let speed = dict["targetSpeed"] as? Int, speed >= 3, speed <= 20 else { continue }
+                let profile = SpeedProfileData(context: container.viewContext)
+                profile.targetSpeed          = Int16(speed)
+                profile.totalPutts           = Int32(dict["totalPutts"]           as? Int ?? 0)
+                profile.onTargetPutts        = Int32(dict["onTargetPutts"]        as? Int ?? 0)
+                profile.totalDeviation       = dict["totalDeviation"]       as? Double ?? 0
+                profile.totalSignedDeviation = dict["totalSignedDeviation"]  as? Double ?? 0
+                profile.sumSquaredDeviation  = dict["sumSquaredDeviation"]   as? Double ?? 0
+                profile.sumActualSpeed       = dict["sumActualSpeed"]        as? Double ?? 0
+                profile.bestStreak           = Int16(dict["bestStreak"]      as? Int ?? 0)
+                profile.currentStreak        = Int16(dict["currentStreak"]   as? Int ?? 0)
+                profile.recentPutts          = Int16(dict["recentPutts"]     as? Int ?? 0)
+                profile.recentOnTargetPutts  = Int16(dict["recentOnTargetPutts"] as? Int ?? 0)
+                profile.tierOverride         = Int16(dict["tierOverride"]    as? Int ?? -1)
+                if let ts = dict["lastPracticedAt"] as? Double {
+                    profile.lastPracticedAt = Date(timeIntervalSince1970: ts)
+                }
+            }
+            print("Restored \(array.count) speed profiles from iCloud KV backup.")
+            restored = true
+        }
+
+        if let json = kv.string(forKey: kvDailySnapshotsKey),
+           let data = json.data(using: .utf8),
+           let array = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] {
+            for dict in array {
+                guard let ts = dict["date"] as? Double else { continue }
+                let snapshot = DailySnapshotData(context: container.viewContext)
+                snapshot.date                = Date(timeIntervalSince1970: ts)
+                snapshot.totalPutts          = Int32(dict["totalPutts"]    as? Int ?? 0)
+                snapshot.onTargetPutts       = Int32(dict["onTargetPutts"] as? Int ?? 0)
+                snapshot.totalDeviation      = dict["totalDeviation"]    as? Double ?? 0
+                snapshot.sumSquaredDeviation = dict["sumSquaredDeviation"] as? Double ?? 0
+                snapshot.practiceSeconds     = dict["practiceSeconds"]   as? Double ?? 0
+            }
+            print("Restored \(array.count) daily snapshots from iCloud KV backup.")
+            restored = true
+        }
+
+        if restored {
+            try? container.viewContext.save()
+        }
     }
 
     // MARK: - Day Completion
@@ -117,6 +318,10 @@ class DataService: ObservableObject {
         completion.onTargetPutts = Int16(onTargetPutts)
 
         saveContext()
+        // Mirror completed day list to KV backup.
+        let allCompleted = getAllCompletedDays().map { Int($0.dayNumber) }
+        NSUbiquitousKeyValueStore.default.set(allCompleted, forKey: kvCompletedDaysKey)
+        NSUbiquitousKeyValueStore.default.synchronize()
     }
 
     func isDayCompleted(_ dayNumber: Int) -> Bool {
@@ -451,6 +656,9 @@ public class SpeedProfileData: NSManagedObject {
     @NSManaged public var sumActualSpeed: Double
     @NSManaged public var bestStreak: Int16
     @NSManaged public var currentStreak: Int16
+    @NSManaged public var recentPutts: Int16
+    @NSManaged public var recentOnTargetPutts: Int16
+    @NSManaged public var tierOverride: Int16
     @NSManaged public var lastPracticedAt: Date?
 
     // Computed properties

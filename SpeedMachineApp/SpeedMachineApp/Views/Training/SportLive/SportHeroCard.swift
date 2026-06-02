@@ -112,7 +112,7 @@ struct SportHeroCard: View {
                         tokens: tokens,
                         pxHeight: ladderH
                     )
-                    .frame(width: 60, height: ladderH)
+                    .frame(width: 90, height: ladderH)
                     .frame(maxHeight: .infinity)   // centre in geo height
                     .padding(.leading, 8)
                     Spacer()

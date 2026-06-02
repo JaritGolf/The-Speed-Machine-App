@@ -9,34 +9,73 @@ import Foundation
 import CoreData
 import Combine
 
+enum CloudKitSyncStatus: Equatable {
+    case idle, syncing, synced, error
+}
+
 class DataService: ObservableObject {
     static let shared = DataService()
 
-    let container: NSPersistentContainer
+    let container: NSPersistentCloudKitContainer
 
     @Published var userProgress: UserProgressData
     @Published var combineHighScore: Int = 0
+    @Published var cloudKitSyncStatus: CloudKitSyncStatus = .idle
 
     private init() {
-        container = NSPersistentContainer(name: "SpeedMachine")
-        // Enable lightweight migration so schema additions (new attributes with defaults)
-        // are automatically handled for existing installs.
-        // IMPORTANT: modify the existing description rather than replacing it — creating a
-        // new NSPersistentStoreDescription() without a URL causes Core Data to lose the
-        // SQLite file location and fall back to an in-memory store (all data lost on relaunch).
+        container = NSPersistentCloudKitContainer(name: "SpeedMachine")
+        // IMPORTANT: modify the existing description (not replace it) to preserve
+        // the SQLite store URL — same rule as before, now also adds CloudKit config.
         if let description = container.persistentStoreDescriptions.first {
             description.shouldMigrateStoreAutomatically = true
             description.shouldInferMappingModelAutomatically = true
+            description.cloudKitContainerOptions = NSPersistentCloudKitContainerOptions(
+                containerIdentifier: "iCloud.Jarit-Golf.SpeedMachineApp"
+            )
+            // Required so CloudKit push notifications trigger a context refresh.
+            description.setOption(true as NSNumber,
+                forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
         }
         container.loadPersistentStores { _, error in
             if let error = error {
                 print("Core Data failed to load: \(error.localizedDescription)")
             }
         }
+        // Standard CloudKit merge policy: last-writer-wins per attribute.
+        container.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+        // Automatically absorb CloudKit-pushed changes into the viewContext.
+        container.viewContext.automaticallyMergesChangesFromParent = true
+
+        migrateGateTestsToICloudKV()
+
+        // Observe CloudKit sync events to drive the sync status indicator.
+        NotificationCenter.default.addObserver(
+            forName: NSPersistentCloudKitContainer.eventChangedNotification,
+            object: container,
+            queue: .main
+        ) { [weak self] notification in
+            self?.handleCloudKitEvent(notification)
+        }
 
         // Load or create user progress
         userProgress = Self.loadUserProgress(context: container.viewContext)
         combineHighScore = Int(userProgress.combineHighScore)
+    }
+
+    private func handleCloudKitEvent(_ notification: Notification) {
+        guard let event = notification.userInfo?[NSPersistentCloudKitContainer.eventNotificationUserInfoKey]
+                as? NSPersistentCloudKitContainer.Event else { return }
+        if event.endDate == nil {
+            cloudKitSyncStatus = .syncing
+        } else if event.succeeded {
+            cloudKitSyncStatus = .synced
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3) { [weak self] in
+                guard let self, cloudKitSyncStatus == .synced else { return }
+                cloudKitSyncStatus = .idle
+            }
+        } else {
+            cloudKitSyncStatus = .error
+        }
     }
 
     // MARK: - User Progress
@@ -101,18 +140,33 @@ class DataService: ObservableObject {
     private let passedGateTestsKey = "passedGateTests"
 
     func getPassedGateTests() -> Set<String> {
-        let array = UserDefaults.standard.stringArray(forKey: passedGateTestsKey) ?? []
+        let array = NSUbiquitousKeyValueStore.default.array(forKey: passedGateTestsKey) as? [String] ?? []
         return Set(array)
     }
 
     func recordGateTestPassed(gateId: String) {
         var passed = getPassedGateTests()
         passed.insert(gateId)
-        UserDefaults.standard.set(Array(passed), forKey: passedGateTestsKey)
+        NSUbiquitousKeyValueStore.default.set(Array(passed), forKey: passedGateTestsKey)
+        NSUbiquitousKeyValueStore.default.synchronize()
     }
 
     func hasPassedGateTest(gateId: String) -> Bool {
         return getPassedGateTests().contains(gateId)
+    }
+
+    private func migrateGateTestsToICloudKV() {
+        let migrationDoneKey = "gateTestsKVMigrated_v1"
+        guard !UserDefaults.standard.bool(forKey: migrationDoneKey) else { return }
+
+        let localArray = UserDefaults.standard.stringArray(forKey: passedGateTestsKey) ?? []
+        if !localArray.isEmpty {
+            let cloudArray = NSUbiquitousKeyValueStore.default.array(forKey: passedGateTestsKey) as? [String] ?? []
+            let merged = Array(Set(localArray).union(Set(cloudArray)))
+            NSUbiquitousKeyValueStore.default.set(merged, forKey: passedGateTestsKey)
+            NSUbiquitousKeyValueStore.default.synchronize()
+        }
+        UserDefaults.standard.set(true, forKey: migrationDoneKey)
     }
 
     // MARK: - Day Completion
