@@ -37,6 +37,9 @@ struct SportHeroCard<Accessory: View, Middle: View>: View {
     var targetLabelColor: Color? = nil
     /// Label above the LAST PUTT readout.
     var lastPuttLabel: String = "LAST PUTT"
+    /// Multiplier on the idle/settled TARGET number font (make-in-row enlarges it
+    /// to fill the space freed by dropping the pass-needed bars).
+    var targetNumberScale: CGFloat = 1.0
     /// Optional accessory placed to the LEFT of the centre number (ladder graphic).
     let leftAccessory: Accessory
     /// Optional content placed BETWEEN the centre number and the LAST PUTT section
@@ -55,6 +58,7 @@ struct SportHeroCard<Accessory: View, Middle: View>: View {
     init(session: SessionProgress, tokens: SportTokens, tolerance: Float,
          targetSpeed: Int? = nil, targetLabel: String = "TARGET",
          targetLabelColor: Color? = nil, lastPuttLabel: String = "LAST PUTT",
+         targetNumberScale: CGFloat = 1.0,
          @ViewBuilder leftAccessory: () -> Accessory,
          @ViewBuilder middle: () -> Middle) {
         self.session = session
@@ -64,6 +68,7 @@ struct SportHeroCard<Accessory: View, Middle: View>: View {
         self.targetLabel = targetLabel
         self.targetLabelColor = targetLabelColor
         self.lastPuttLabel = lastPuttLabel
+        self.targetNumberScale = targetNumberScale
         self.leftAccessory = leftAccessory()
         self.middle = middle()
     }
@@ -103,6 +108,7 @@ struct SportHeroCard<Accessory: View, Middle: View>: View {
                 leftAccessory
                 centerNumber
                     .frame(maxWidth: .infinity)
+                    .padding(.trailing, 28)
             }
             Spacer(minLength: 0)
             middle
@@ -123,7 +129,7 @@ struct SportHeroCard<Accessory: View, Middle: View>: View {
         ZStack {
             // TARGET (idle + settled)
             let tStr = "\(displayTarget)"
-            let tFont: CGFloat = tStr.count >= 2 ? fs(150) : fs(200)
+            let tFont: CGFloat = (tStr.count >= 2 ? fs(150) : fs(200)) * targetNumberScale
             VStack(spacing: fs(8)) {
                 Text(tStr)
                     .font(.inter(tFont))
@@ -250,10 +256,12 @@ extension SportHeroCard where Accessory == EmptyView {
     init(session: SessionProgress, tokens: SportTokens, tolerance: Float,
          targetSpeed: Int? = nil, targetLabel: String = "TARGET",
          targetLabelColor: Color? = nil, lastPuttLabel: String = "LAST PUTT",
+         targetNumberScale: CGFloat = 1.0,
          @ViewBuilder middle: () -> Middle) {
         self.init(session: session, tokens: tokens, tolerance: tolerance,
                   targetSpeed: targetSpeed, targetLabel: targetLabel,
                   targetLabelColor: targetLabelColor, lastPuttLabel: lastPuttLabel,
+                  targetNumberScale: targetNumberScale,
                   leftAccessory: { EmptyView() }, middle: middle)
     }
 }

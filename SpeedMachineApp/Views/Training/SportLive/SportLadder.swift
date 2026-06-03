@@ -42,7 +42,7 @@ struct SportLadder: View {
                 .fill(tokens.subtle)
                 .frame(width: 2)
                 .frame(height: pxHeight)
-                .position(x: 23, y: pxHeight / 2)
+                .position(x: 8, y: pxHeight / 2)
 
             // Tolerance band
             let tolMin = Float(targetSpeed) - tolerance
@@ -54,25 +54,27 @@ struct SportLadder: View {
                 .overlay(Rectangle().stroke(tokens.zone, lineWidth: 1.5))
                 .cornerRadius(4)
                 .frame(width: 14, height: max(4, bandH))
-                .position(x: 16 + 7, y: bandTop + bandH / 2)
+                .position(x: 8, y: bandTop + bandH / 2)
 
-            // Ticks
+            // Ticks — dash on LEFT, number on RIGHT
             ForEach(ticks, id: \.self) { mph in
                 let y = yFor(Float(mph))
                 let isTarget = mph == targetSpeed
-                HStack(spacing: 4) {
+                let dashW: CGFloat = isTarget ? 14 : 8
+                HStack(spacing: 8) {
+                    Rectangle()
+                        .fill(isTarget ? tokens.fg : tokens.dim)
+                        .frame(width: dashW, height: isTarget ? 2 : 1)
                     Text("\(mph)")
                         .font(.inter(fs(30), weight: isTarget ? .bold : .semibold))
                         .foregroundColor(isTarget ? tokens.fg : tokens.sub)
                         .monospacedDigit()
                         .lineLimit(1)
                         .fixedSize()
-                        .frame(minWidth: 48, alignment: .trailing)
-                    Rectangle()
-                        .fill(isTarget ? tokens.fg : tokens.dim)
-                        .frame(width: isTarget ? 14 : 8, height: isTarget ? 2 : 1)
+                        .frame(minWidth: 48, alignment: .leading)
                 }
-                .position(x: (48 + 4 + (isTarget ? 14 : 8)) / 2, y: y)
+                // left edge of dash starts at x=8 (track line); position = left_edge + halfWidth
+                .position(x: 8 + (dashW + 8 + 48) / 2, y: y)
             }
 
             // Last putt indicator
@@ -86,7 +88,7 @@ struct SportLadder: View {
                         .font(.system(size: 18))
                         .foregroundColor(Color(hex: "FFC107"))
                         .shadow(color: Color(hex: "FFC107").opacity(0.6), radius: 4)
-                        .position(x: 48, y: y)
+                        .position(x: 30, y: y)
                 }
             }
         }
