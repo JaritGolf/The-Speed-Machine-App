@@ -22,7 +22,6 @@ struct MakeInRowSessionView: View {
     }
 
     private var goal: Int { block.consecutiveRequired ?? 5 }
-    var lastPutt: PuttResult? { session.puttRecords.last }
 
     var body: some View {
         ZStack {
@@ -33,7 +32,7 @@ struct MakeInRowSessionView: View {
                                isConnected: bluetoothService.isConnected)
 
                 SportPassStrip(
-                    config: .makeInRow(puttsHit: session.inZonePutts,
+                    config: .makeInRow(puttsTaken: session.currentPutt,
                                        consecutive: session.consecutiveSuccesses,
                                        goal: goal),
                     tokens: tokens,
@@ -43,47 +42,32 @@ struct MakeInRowSessionView: View {
                     tolerance: 0.5
                 )
 
-                // Chromeless target
-                Spacer(minLength: 0)
-                let tStr = "\(session.currentTargetSpeed)"
-                VStack(spacing: fs(8)) {
-                    Text(tStr)
-                        .font(.inter(tStr.count >= 2 ? fs(150) : fs(200)))
-                        .foregroundColor(tokens.fg)
-                        .lineLimit(1).minimumScaleFactor(0.3).monospacedDigit()
-                    HStack(spacing: 14) {
-                        Text("MPH").font(.inter(fs(24), weight: .heavy)).foregroundColor(tokens.fg).tracking(fs(24) * 0.06)
-                        Rectangle().fill(tokens.subtle).frame(width: 1, height: fs(20))
-                        Text("TARGET").font(.inter(fs(24), weight: .heavy)).foregroundColor(tokens.sub).tracking(fs(24) * 0.22)
-                    }
-                }
-                .frame(maxWidth: .infinity)
-                Spacer(minLength: 0)
-
-                // Consecutive-hits streak dots
-                VStack(spacing: 12) {
-                    Text("CONSECUTIVE HITS")
-                        .font(.inter(fs(20), weight: .heavy))
-                        .foregroundColor(tokens.sub)
-                        .tracking(fs(20) * 0.22)
-                    HStack(spacing: 14) {
-                        ForEach(0..<goal, id: \.self) { i in
-                            let hit = i < session.consecutiveSuccesses
-                            ZStack {
-                                Circle().fill(hit ? tokens.zone : Color.clear)
-                                Circle().stroke(hit ? tokens.zone : tokens.subtle, lineWidth: 2.5)
-                                Text("\(i + 1)")
-                                    .font(.inter(fs(22), weight: .black))
-                                    .foregroundColor(hit ? .white : Color(hex: "d4d4d4"))
+                // Chromeless target + putt glide animation, with the consecutive-hits
+                // streak dots in the hero's middle slot (above the LAST PUTT readout).
+                SportHeroCard(session: session, tokens: tokens, tolerance: 0.5, middle: {
+                    VStack(spacing: 12) {
+                        Text("CONSECUTIVE HITS")
+                            .font(.inter(fs(20), weight: .heavy))
+                            .foregroundColor(tokens.sub)
+                            .tracking(fs(20) * 0.22)
+                        HStack(spacing: 14) {
+                            ForEach(0..<goal, id: \.self) { i in
+                                let hit = i < session.consecutiveSuccesses
+                                ZStack {
+                                    Circle().fill(hit ? tokens.zone : Color.clear)
+                                    Circle().stroke(hit ? tokens.zone : tokens.subtle, lineWidth: 2.5)
+                                    Text("\(i + 1)")
+                                        .font(.inter(fs(22), weight: .black))
+                                        .foregroundColor(hit ? .white : Color(hex: "d4d4d4"))
+                                }
+                                .frame(width: fs(48), height: fs(48))
                             }
-                            .frame(width: fs(48), height: fs(48))
                         }
                     }
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.bottom, 6)
-
-                SportLastPutt(lastPutt: lastPutt, tokens: tokens)
+                    .frame(maxWidth: .infinity)
+                    .padding(.bottom, 6)
+                })
+                .frame(maxHeight: .infinity)
 
                 SportEndButton(tokens: tokens, showAlert: $showEndSessionAlert)
                     .padding(.horizontal, 22).padding(.top, 4).padding(.bottom, 22)

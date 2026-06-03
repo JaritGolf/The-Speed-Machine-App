@@ -240,11 +240,14 @@ class TrainingViewModel: ObservableObject {
     }
 
     /// Decides whether a completed block passed. Special self-completing session types
-    /// (warmup / make-in-row / elimination ladder / recovery) are never in-zone-count
-    /// gated; standard blocks are gated by `requiredInZonePutts`.
+    /// (warmup / elimination ladder / recovery) are never in-zone-count gated; standard
+    /// blocks are gated by `requiredInZonePutts`. Make-in-row passes only once the
+    /// consecutive streak is achieved (completion already implies this, but gate it
+    /// explicitly so the pass logic can't be bypassed by any putt-count path).
     func blockIsPassed(_ session: SessionProgress, _ block: TrainingBlock, _ day: TrainingDay) -> Bool {
         switch session.blockSessionType {
-        case .warmup, .makeInRow, .eliminationLadder, .recovery: return true
+        case .warmup, .eliminationLadder, .recovery: return true
+        case .makeInRow: return session.pressureChallengeComplete
         case .standard: break
         }
         let required = block.requiredInZonePutts(day: day.day, totalPutts: session.totalPutts)

@@ -23,16 +23,50 @@ private enum HeroPuttPhase: Equatable {
 
 // MARK: - Hero (chromeless target + last putt)
 
-struct SportHeroCard: View {
+struct SportHeroCard<Accessory: View, Middle: View>: View {
     @ObservedObject var session: SessionProgress
     let tokens: SportTokens
     let tolerance: Float
+
+    /// Overrides the displayed TARGET number. nil → `session.currentTargetSpeed`
+    /// (ladder passes its current rung speed, where currentTargetSpeed is 0).
+    var targetSpeed: Int? = nil
+    /// Right-hand label in the unit row (e.g. "TARGET", "DON'T BREAK").
+    var targetLabel: String = "TARGET"
+    /// Colour of `targetLabel`. nil → `tokens.sub`.
+    var targetLabelColor: Color? = nil
+    /// Label above the LAST PUTT readout.
+    var lastPuttLabel: String = "LAST PUTT"
+    /// Optional accessory placed to the LEFT of the centre number (ladder graphic).
+    let leftAccessory: Accessory
+    /// Optional content placed BETWEEN the centre number and the LAST PUTT section
+    /// (make-in-row streak dots).
+    let middle: Middle
 
     @Namespace private var heroNS
     @State private var phase: HeroPuttPhase = .idle
     @State private var capturedPutt: PuttResult? = nil
     @State private var chipVisible = false
     @State private var animTask: Task<Void, Never>? = nil
+
+    private var displayTarget: Int { targetSpeed ?? session.currentTargetSpeed }
+
+    // Designated init — both slots supplied.
+    init(session: SessionProgress, tokens: SportTokens, tolerance: Float,
+         targetSpeed: Int? = nil, targetLabel: String = "TARGET",
+         targetLabelColor: Color? = nil, lastPuttLabel: String = "LAST PUTT",
+         @ViewBuilder leftAccessory: () -> Accessory,
+         @ViewBuilder middle: () -> Middle) {
+        self.session = session
+        self.tokens = tokens
+        self.tolerance = tolerance
+        self.targetSpeed = targetSpeed
+        self.targetLabel = targetLabel
+        self.targetLabelColor = targetLabelColor
+        self.lastPuttLabel = lastPuttLabel
+        self.leftAccessory = leftAccessory()
+        self.middle = middle()
+    }
 
     // MARK: Animation trigger
 
@@ -65,9 +99,13 @@ struct SportHeroCard: View {
     var body: some View {
         VStack(spacing: 0) {
             Spacer(minLength: 0)
-            centerNumber
-                .frame(maxWidth: .infinity)
+            HStack(spacing: 0) {
+                leftAccessory
+                centerNumber
+                    .frame(maxWidth: .infinity)
+            }
             Spacer(minLength: 0)
+            middle
             lastPuttSection
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -84,7 +122,7 @@ struct SportHeroCard: View {
     private var centerNumber: some View {
         ZStack {
             // TARGET (idle + settled)
-            let tStr = "\(session.currentTargetSpeed)"
+            let tStr = "\(displayTarget)"
             let tFont: CGFloat = tStr.count >= 2 ? fs(150) : fs(200)
             VStack(spacing: fs(8)) {
                 Text(tStr)
@@ -93,7 +131,7 @@ struct SportHeroCard: View {
                     .lineLimit(1)
                     .minimumScaleFactor(0.3)
                     .monospacedDigit()
-                unitRow(label: "TARGET", unitColor: tokens.fg)
+                unitRow(label: targetLabel, unitColor: tokens.fg)
             }
             .opacity(phase == .showing ? 0 : 1)
 
@@ -133,7 +171,7 @@ struct SportHeroCard: View {
                 .frame(width: 1, height: fs(20))
             Text(label)
                 .font(.inter(fs(24), weight: .heavy))
-                .foregroundColor(tokens.sub)
+                .foregroundColor(targetLabelColor ?? tokens.sub)
                 .tracking(fs(24) * 0.22)
         }
     }
@@ -155,7 +193,7 @@ struct SportHeroCard: View {
     @ViewBuilder
     private var lastPuttSection: some View {
         VStack(spacing: fs(8)) {
-            Text("LAST PUTT")
+            Text(lastPuttLabel)
                 .font(.inter(fs(20), weight: .heavy))
                 .foregroundColor(tokens.sub)
                 .tracking(fs(20) * 0.22)
@@ -190,5 +228,45 @@ struct SportHeroCard: View {
         .padding(.top, 16)
         .padding(.bottom, 14)
         .overlay(Rectangle().fill(tokens.hairline).frame(height: 1), alignment: .top)
+    }
+}
+
+// MARK: - Convenience initializers (omit one or both slots)
+
+extension SportHeroCard where Accessory == EmptyView, Middle == EmptyView {
+    /// No accessory, no middle (standard / exploration / gate test / pressure).
+    init(session: SessionProgress, tokens: SportTokens, tolerance: Float,
+         targetSpeed: Int? = nil, targetLabel: String = "TARGET",
+         targetLabelColor: Color? = nil, lastPuttLabel: String = "LAST PUTT") {
+        self.init(session: session, tokens: tokens, tolerance: tolerance,
+                  targetSpeed: targetSpeed, targetLabel: targetLabel,
+                  targetLabelColor: targetLabelColor, lastPuttLabel: lastPuttLabel,
+                  leftAccessory: { EmptyView() }, middle: { EmptyView() })
+    }
+}
+
+extension SportHeroCard where Accessory == EmptyView {
+    /// Middle content only (make-in-row streak dots).
+    init(session: SessionProgress, tokens: SportTokens, tolerance: Float,
+         targetSpeed: Int? = nil, targetLabel: String = "TARGET",
+         targetLabelColor: Color? = nil, lastPuttLabel: String = "LAST PUTT",
+         @ViewBuilder middle: () -> Middle) {
+        self.init(session: session, tokens: tokens, tolerance: tolerance,
+                  targetSpeed: targetSpeed, targetLabel: targetLabel,
+                  targetLabelColor: targetLabelColor, lastPuttLabel: lastPuttLabel,
+                  leftAccessory: { EmptyView() }, middle: middle)
+    }
+}
+
+extension SportHeroCard where Middle == EmptyView {
+    /// Left accessory only (ladder graphic).
+    init(session: SessionProgress, tokens: SportTokens, tolerance: Float,
+         targetSpeed: Int? = nil, targetLabel: String = "TARGET",
+         targetLabelColor: Color? = nil, lastPuttLabel: String = "LAST PUTT",
+         @ViewBuilder leftAccessory: () -> Accessory) {
+        self.init(session: session, tokens: tokens, tolerance: tolerance,
+                  targetSpeed: targetSpeed, targetLabel: targetLabel,
+                  targetLabelColor: targetLabelColor, lastPuttLabel: lastPuttLabel,
+                  leftAccessory: leftAccessory, middle: { EmptyView() })
     }
 }

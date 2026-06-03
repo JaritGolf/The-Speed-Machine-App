@@ -221,11 +221,12 @@ struct PressureSessionView: View {
                     livesHero
                 }
 
-                Spacer(minLength: 0)
-                pressureTarget
-                Spacer(minLength: 0)
-
-                SportLastPutt(lastPutt: lastPutt, tokens: tokens, label: lastPuttLabel)
+                // Chromeless target + putt glide animation (red pressure label).
+                SportHeroCard(session: session, tokens: tokens, tolerance: 0.5,
+                              targetLabel: pressureLabel,
+                              targetLabelColor: AppColors.error,
+                              lastPuttLabel: lastPuttLabel)
+                    .frame(maxHeight: .infinity)
 
                 SportEndButton(tokens: tokens, showAlert: $showEndSessionAlert, title: "END PRESSURE")
                     .padding(.horizontal, 22)
@@ -243,45 +244,6 @@ struct PressureSessionView: View {
             Button("End", role: .destructive) { trainingViewModel.endSession() }
         } message: {
             Text("Are you sure you want to end this pressure challenge? Your progress will be saved.")
-        }
-    }
-
-    // Centered target (mockup .live-target, red label)
-    @ViewBuilder
-    private var pressureTarget: some View {
-        if isTransitioning {
-            VStack(spacing: fs(8)) {
-                Image(systemName: "checkmark.circle.fill")
-                    .font(.system(size: fs(100)))
-                    .foregroundColor(tokens.zone)
-                Text("DONE")
-                    .font(.inter(fs(48), weight: .heavy))
-                    .foregroundColor(tokens.zone)
-                    .tracking(fs(48) * 0.1)
-            }
-            .frame(maxWidth: .infinity)
-        } else {
-            let tStr = "\(session.currentTargetSpeed)"
-            VStack(spacing: fs(8)) {
-                Text(tStr)
-                    .font(.inter(tStr.count >= 2 ? fs(150) : fs(200)))
-                    .foregroundColor(tokens.fg)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.3)
-                    .monospacedDigit()
-                HStack(spacing: 14) {
-                    Text("MPH")
-                        .font(.inter(fs(24), weight: .heavy))
-                        .foregroundColor(tokens.fg)
-                        .tracking(fs(24) * 0.06)
-                    Rectangle().fill(tokens.subtle).frame(width: 1, height: fs(20))
-                    Text(pressureLabel)
-                        .font(.inter(fs(24), weight: .heavy))
-                        .foregroundColor(AppColors.error)
-                        .tracking(fs(24) * 0.22)
-                }
-            }
-            .frame(maxWidth: .infinity)
         }
     }
 

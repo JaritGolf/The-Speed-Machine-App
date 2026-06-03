@@ -16,8 +16,8 @@ enum SportPassStripConfig {
     case standard(totalPutts: Int, puttsTaken: Int, inZone: Int, passThreshold: Int)
     /// Gate test: same two-col layout but labelled for gate context
     case gateTest(totalPutts: Int, puttsTaken: Int, inZone: Int, passThreshold: Int)
-    /// Make-in-row: PUTTS HIT (cumulative) / PUTTS REMAINING (goal − consecutive)
-    case makeInRow(puttsHit: Int, consecutive: Int, goal: Int)
+    /// Make-in-row: PUTTS TAKEN (running total of all attempts) / PUTTS REMAINING (goal − consecutive)
+    case makeInRow(puttsTaken: Int, consecutive: Int, goal: Int)
     /// Ladder: RUNG x/y + PUTTS HIT (mockup 10)
     case ladder(currentRung: Int, totalRungs: Int, puttsHit: Int)
     /// Exploration: single column PUTTS LEFT (countdown from totalPutts)
@@ -56,8 +56,8 @@ struct SportPassStrip: View {
                         color: tokens.fg
                     )
 
-                case .makeInRow(let hit, let consecutive, let goal):
-                    statColumn(label: "PUTTS\nHIT", value: hit, color: tokens.fg)
+                case .makeInRow(let taken, let consecutive, let goal):
+                    statColumn(label: "PUTTS\nTAKEN", value: taken, color: tokens.fg)
                     statColumn(label: "PUTTS\nREMAINING", value: max(0, goal - consecutive), color: tokens.fg)
 
                 case .ladder(let rung, let total, let puttsHit):
@@ -208,9 +208,14 @@ struct TachBars: View {
             let barCount = max(1, total)
             let totalGap = CGFloat(barCount - 1) * 2
             let barWidth = min(30, max(2, (geo.size.width - totalGap) / CGFloat(barCount)))
+            // Once putts exceed the visible slots (make-in-row has no putt cap), keep the
+            // bar width fixed and scroll the whole strip left so the oldest bar slides off
+            // and the newest enters on the right. Below capacity scrollX == 0 → unchanged.
+            let slotCount = max(barCount, history.count)
+            let scrollX = max(0, CGFloat(history.count - barCount)) * (barWidth + 2)
 
             HStack(spacing: 2) {
-                ForEach(0..<barCount, id: \.self) { i in
+                ForEach(0..<slotCount, id: \.self) { i in
                     let putt = i < history.count ? history[i] : nil
 
                     ZStack {
@@ -263,6 +268,10 @@ struct TachBars: View {
                     .clipped()
                 }
             }
+            .offset(x: -scrollX)
+            .frame(width: geo.size.width, alignment: .leading)
+            .clipped()
+            .animation(.easeInOut(duration: 0.3), value: history.count)
         }
         .frame(height: totalHeight)
     }

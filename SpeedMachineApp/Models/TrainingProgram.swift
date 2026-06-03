@@ -750,8 +750,11 @@ class SessionProgress: ObservableObject {
     var isComplete: Bool {
         // For pressure challenges
         if block.type == .pressure {
-            if block.isConsecutiveChallenge && pressureChallengeComplete {
-                return true
+            // Make-in-row completes ONLY when the streak is achieved — never via the
+            // putt count. block.putts is not a cap here; the user keeps putting (or
+            // ends the session) until they string consecutiveRequired hits together.
+            if block.isConsecutiveChallenge {
+                return pressureChallengeComplete
             }
             if block.challengeType == "elimination" && livesRemaining <= 0 {
                 return true

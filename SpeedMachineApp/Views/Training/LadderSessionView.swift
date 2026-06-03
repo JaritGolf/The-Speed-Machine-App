@@ -45,14 +45,23 @@ struct LadderSessionView: View {
                     tokens: tokens
                 )
 
-                LadderBody(
-                    targetSpeed: session.getCurrentLadderSpeed(),
-                    lastPutt: lastPutt,
-                    tokens: tokens
-                )
+                // Chromeless target + putt glide animation, with the ladder graphic
+                // kept to the LEFT of the number via the hero's left-accessory slot.
+                SportHeroCard(session: session, tokens: tokens, tolerance: 0.5,
+                              targetSpeed: session.getCurrentLadderSpeed(),
+                              leftAccessory: {
+                    SportLadder(
+                        targetSpeed: session.getCurrentLadderSpeed(),
+                        tolerance: 0.5,
+                        lastPutt: lastPutt,
+                        tokens: tokens,
+                        pxHeight: 300
+                    )
+                    .frame(width: 90, height: 300)
+                    .padding(.leading, 22)
+                    .padding(.trailing, 16)
+                })
                 .frame(maxHeight: .infinity)
-
-                SportLastPutt(lastPutt: lastPutt, tokens: tokens)
 
                 SportEndButton(tokens: tokens, showAlert: $showEndSessionAlert)
                     .padding(.horizontal, 22)
@@ -74,105 +83,3 @@ struct LadderSessionView: View {
     }
 }
 
-// MARK: - Ladder body (graphic + chromeless target)
-
-private struct LadderBody: View {
-    let targetSpeed: Int
-    let lastPutt: PuttResult?
-    let tokens: SportTokens
-
-    var body: some View {
-        GeometryReader { geo in
-            let h = min(max(200, geo.size.height - 24), 360)
-            HStack(alignment: .center, spacing: 16) {
-                SportLadder(
-                    targetSpeed: targetSpeed,
-                    tolerance: 0.5,
-                    lastPutt: lastPutt,
-                    tokens: tokens,
-                    pxHeight: h
-                )
-                .frame(width: 90, height: h)
-
-                let tStr = "\(targetSpeed)"
-                VStack(spacing: fs(8)) {
-                    Text(tStr)
-                        .font(.inter(tStr.count >= 2 ? fs(150) : fs(180)))
-                        .foregroundColor(tokens.fg)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.3)
-                        .monospacedDigit()
-                    HStack(spacing: 14) {
-                        Text("MPH")
-                            .font(.inter(fs(24), weight: .heavy))
-                            .foregroundColor(tokens.fg)
-                            .tracking(fs(24) * 0.06)
-                        Rectangle().fill(tokens.subtle).frame(width: 1, height: fs(20))
-                        Text("TARGET")
-                            .font(.inter(fs(24), weight: .heavy))
-                            .foregroundColor(tokens.sub)
-                            .tracking(fs(24) * 0.22)
-                    }
-                }
-                .frame(maxWidth: .infinity)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .padding(.horizontal, 22)
-        }
-    }
-}
-
-// MARK: - Shared LAST PUTT section (mockup .last-putt, static)
-
-struct SportLastPutt: View {
-    let lastPutt: PuttResult?
-    let tokens: SportTokens
-    var label: String = "LAST PUTT"
-
-    private var resultColor: Color {
-        guard let p = lastPutt else { return tokens.sub }
-        return p.isInZone ? tokens.zone : tokens.miss
-    }
-
-    private var deltaString: String {
-        guard let p = lastPutt else { return "" }
-        let d = p.actualSpeed - Float(p.targetSpeed)
-        return String(format: "%@%.1f", d > 0 ? "+" : "", d)
-    }
-
-    var body: some View {
-        VStack(spacing: fs(8)) {
-            Text(label)
-                .font(.inter(fs(20), weight: .heavy))
-                .foregroundColor(tokens.sub)
-                .tracking(fs(20) * 0.22)
-
-            HStack(alignment: .firstTextBaseline, spacing: 14) {
-                if let p = lastPutt {
-                    Text(String(format: "%.1f", p.actualSpeed))
-                        .font(.inter(fs(64)))
-                        .foregroundColor(resultColor)
-                        .monospacedDigit()
-                    Text("MPH")
-                        .font(.inter(fs(22), weight: .heavy))
-                        .foregroundColor(tokens.sub)
-                        .tracking(fs(22) * 0.04)
-                    Text(deltaString)
-                        .font(.inter(fs(48)))
-                        .foregroundColor(resultColor)
-                        .monospacedDigit()
-                } else {
-                    Text("—")
-                        .font(.inter(fs(64)))
-                        .foregroundColor(tokens.subtle)
-                }
-            }
-            .frame(minHeight: fs(64))
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.horizontal, 24)
-        .padding(.top, 16)
-        .padding(.bottom, 14)
-        .overlay(Rectangle().fill(tokens.hairline).frame(height: 1), alignment: .top)
-    }
-}
