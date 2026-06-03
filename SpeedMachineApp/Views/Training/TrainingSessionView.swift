@@ -63,6 +63,8 @@ struct TrainingSessionView: View {
                             switch block.type {
                             case .exploration:
                                 ExplorationSessionView(session: session, block: block, day: day, isTransitioning: false)
+                            case .warmup, .recovery:
+                                ExplorationSessionView(session: session, block: block, day: day, isTransitioning: false)
                             case .pressure:
                                 PressureSessionView(session: session, block: block, day: day, isTransitioning: false)
                             case .gateTest:

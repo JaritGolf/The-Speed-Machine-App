@@ -102,7 +102,14 @@ struct SportPassStrip: View {
             }
         }
         .background(tokens.bg)
-        .overlay(Rectangle().fill(tokens.subtle).frame(height: 1), alignment: .bottom)
+        .overlay(alignment: .bottom) {
+            // Make-in-row drops the bottom hairline (it follows the tachs directly).
+            if case .makeInRow = config {
+                EmptyView()
+            } else {
+                Rectangle().fill(tokens.subtle).frame(height: 1)
+            }
+        }
     }
 
     // MARK: - Helpers
@@ -113,8 +120,8 @@ struct SportPassStrip: View {
             return (threshold, inZone)
         case .gateTest(_, _, let inZone, let threshold):
             return (threshold, inZone)
-        case .makeInRow(_, let consecutive, let goal):
-            return (goal, consecutive)
+        // Make-in-row intentionally omits the pass-needed countdown bars — they are
+        // redundant with the PUTTS REMAINING number and the CONSECUTIVE HITS dots.
         default:
             return nil
         }

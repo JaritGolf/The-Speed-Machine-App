@@ -44,7 +44,8 @@ struct MakeInRowSessionView: View {
 
                 // Chromeless target + putt glide animation, with the consecutive-hits
                 // streak dots in the hero's middle slot (above the LAST PUTT readout).
-                SportHeroCard(session: session, tokens: tokens, tolerance: 0.5, middle: {
+                SportHeroCard(session: session, tokens: tokens, tolerance: 0.5,
+                              targetNumberScale: 1.25, middle: {
                     VStack(spacing: 12) {
                         Text("CONSECUTIVE HITS")
                             .font(.inter(fs(20), weight: .heavy))

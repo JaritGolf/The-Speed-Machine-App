@@ -18,6 +18,9 @@ struct SettingsView: View {
     @AppStorage("hapticFeedbackEnabled") private var hapticFeedbackEnabled = true
     @AppStorage("liveViewTheme") private var liveViewThemeRaw: String = LiveViewTheme.light.rawValue
     @State private var showResetModal = false
+    @State private var showRestoreModal = false
+    @State private var showBackupSaved = false
+    @State private var showRestoreDone = false
     @State private var debugTrack: Int = 1
     @State private var showTrackSaved = false
     @StateObject private var adminVersion = AdminVersionService()
@@ -62,6 +65,45 @@ struct SettingsView: View {
                             }
                             .buttonStyle(.plain)
                             SettingsFooter("Resets speed profiles and trend data. Training program progress is not affected.")
+
+                            SettingsSectionLabel("ICLOUD BACKUP")
+                            SettingsRow {
+                                Text("STATUS").modifier(RowLabel())
+                                Spacer()
+                                iCloudSyncValue
+                            }
+                            SettingsRow {
+                                Text("LAST BACKED UP").modifier(RowLabel())
+                                Spacer()
+                                Text(lastBackupText).modifier(SettingsValue())
+                            }
+                            Button { backUpNow() } label: {
+                                SettingsRow {
+                                    Text("BACK UP NOW").modifier(RowLabel(color: AppColors.accentGreen))
+                                    Spacer()
+                                    if showBackupSaved {
+                                        Text("Backed up ✓")
+                                            .font(.custom("Inter-Bold", size: 11))
+                                            .foregroundColor(AppColors.accentGreen)
+                                            .transition(.opacity)
+                                    }
+                                }
+                            }
+                            .buttonStyle(.plain)
+                            Button { showRestoreModal = true } label: {
+                                SettingsRow {
+                                    Text("RESTORE FROM ICLOUD").modifier(RowLabel())
+                                    Spacer()
+                                    if showRestoreDone {
+                                        Text("Restored ✓")
+                                            .font(.custom("Inter-Bold", size: 11))
+                                            .foregroundColor(AppColors.accentGreen)
+                                            .transition(.opacity)
+                                    }
+                                }
+                            }
+                            .buttonStyle(.plain)
+                            SettingsFooter("Your progress, stats, session history and combine scores are backed up to iCloud automatically and restored if you reinstall. Putt-by-putt detail restores when iCloud finishes syncing.")
 
                             SettingsSectionLabel("ABOUT")
                             SettingsRow {
@@ -131,10 +173,41 @@ struct SettingsView: View {
                         onCancel: { showResetModal = false }
                     )
                 }
+
+                if showRestoreModal {
+                    RestoreModal(
+                        onConfirm: { restoreFromICloud(); showRestoreModal = false },
+                        onCancel: { showRestoreModal = false }
+                    )
+                }
             }
             .navigationBarHidden(true)
             .task { await adminVersion.fetch() }
             .onAppear { debugTrack = Int(dataService.userProgress.currentDay) }
+        }
+    }
+
+    private var lastBackupText: String {
+        guard let date = dataService.lastBackupDate else { return "Never" }
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
+        return formatter.string(from: date)
+    }
+
+    private func backUpNow() {
+        dataService.backUpNowToICloud(statsService: statsService)
+        withAnimation(.easeInOut(duration: 0.2)) { showBackupSaved = true }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            withAnimation(.easeInOut(duration: 0.2)) { showBackupSaved = false }
+        }
+    }
+
+    private func restoreFromICloud() {
+        dataService.restoreFromICloudNow(statsService: statsService)
+        withAnimation(.easeInOut(duration: 0.2)) { showRestoreDone = true }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            withAnimation(.easeInOut(duration: 0.2)) { showRestoreDone = false }
         }
     }
 
@@ -370,6 +443,58 @@ private struct ResetStatsModal: View {
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 15)
                         .background(AppColors.error)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+                .padding(.bottom, 8)
+
+                Button(action: onCancel) {
+                    Text("Cancel")
+                        .font(.custom("Inter-Medium", size: 15))
+                        .foregroundColor(AppColors.textMuted)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 15)
+                }
+            }
+            .padding(.horizontal, 24)
+            .padding(.top, 28)
+            .padding(.bottom, 20)
+            .background(Color.white)
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .padding(.horizontal, 28)
+        }
+    }
+}
+
+// MARK: - Restore modal
+
+private struct RestoreModal: View {
+    let onConfirm: () -> Void
+    let onCancel: () -> Void
+
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.48).ignoresSafeArea()
+                .onTapGesture(perform: onCancel)
+
+            VStack(spacing: 0) {
+                Text("Restore from iCloud?")
+                    .font(.custom("Inter-Bold", size: 17))
+                    .foregroundColor(.black)
+                    .padding(.bottom, 8)
+                Text("This pulls your latest iCloud backup — progress, stats, session history and combine scores — into this device. Use it after reinstalling if your data hasn't reappeared.")
+                    .font(.custom("Inter-Regular", size: 14))
+                    .foregroundColor(AppColors.textMuted)
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(4)
+                    .padding(.bottom, 24)
+
+                Button(action: onConfirm) {
+                    Text("Restore Now")
+                        .font(.custom("Inter-Bold", size: 15))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 15)
+                        .background(AppColors.accentGreen)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
                 .padding(.bottom, 8)

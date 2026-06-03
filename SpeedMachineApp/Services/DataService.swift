@@ -9,6 +9,7 @@ import Foundation
 import CoreData
 import Combine
 import CloudKit
+import UIKit
 
 enum CloudKitSyncStatus: Equatable {
     case idle, syncing, synced, error
@@ -61,6 +62,8 @@ class DataService: ObservableObject {
             migrateGateTestsToICloudKV()
             restoreProgressFromKVIfNeeded()
             restoreStatsFromKVIfNeeded()
+            restoreHistoryFromKVIfNeeded()
+            registerHistoryBackupObservers()
 
             NotificationCenter.default.addObserver(
                 forName: NSPersistentCloudKitContainer.eventChangedNotification,
@@ -94,8 +97,42 @@ class DataService: ObservableObject {
             migrateGateTestsToICloudKV()
             restoreProgressFromKVIfNeeded()
             restoreStatsFromKVIfNeeded()
+            restoreHistoryFromKVIfNeeded()
+            registerHistoryBackupObservers()
             checkCloudKitAccountStatus()
         }
+    }
+
+    private func registerHistoryBackupObservers() {
+        NotificationCenter.default.addObserver(
+            forName: UIApplication.didEnterBackgroundNotification, object: nil, queue: .main
+        ) { [weak self] _ in self?.snapshotHistoryToKV() }
+        NotificationCenter.default.addObserver(
+            forName: UIApplication.willTerminateNotification, object: nil, queue: .main
+        ) { [weak self] _ in self?.snapshotHistoryToKV() }
+    }
+
+    /// User-initiated full backup of everything in the KV fallback. `statsService` is passed in
+    /// because StatsService owns the speed-profile/daily snapshot writer.
+    func backUpNowToICloud(statsService: StatsService) {
+        statsService.snapshotStatsToKV()
+        snapshotHistoryToKV()
+        NSUbiquitousKeyValueStore.default.set(Int64(userProgress.currentDay), forKey: kvCurrentDayKey)
+        let allCompleted = getAllCompletedDays().map { Int($0.dayNumber) }
+        NSUbiquitousKeyValueStore.default.set(allCompleted, forKey: kvCompletedDaysKey)
+        NSUbiquitousKeyValueStore.default.synchronize()
+    }
+
+    /// User-initiated restore from iCloud — bypasses the "fresh install only" guard.
+    func restoreFromICloudNow(statsService: StatsService) {
+        NSUbiquitousKeyValueStore.default.synchronize()
+        restoreProgressFromKVIfNeeded()
+        restoreStatsFromKVIfNeeded()
+        restoreHistoryFromKVIfNeeded(force: true)
+        userProgress = Self.loadUserProgress(context: container.viewContext)
+        combineHighScore = Int(userProgress.combineHighScore)
+        statsService.loadSpeedProfiles()
+        statsService.recalculateOverallStats()
     }
 
     private func handleCloudKitEvent(_ notification: Notification) {
@@ -307,6 +344,125 @@ class DataService: ObservableObject {
         }
     }
 
+    // MARK: - iCloud KV History Backup
+    // Mirrors completed session + combine-game summaries to NSUbiquitousKeyValueStore so the
+    // history screens survive a reinstall even before CloudKit finishes syncing. Raw putt /
+    // combine-shot detail is NOT mirrored here (too large for the 1 MB KV budget) — it relies on
+    // CloudKit. Capped to the most recent N entries to stay well within budget.
+
+    private let kvSessionsKey          = "sessionHistorySnapshot"
+    private let kvCombineGamesKey      = "combineGamesSnapshot"
+    private let kvHistoryLastBackupKey = "historyLastBackupAt"
+    private let kvSessionCap = 500
+    private let kvCombineCap = 300
+
+    /// Most recent successful KV backup time (set by `snapshotHistoryToKV`), or nil if never.
+    var lastBackupDate: Date? {
+        let ts = NSUbiquitousKeyValueStore.default.double(forKey: kvHistoryLastBackupKey)
+        return ts > 0 ? Date(timeIntervalSince1970: ts) : nil
+    }
+
+    func snapshotHistoryToKV() {
+        let kv = NSUbiquitousKeyValueStore.default
+
+        // Completed sessions (most recent first, capped).
+        let sessionRequest: NSFetchRequest<SessionData> = SessionData.fetchRequest()
+        sessionRequest.predicate = NSPredicate(format: "isComplete == YES")
+        sessionRequest.sortDescriptors = [NSSortDescriptor(keyPath: \SessionData.startedAt, ascending: false)]
+        sessionRequest.fetchLimit = kvSessionCap
+        if let sessions = try? container.viewContext.fetch(sessionRequest) {
+            let dicts: [[String: Any]] = sessions.map { s in
+                var d: [String: Any] = [
+                    "dayNumber":      Int(s.dayNumber),
+                    "targetPutts":    Int(s.targetPutts),
+                    "completedPutts": Int(s.completedPutts),
+                    "onTargetPutts":  Int(s.onTargetPutts),
+                ]
+                if let id = s.id { d["id"] = id.uuidString }
+                if let b = s.blockId { d["blockId"] = b }
+                if let started = s.startedAt { d["startedAt"] = started.timeIntervalSince1970 }
+                if let completed = s.completedAt { d["completedAt"] = completed.timeIntervalSince1970 }
+                return d
+            }
+            if let data = try? JSONSerialization.data(withJSONObject: dicts),
+               let json = String(data: data, encoding: .utf8) {
+                kv.set(json, forKey: kvSessionsKey)
+            }
+        }
+
+        // Completed combine games (scores only; shots are not mirrored).
+        let gameRequest: NSFetchRequest<CombineGameData> = CombineGameData.fetchRequest()
+        gameRequest.predicate = NSPredicate(format: "isComplete == YES")
+        gameRequest.sortDescriptors = [NSSortDescriptor(keyPath: \CombineGameData.playedAt, ascending: false)]
+        gameRequest.fetchLimit = kvCombineCap
+        if let games = try? container.viewContext.fetch(gameRequest) {
+            let dicts: [[String: Any]] = games.map { g in
+                var d: [String: Any] = ["totalScore": Int(g.totalScore)]
+                if let id = g.id { d["id"] = id.uuidString }
+                if let played = g.playedAt { d["playedAt"] = played.timeIntervalSince1970 }
+                return d
+            }
+            if let data = try? JSONSerialization.data(withJSONObject: dicts),
+               let json = String(data: data, encoding: .utf8) {
+                kv.set(json, forKey: kvCombineGamesKey)
+            }
+        }
+
+        kv.set(Date().timeIntervalSince1970, forKey: kvHistoryLastBackupKey)
+        kv.synchronize()
+        print("History snapshot written to iCloud KV.")
+    }
+
+    func restoreHistoryFromKVIfNeeded(force: Bool = false) {
+        if !force {
+            // Only restore on a fresh install (no sessions exist yet).
+            let request: NSFetchRequest<SessionData> = SessionData.fetchRequest()
+            request.fetchLimit = 1
+            let existing = (try? container.viewContext.count(for: request)) ?? 0
+            guard existing == 0 else { return }
+        }
+
+        let kv = NSUbiquitousKeyValueStore.default
+        var restored = false
+
+        if let json = kv.string(forKey: kvSessionsKey),
+           let data = json.data(using: .utf8),
+           let array = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] {
+            for dict in array {
+                let session = SessionData(context: container.viewContext)
+                if let idStr = dict["id"] as? String { session.id = UUID(uuidString: idStr) }
+                session.dayNumber      = Int16(dict["dayNumber"]      as? Int ?? 0)
+                session.blockId        = dict["blockId"] as? String
+                session.targetPutts    = Int16(dict["targetPutts"]    as? Int ?? 0)
+                session.completedPutts = Int16(dict["completedPutts"] as? Int ?? 0)
+                session.onTargetPutts  = Int16(dict["onTargetPutts"]  as? Int ?? 0)
+                session.isComplete     = true
+                if let ts = dict["startedAt"]   as? Double { session.startedAt   = Date(timeIntervalSince1970: ts) }
+                if let ts = dict["completedAt"] as? Double { session.completedAt = Date(timeIntervalSince1970: ts) }
+            }
+            print("Restored \(array.count) sessions from iCloud KV backup.")
+            restored = true
+        }
+
+        if let json = kv.string(forKey: kvCombineGamesKey),
+           let data = json.data(using: .utf8),
+           let array = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] {
+            for dict in array {
+                let game = CombineGameData(context: container.viewContext)
+                if let idStr = dict["id"] as? String { game.id = UUID(uuidString: idStr) }
+                game.totalScore = Int16(dict["totalScore"] as? Int ?? 0)
+                game.isComplete = true
+                if let ts = dict["playedAt"] as? Double { game.playedAt = Date(timeIntervalSince1970: ts) }
+            }
+            print("Restored \(array.count) combine games from iCloud KV backup.")
+            restored = true
+        }
+
+        if restored {
+            try? container.viewContext.save()
+        }
+    }
+
     // MARK: - Day Completion
 
     func markDayComplete(dayNumber: Int, accuracy: Float, totalPutts: Int, onTargetPutts: Int) {
@@ -375,6 +531,9 @@ class DataService: ObservableObject {
         }
 
         saveContext()
+        if isComplete {
+            snapshotHistoryToKV()
+        }
     }
 
     func recordPutt(session: SessionData, targetSpeed: Float, actualSpeed: Float, tolerance: Float, isOnTarget: Bool) {
@@ -424,6 +583,7 @@ class DataService: ObservableObject {
 
         updateCombineHighScore(finalScore)
         saveContext()
+        snapshotHistoryToKV()
     }
 
     // MARK: - Stats

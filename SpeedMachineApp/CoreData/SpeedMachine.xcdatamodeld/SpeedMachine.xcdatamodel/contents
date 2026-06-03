@@ -63,6 +63,10 @@
         <attribute name="bestStreak" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="currentStreak" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="lastPracticedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <!-- Phase 1: Mastery tier telemetry fields -->
+        <attribute name="recentPutts" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="recentOnTargetPutts" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="tierOverride" attributeType="Integer 16" defaultValueString="-1" usesScalarValueType="YES"/>
     </entity>
     <entity name="DailySnapshotData" representedClassName="DailySnapshotData" syncable="YES">
         <attribute name="date" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
@@ -71,5 +75,16 @@
         <attribute name="totalDeviation" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="sumSquaredDeviation" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="practiceSeconds" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+    </entity>
+    <!-- Phase 1: Block attempt telemetry — records every block completion for threshold validation -->
+    <entity name="BlockAttemptData" representedClassName="BlockAttemptData" syncable="YES">
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="dayNumber" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="blockId" optional="YES" attributeType="String"/>
+        <attribute name="attemptNumber" attributeType="Integer 16" defaultValueString="1" usesScalarValueType="YES"/>
+        <attribute name="zoneAccuracy" attributeType="Float" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="passedThreshold" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="passedWithOverride" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="attemptedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
     </entity>
 </model>
