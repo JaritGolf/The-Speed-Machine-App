@@ -1,4 +1,4 @@
-//
+ //
 //  StatsService.swift
 //  SpeedMachine
 //
@@ -8,6 +8,7 @@
 import Foundation
 import CoreData
 import Combine
+import UIKit
 
 /// Manages all stat tracking independent of training protocol.
 /// Maintains SpeedProfile (per-speed running stats) and DailySnapshot (per-day aggregates).
@@ -33,6 +34,23 @@ class StatsService: ObservableObject {
     private init() {
         loadSpeedProfiles()
         recalculateOverallStats()
+
+        // Snapshot stats to KV whenever the app moves to background or is about to terminate,
+        // so data is always current even if the user never finishes a formal session.
+        NotificationCenter.default.addObserver(
+            forName: UIApplication.didEnterBackgroundNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.snapshotStatsToKV()
+        }
+        NotificationCenter.default.addObserver(
+            forName: UIApplication.willTerminateNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.snapshotStatsToKV()
+        }
     }
 
     // MARK: - Speed Profile Management
