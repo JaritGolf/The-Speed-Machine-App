@@ -16,6 +16,11 @@ class TrainingViewModel: ObservableObject {
     @Published var isSessionActive = false
     @Published var blockCompletionPending = false
     @Published var blockJustCompleted = false
+    /// True when the just-completed block FAILED. Drives the red variant of the
+    /// "BLOCK FAILED" drop-down banner. Pairs with `blockJustCompleted` (which is
+    /// the umbrella "banner is showing" flag) so the view branches color/text/icon.
+    /// Reset alongside `blockJustCompleted` everywhere.
+    @Published var lastBlockFailed: Bool = false
     @Published var nextBlockForTransition: TrainingBlock? = nil
     @Published var shouldNavigateHome = false
     @Published var gateTestResult: GateTestResult?
@@ -146,6 +151,8 @@ class TrainingViewModel: ObservableObject {
         isSessionActive = true
         gateTestResult = nil
         blockFailedResult = nil
+        blockJustCompleted = false
+        lastBlockFailed = false
         nextTrackForAutoAdvance = nil
         autoAdvanceToken = nil
         sessionStartTime = Date()
@@ -225,13 +232,15 @@ class TrainingViewModel: ObservableObject {
             tolerance: tolerance
         )
 
-        // Check if block is complete — 2-second delay so the final putt result
+        // Check if block is complete — 3-second delay so the final putt result
         // is visible on screen before the block advances or transitions.
-        // blockJustCompleted drives the "✓ BLOCK COMPLETE" banner overlay.
+        // The banner overlay shows on BOTH outcomes: green ✓ "BLOCK COMPLETE" on
+        // pass, red ✗ "BLOCK FAILED" on fail. `blockJustCompleted` gates the
+        // overlay's visibility; `lastBlockFailed` selects the red variant.
         if session.isComplete || session.isLadderComplete {
-            // Only show the green "BLOCK COMPLETE" banner if the block actually passes —
-            // otherwise it would flash misleadingly for 3s before the FAILED screen.
-            blockJustCompleted = blockIsPassed(session, block, day)
+            let passed = blockIsPassed(session, block, day)
+            blockJustCompleted = true
+            lastBlockFailed = !passed
             Task {
                 try? await Task.sleep(for: .seconds(3))
                 await MainActor.run { completeBlock() }
@@ -325,6 +334,7 @@ class TrainingViewModel: ObservableObject {
 
         // Banner has served its purpose — hide it now.
         blockJustCompleted = false
+        lastBlockFailed = false
 
         // Check if this is a gate test block with pass criteria
         if block.type == .gateTest && block.passRequirements != nil {
@@ -593,6 +603,8 @@ class TrainingViewModel: ObservableObject {
     func retryBlock() {
         guard let day = selectedDay, let block = selectedBlock else { return }
         blockFailedResult = nil
+        blockJustCompleted = false
+        lastBlockFailed = false
         activeSessionData = nil   // force a fresh SessionData record on the next putt
         currentSession = nil
         startBlock(block, for: day)
@@ -634,6 +646,7 @@ class TrainingViewModel: ObservableObject {
         isSessionActive = false
         blockCompletionPending = false
         blockJustCompleted = false
+        lastBlockFailed = false
         dayCompleteStats = nil
         adaptiveBlockContext = nil
         nextBlockForTransition = nil

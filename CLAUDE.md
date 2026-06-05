@@ -136,15 +136,14 @@ To navigate home programmatically: `endSession()` + `shouldNavigateHome = true` 
 
 ## Speed Zones & Tolerance
 
-All zones use a **uniform ±0.5 MPH tolerance** — this was intentionally set equal across all zones.
+There are **4 speed zones (3–15 MPH)** and tolerance **widens as speed increases** — it is NOT uniform. A fixed ±X MPH window is a larger proportional miss on a slow putt than a fast one, so the window opens up slightly in the higher zones to keep the difficulty roughly constant in percentage terms.
 
 | Zone | Name | Speed Range | Tolerance |
 |------|------|-------------|-----------|
-| 1 | Touch | 3–7 MPH | ±0.5 MPH |
-| 2 | Moderate | 8–10 MPH | ±0.5 MPH |
-| 3 | Firm | 11–14 MPH | ±0.5 MPH |
-| 4 | Power | 15–18 MPH | ±0.5 MPH |
-| 5 | Maximum | 19–20 MPH | ±0.5 MPH |
+| 1 | Touch | 3–6 MPH | ±0.5 MPH |
+| 2 | Moderate | 7–9 MPH | ±0.5 MPH |
+| 3 | Firm | 10–12 MPH | ±0.6 MPH |
+| 4 | Power | 13–15 MPH | ±0.7 MPH |
 
 Tolerance is stored in two places in the shipped app — keep them in sync when changing:
 1. `Utilities/Constants.swift` — `SpeedZone.zones` array
@@ -199,7 +198,7 @@ Gate test tracks: 5, 9, 12, 19, 25, 30.
 
 ## Key Decisions Log
 
-- **Uniform ±0.5 MPH tolerance across all zones** — applied to make the standard consistent regardless of speed zone
+- **Speed-scaled tolerance** — ±0.5 MPH for zones 1–2 (3–9 MPH), ±0.6 for zone 3 (10–12 MPH), ±0.7 for zone 4 (13–15 MPH). Widens with speed so each zone is roughly the same percentage challenge. `getToleranceForSpeed()` falls back to 0.5 for speeds outside the zone table (e.g. 16–20 MPH, which the Speed Profile tracks but the training program does not target)
 - **Auto-advance between blocks** — global, applies to all tracks/block types. 3-second `BlockTransitionView` shown between blocks
 - **Auto-navigate home after last block** — no "Continue" button; app returns to HomeView automatically after 3 seconds
 - **Target accuracy removed** — only zone accuracy is used as a success metric. Warning message text may still reference it

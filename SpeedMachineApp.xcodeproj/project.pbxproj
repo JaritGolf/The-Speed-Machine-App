@@ -88,6 +88,7 @@
 		A1C85736F0AA480896B92799 /* SpeedMachineApp/Views/Training/SportLive/SportEndButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedMachineApp/Views/Training/SportLive/SportEndButton.swift; sourceTree = "<group>"; };
 		A1D4F500B2C34E8A9F123456 /* SpeedMachineApp/Utilities/AdaptiveLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedMachineApp/Utilities/AdaptiveLayout.swift; sourceTree = "<group>"; };
 		AA8FAED12FCBA77500DBEBC0 /* SpeedMachineApp_OLD_DO_NOT_OPEN.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = SpeedMachineApp_OLD_DO_NOT_OPEN.xcodeproj; sourceTree = "<group>"; };
+		AA8FB2232FCDDDAE00DBEBC0 /* SpeedMachineApp_OLD_DO_NOT_OPEN.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = SpeedMachineApp_OLD_DO_NOT_OPEN.xcodeproj; sourceTree = "<group>"; };
 		AAF330222F26C60100FC9201 /* SpeedMachineApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SpeedMachineApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AAF3302F2F26C60300FC9201 /* SpeedMachineAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SpeedMachineAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		AAF330392F26C60300FC9201 /* SpeedMachineAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SpeedMachineAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -110,22 +111,14 @@
 				Services/DataService.swift,
 				Services/StatsService.swift,
 				Utilities/AdaptiveLayout.swift,
-				Views/Stats/CombineStatsView.swift,
 				Views/Stats/SessionHistoryView.swift,
-				Views/Stats/SpeedDetailView.swift,
 				Views/Stats/StatsView.swift,
-				Views/Stats/TrendsView.swift,
 				Views/Training/DaySelectionView.swift,
 				Views/Training/LadderSessionView.swift,
-				Views/Training/MakeInRowSessionView.swift,
 				Views/Training/SportLive/SportAnimations.swift,
 				Views/Training/SportLive/SportEndButton.swift,
 				Views/Training/SportLive/SportHeroCard.swift,
-				Views/Training/SportLive/SportLadder.swift,
-				Views/Training/SportLive/SportLiveContainer.swift,
-				Views/Training/SportLive/SportPassStrip.swift,
 				Views/Training/SportLive/SportRecHeader.swift,
-				Views/Training/SportLive/SportTokens.swift,
 				Views/Training/TrainingSessionView.swift,
 			);
 			target = AAF330212F26C60100FC9201 /* SpeedMachineApp */;
@@ -225,6 +218,13 @@
 			sourceTree = "<group>";
 		};
 		AA8FAED32FCBA77500DBEBC0 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		AA8FB2252FCDDDAE00DBEBC0 /* Products */ = {
 			isa = PBXGroup;
 			children = (
 			);
@@ -358,6 +358,10 @@
 				{
 					ProductGroup = AA8FAED32FCBA77500DBEBC0 /* Products */;
 					ProjectRef = AA8FAED12FCBA77500DBEBC0 /* SpeedMachineApp_OLD_DO_NOT_OPEN.xcodeproj */;
+				},
+				{
+					ProductGroup = AA8FB2252FCDDDAE00DBEBC0 /* Products */;
+					ProjectRef = AA8FB2232FCDDDAE00DBEBC0 /* SpeedMachineApp_OLD_DO_NOT_OPEN.xcodeproj */;
 				},
 			);
 			projectRoot = "";

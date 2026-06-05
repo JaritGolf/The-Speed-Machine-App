@@ -76,21 +76,23 @@ struct TrainingSessionView: View {
                     }
                 }
 
-                // "✓ BLOCK COMPLETE" banner — floats over any live session view for 2 seconds
-                // after the final putt lands. Clears automatically when completeBlock() fires.
+                // Block-end banner — floats over any live session view for 3 seconds
+                // after the final putt lands. Green ✓ "BLOCK COMPLETE" on pass, red ✗
+                // "BLOCK FAILED" on fail. Clears automatically when completeBlock() fires.
                 if trainingViewModel.blockJustCompleted {
+                    let failed = trainingViewModel.lastBlockFailed
                     VStack {
                         HStack(spacing: 12) {
-                            Image(systemName: "checkmark.circle.fill")
+                            Image(systemName: failed ? "xmark.circle.fill" : "checkmark.circle.fill")
                                 .font(.system(size: fs(28), weight: .bold))
                                 .foregroundColor(.white)
-                            Text("BLOCK COMPLETE")
+                            Text(failed ? "BLOCK FAILED" : "BLOCK COMPLETE")
                                 .font(.system(size: fs(28), weight: .black, design: .rounded))
                                 .foregroundColor(.white)
                         }
                         .padding(.horizontal, 28)
                         .padding(.vertical, 18)
-                        .background(AppColors.accentGreen)
+                        .background(failed ? AppColors.error : AppColors.accentGreen)
                         .cornerRadius(20)
                         .shadow(color: .black.opacity(0.25), radius: 12, x: 0, y: 4)
 
@@ -554,160 +556,150 @@ struct GateTestResultView: View {
 /// Shown when a standard block misses its in-zone threshold. Offers Try Again (restart
 /// the same block in place) and Exit (return home). Built on the Sport live-view design
 /// architecture: theme-aware SportTokens, Inter type, big monospaced stat readout.
+/// Full-black takeover shown when a standard block fails. Ports the mockup at
+/// `designs/block-failed-mockup.html`: giant "BLOCK / FAILED" headline, muted
+/// reason line, green countdown ring + "TRY AGAIN IN" label, and a green
+/// "RETURN TO HOME" pill. The ring drains over 5 seconds, then auto-calls
+/// `retryBlock()`. Tapping the button during the countdown cancels the timer
+/// and calls `endSession()` instead. View-layer only — `retryBlock()` and
+/// `endSession()` are unchanged.
 struct BlockFailedView: View {
     let result: BlockFailResult
     let block: TrainingBlock
     let day: TrainingDay
     @EnvironmentObject var trainingViewModel: TrainingViewModel
-    @AppStorage("liveViewTheme") private var themeRaw: String = LiveViewTheme.light.rawValue
-    @Environment(\.colorScheme) private var colorScheme
-    @Environment(\.isLandscapeOrientation) var isLandscape
+    @Environment(\.verticalSizeClass) private var vSize
 
-    private var tokens: SportTokens {
-        let isDark = (LiveViewTheme(rawValue: themeRaw) ?? .light).resolvedDark(scheme: colorScheme)
-        return SportTokens.make(dark: isDark)
-    }
+    @State private var countdown: Int = 5
+    @State private var didFire: Bool = false
+    private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
-    private var blockNumber: Int {
-        (day.blocks.firstIndex(where: { $0.id == block.id }) ?? 0) + 1
-    }
+    // Mockup palette
+    private static let parchment = Color(hex: "F6F5F1")
+    private static let forestGreen = Color(hex: "15803D")
 
-    private var subtitle: String {
-        block.onFail ?? "Land \(result.required) in the zone to pass."
+    private var headlineSize: CGFloat {
+        // Mockup is 88pt portrait; compress for landscape to avoid clipping.
+        vSize == .compact ? fs(56) : fs(84)
     }
 
     // MARK: Pieces
 
-    private func badge(_ size: CGFloat) -> some View {
-        ZStack {
-            Circle().fill(tokens.miss.opacity(tokens.isDark ? 0.16 : 0.10))
-            Circle().stroke(tokens.miss.opacity(0.45), lineWidth: 2)
-            Image(systemName: "xmark")
-                .font(.system(size: size * 0.42, weight: .black))
-                .foregroundColor(tokens.miss)
+    private var headlineBlock: some View {
+        VStack(alignment: .center, spacing: 0) {
+            Text("BLOCK")
+                .font(.inter(headlineSize))
+                .foregroundColor(Self.parchment)
+                .tracking(headlineSize * -0.02)
+            Text("FAILED")
+                .font(.inter(headlineSize))
+                .foregroundColor(Self.parchment)
+                .tracking(headlineSize * -0.02)
         }
-        .frame(width: size, height: size)
+        .lineLimit(1)
+        .minimumScaleFactor(0.5)
     }
 
-    private var titleStack: some View {
-        VStack(spacing: fs(8)) {
-            Text("BLOCK FAILED")
-                .font(.inter(fs(40)))
-                .foregroundColor(tokens.miss)
-                .tracking(fs(40) * 0.04)
-                .minimumScaleFactor(0.6).lineLimit(1)
-            Text("T\(day.day) · BLOCK \(blockNumber) · \(block.name.uppercased())")
-                .font(.inter(fs(13), weight: .heavy))
-                .foregroundColor(tokens.sub)
-                .tracking(fs(13) * 0.10)
-                .multilineTextAlignment(.center)
-                .lineLimit(2)
+    private var reasonLines: some View {
+        // Two-line muted reason with bold count values (mirrors mockup <strong>).
+        VStack(spacing: fs(4)) {
+            (
+                Text("Needed: ")
+                    .font(.inter(fs(17), weight: .regular))
+                +
+                Text("\(result.required) in zone")
+                    .font(.inter(fs(17), weight: .semibold))
+            )
+            (
+                Text("Yours: ")
+                    .font(.inter(fs(17), weight: .regular))
+                +
+                Text("\(result.inZone) in zone")
+                    .font(.inter(fs(17), weight: .semibold))
+            )
         }
+        .foregroundColor(Self.parchment.opacity(0.55))
+        .multilineTextAlignment(.center)
+        .padding(.top, fs(16))
     }
 
-    // Big monospaced IN ZONE readout: achieved in miss, required in sub.
-    private var statBlock: some View {
-        VStack(spacing: fs(6)) {
-            Text("IN ZONE")
-                .font(.inter(fs(20), weight: .heavy))
-                .foregroundColor(tokens.sub)
-                .tracking(fs(20) * 0.16)
-            HStack(alignment: .firstTextBaseline, spacing: 0) {
-                Text("\(result.inZone)")
-                    .font(.inter(fs(84)))
-                    .foregroundColor(tokens.miss)
-                    .monospacedDigit()
-                Text(" / \(result.required)")
-                    .font(.inter(fs(42), weight: .heavy))
-                    .foregroundColor(tokens.sub)
-                    .monospacedDigit()
+    private var countdownRing: some View {
+        VStack(spacing: fs(10)) {
+            Text("TRY AGAIN IN")
+                .font(.inter(fs(11), weight: .medium))
+                .kerning(1.6)
+                .foregroundColor(Self.forestGreen)
+
+            ZStack {
+                Circle()
+                    .stroke(Color.white.opacity(0.08), lineWidth: 4)
+                    .frame(width: 128, height: 128)
+                Circle()
+                    .trim(from: 0, to: CGFloat(countdown) / 5.0)
+                    .stroke(Self.forestGreen, style: StrokeStyle(lineWidth: 4, lineCap: .butt))
+                    .frame(width: 128, height: 128)
+                    .rotationEffect(.degrees(-90))
+                    .animation(.linear(duration: 0.9), value: countdown)
+                Text("\(countdown)")
+                    .font(.inter(fs(54)))
+                    .foregroundColor(Self.parchment)
             }
-            .lineLimit(1)
-            .minimumScaleFactor(0.4)
         }
     }
 
-    private var subtitleText: some View {
-        Text(subtitle)
-            .font(.inter(fs(18), weight: .medium))
-            .foregroundColor(tokens.sub)
-            .multilineTextAlignment(.center)
-            .fixedSize(horizontal: false, vertical: true)
-    }
-
-    private var tryAgainButton: some View {
+    private var returnHomeButton: some View {
         Button {
-            trainingViewModel.retryBlock()
-        } label: {
-            Text("TRY AGAIN")
-                .font(.inter(fs(20), weight: .heavy))
-                .foregroundColor(tokens.isDark ? Color(hex: "08090C") : .white)
-                .tracking(fs(20) * 0.16)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
-                .background(tokens.zone)
-                .clipShape(RoundedRectangle(cornerRadius: 14))
-        }
-    }
-
-    private var exitButton: some View {
-        Button {
+            guard !didFire else { return }
+            didFire = true
             trainingViewModel.endSession()
         } label: {
-            Text("EXIT")
-                .font(.inter(fs(20), weight: .heavy))
-                .foregroundColor(tokens.sub)
-                .tracking(fs(20) * 0.22)
+            Text("RETURN TO HOME")
+                .font(.inter(fs(16)))
+                .kerning(1.0)
+                .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 14)
-                .overlay(RoundedRectangle(cornerRadius: 14).stroke(tokens.subtle, lineWidth: 1.5))
+                .padding(.vertical, 16)
+                .background(Self.forestGreen)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
         }
+        .buttonStyle(.plain)
     }
 
     // MARK: Body
 
     var body: some View {
         ZStack {
-            tokens.bg.ignoresSafeArea()
+            Color.black.ignoresSafeArea()
 
-            if isLandscape {
-                GeometryReader { geo in
-                    HStack(spacing: 24) {
-                        VStack(spacing: fs(18)) {
-                            Spacer()
-                            badge(120)
-                            titleStack
-                            Spacer()
-                        }
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+            VStack(spacing: 0) {
+                Spacer(minLength: fs(24))
 
-                        VStack(spacing: fs(20)) {
-                            Spacer()
-                            statBlock
-                            subtitleText
-                            VStack(spacing: 12) { tryAgainButton; exitButton }
-                            Spacer()
-                        }
-                        .frame(maxWidth: .infinity)
-                    }
-                    .padding(.top, 12)
-                    .padding(.bottom, max(12, geo.safeAreaInsets.bottom))
-                    .padding(.leading, max(24, geo.safeAreaInsets.leading + 12))
-                    .padding(.trailing, max(24, geo.safeAreaInsets.trailing + 12))
+                VStack(spacing: 0) {
+                    headlineBlock
+                    reasonLines
                 }
-                .ignoresSafeArea(edges: .horizontal)
-            } else {
-                VStack(spacing: fs(28)) {
-                    Spacer()
-                    badge(150)
-                    titleStack
-                    statBlock
-                    subtitleText.padding(.horizontal, 8)
-                    Spacer()
-                    VStack(spacing: 12) { tryAgainButton; exitButton }
+
+                Spacer(minLength: fs(24))
+
+                countdownRing
+
+                Spacer(minLength: fs(24))
+
+                returnHomeButton
+            }
+            .padding(.horizontal, 32)
+            .padding(.top, fs(24))
+            .padding(.bottom, fs(40))
+        }
+        .onReceive(timer) { _ in
+            guard !didFire, countdown > 0 else { return }
+            countdown -= 1
+            if countdown == 0 {
+                didFire = true
+                // Brief tail so the ring visibly hits empty before the screen swaps.
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    trainingViewModel.retryBlock()
                 }
-                .padding(.horizontal, 24)
-                .padding(.bottom, 20)
             }
         }
     }
