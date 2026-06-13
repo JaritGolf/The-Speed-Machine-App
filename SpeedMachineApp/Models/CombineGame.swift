@@ -48,25 +48,30 @@ class CombineGame: ObservableObject {
     func calculateScore(target: Int, actual: Float) -> (points: Int, tier: AccuracyTier) {
         let zone = SpeedZone.getZone(for: target)
         let tolerance = zone.tolerance
-        let difference = abs(actual - Float(target))
+
+        // Compare in integer hundredths of a MPH: tier cutoffs sit on quarter
+        // tolerances (e.g. 0.15), and Float math misclassifies exact-boundary
+        // shots (10.6 at 10 ±0.6 scored "close" instead of "in zone").
+        let devH = abs(SpeedMath.tenths(actual) * 10 - target * 100)
+        let tolH = SpeedMath.tenths(tolerance) * 10
 
         let tier: AccuracyTier
         let basePoints: Int
 
-        switch difference {
-        case 0...(tolerance * 0.25):
+        switch devH {
+        case 0...(tolH / 4):
             tier = .perfect
             basePoints = 10
-        case 0...(tolerance * 0.50):
+        case 0...(tolH / 2):
             tier = .excellent
             basePoints = 8
-        case 0...(tolerance * 0.75):
+        case 0...(tolH * 3 / 4):
             tier = .good
             basePoints = 6
-        case 0...tolerance:
+        case 0...tolH:
             tier = .inZone
             basePoints = 4
-        case 0...(tolerance * 1.5):
+        case 0...(tolH * 3 / 2):
             tier = .close
             basePoints = 2
         default:

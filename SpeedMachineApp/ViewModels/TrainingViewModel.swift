@@ -176,21 +176,19 @@ class TrainingViewModel: ObservableObject {
             targetSpeed = session.currentTargetSpeed
         }
 
-        // Calculate tolerance and check if in zone.
-        // Round to 1 decimal place before comparing so the zone check matches
-        // what is displayed on screen (%.1f), preventing floating-point edge
-        // cases where the display shows e.g. "6.5" but the raw BLE float is
-        // 6.5000001 and would otherwise narrowly fail the boundary check.
+        // Calculate tolerance and check if in zone. SpeedMath compares in
+        // integer tenths so the result matches the %.1f display exactly and
+        // boundary putts (e.g. 10.6 at 10 ±0.6) can never fail on Float error.
         let roundedSpeed = (speed * 10).rounded() / 10
         let tolerance: Float
         let isInZone: Bool
         if let acceptRange = block.acceptRange {
             tolerance = (acceptRange.max - acceptRange.min) / 2
-            isInZone = roundedSpeed >= acceptRange.min && roundedSpeed <= acceptRange.max
+            isInZone = SpeedMath.isInZone(actual: speed, min: acceptRange.min, max: acceptRange.max)
         } else {
             let t = programLoader.getToleranceForSpeed(targetSpeed)
             tolerance = t
-            isInZone = abs(roundedSpeed - Float(targetSpeed)) <= t
+            isInZone = SpeedMath.isInZone(actual: speed, target: targetSpeed, tolerance: t)
         }
 
         // Standard putt recording FIRST
@@ -212,7 +210,7 @@ class TrainingViewModel: ObservableObject {
             dataService.recordPutt(
                 session: sessionData,
                 targetSpeed: Float(targetSpeed),
-                actualSpeed: speed,
+                actualSpeed: roundedSpeed,
                 tolerance: tolerance,
                 isOnTarget: isInZone
             )
@@ -239,8 +237,11 @@ class TrainingViewModel: ObservableObject {
         // overlay's visibility; `lastBlockFailed` selects the red variant.
         if session.isComplete || session.isLadderComplete {
             let passed = blockIsPassed(session, block, day)
-            blockJustCompleted = true
+            // Set the color flag BEFORE the visibility flag so the banner can never
+            // render one frame in the wrong color while both `@Published` writes
+            // settle through SwiftUI's diff cycle.
             lastBlockFailed = !passed
+            blockJustCompleted = true
             Task {
                 try? await Task.sleep(for: .seconds(3))
                 await MainActor.run { completeBlock() }
@@ -606,6 +607,22 @@ class TrainingViewModel: ObservableObject {
         blockJustCompleted = false
         lastBlockFailed = false
         activeSessionData = nil   // force a fresh SessionData record on the next putt
+        currentSession = nil
+        startBlock(block, for: day)
+    }
+
+    /// Resets the current block in place from the live RESET button — clears all
+    /// putts, progress, streak, lives, and ladder rung, then restarts the same block.
+    /// Mirrors retryBlock(); startBlock() builds a fresh SessionProgress so every
+    /// per-block counter resets. The partial SessionData record is orphaned and a new
+    /// one is created on the next putt (same as Try Again).
+    func resetBlock() {
+        guard let day = selectedDay, let block = selectedBlock else { return }
+        blockFailedResult = nil
+        blockJustCompleted = false
+        lastBlockFailed = false
+        blockCompletionPending = false
+        activeSessionData = nil
         currentSession = nil
         startBlock(block, for: day)
     }

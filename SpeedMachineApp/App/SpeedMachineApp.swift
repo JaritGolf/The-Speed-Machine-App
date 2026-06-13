@@ -29,8 +29,9 @@ struct SpeedMachineApp: App {
             .environmentObject(dataService)
             .environmentObject(statsService)
             .onAppear {
-                // One-time migration for existing users
+                // One-time migrations for existing users
                 statsService.migrateExistingData()
+                statsService.fixBoundaryClassification()
             }
         }
     }

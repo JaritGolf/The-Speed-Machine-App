@@ -687,6 +687,19 @@ class DataService: ObservableObject {
         }
     }
 
+    // MARK: - Block Attempt Telemetry
+
+    /// Returns the number of non-override failed attempts for a block+day (Phase 4).
+    /// Used by MasteryService.evaluateBlock() to determine hard-gate retry eligibility.
+    func getFailedAttemptCount(trackNumber: Int, blockId: String) -> Int {
+        let request: NSFetchRequest<BlockAttemptData> = BlockAttemptData.fetchRequest()
+        request.predicate = NSPredicate(
+            format: "dayNumber == %d AND blockId == %@ AND passedThreshold == NO AND passedWithOverride == NO",
+            trackNumber, blockId
+        )
+        return (try? container.viewContext.count(for: request)) ?? 0
+    }
+
     // MARK: - Core Data
 
     private func saveContext() {
@@ -800,6 +813,24 @@ public class CombineShotData: NSManagedObject {
 extension CombineShotData {
     @nonobjc public class func fetchRequest() -> NSFetchRequest<CombineShotData> {
         return NSFetchRequest<CombineShotData>(entityName: "CombineShotData")
+    }
+}
+
+@objc(BlockAttemptData)
+public class BlockAttemptData: NSManagedObject {
+    @NSManaged public var id: UUID?
+    @NSManaged public var dayNumber: Int16
+    @NSManaged public var blockId: String?
+    @NSManaged public var attemptNumber: Int16
+    @NSManaged public var zoneAccuracy: Float
+    @NSManaged public var passedThreshold: Bool
+    @NSManaged public var passedWithOverride: Bool
+    @NSManaged public var attemptedAt: Date?
+}
+
+extension BlockAttemptData {
+    @nonobjc public class func fetchRequest() -> NSFetchRequest<BlockAttemptData> {
+        return NSFetchRequest<BlockAttemptData>(entityName: "BlockAttemptData")
     }
 }
 

@@ -95,7 +95,7 @@ class StatsService: ObservableObject {
     /// Update SpeedProfile and DailySnapshot for a single putt.
     /// This is the main entry point — call after every putt from any mode.
     func recordPutt(targetSpeed: Int, actualSpeed: Float, tolerance: Float) {
-        let isOnTarget = abs(actualSpeed - Float(targetSpeed)) <= tolerance
+        let isOnTarget = SpeedMath.isInZone(actual: actualSpeed, target: targetSpeed, tolerance: tolerance)
         let deviation = abs(actualSpeed - Float(targetSpeed))
         let signedDeviation = Double(actualSpeed) - Double(targetSpeed)
 
@@ -516,6 +516,109 @@ class StatsService: ObservableObject {
             print("Stats migration complete: \(allPutts.count) putts processed")
         } catch {
             print("Stats migration failed: \(error)")
+        }
+    }
+
+    // MARK: - Migration: Repair Float boundary misclassification
+
+    /// One-time repair for records saved before SpeedMath existed: Float
+    /// comparison error classified exact-boundary putts (e.g. 10.6 at 10 ±0.6)
+    /// as misses. Re-classifies every stored putt and combine shot, then
+    /// applies the difference to SpeedProfile, DailySnapshot, session, and
+    /// combine score aggregates. Streak fields are left untouched — they can't
+    /// be replayed exactly (combine shots carry no per-shot timestamp) and the
+    /// stored values only ever under-count.
+    func fixBoundaryClassification() {
+        let migrationKey = "boundaryClassificationFixed_v1"
+        guard !UserDefaults.standard.bool(forKey: migrationKey) else { return }
+
+        do {
+            var flipped = 0
+
+            // 1. Training putt records — stored isOnTarget is the old verdict.
+            let puttRequest: NSFetchRequest<PuttRecordData> = PuttRecordData.fetchRequest()
+            let allPutts = try context.fetch(puttRequest)
+            var affectedSessionIds: Set<UUID> = []
+            for putt in allPutts {
+                let target = Int(roundf(putt.targetSpeed))
+                let corrected = SpeedMath.isInZone(actual: putt.actualSpeed, target: target, tolerance: putt.tolerance)
+                guard corrected != putt.isOnTarget else { continue }
+                putt.isOnTarget = corrected
+                flipped += 1
+                if let sessionId = putt.sessionId { affectedSessionIds.insert(sessionId) }
+                applyOnTargetDelta(corrected ? 1 : -1, target: target, date: putt.timestamp)
+            }
+
+            // Re-count onTargetPutts for sessions that had a putt flip.
+            for sessionId in affectedSessionIds {
+                let sessionRequest: NSFetchRequest<SessionData> = SessionData.fetchRequest()
+                sessionRequest.predicate = NSPredicate(format: "id == %@", sessionId as CVarArg)
+                guard let session = try context.fetch(sessionRequest).first else { continue }
+                let sessionPuttsRequest: NSFetchRequest<PuttRecordData> = PuttRecordData.fetchRequest()
+                sessionPuttsRequest.predicate = NSPredicate(format: "sessionId == %@", sessionId as CVarArg)
+                let sessionPutts = try context.fetch(sessionPuttsRequest)
+                session.onTargetPutts = Int16(sessionPutts.filter { $0.isOnTarget }.count)
+            }
+
+            // 2. Combine shots — reconstruct the old verdict the way the old
+            // code computed it (raw Float comparison), then rescore with the
+            // fixed math. Points can only increase, so the high score check
+            // afterwards is safe.
+            let gameRequest: NSFetchRequest<CombineGameData> = CombineGameData.fetchRequest()
+            let games = try context.fetch(gameRequest)
+            var gameDates: [UUID: Date] = [:]
+            for game in games {
+                if let id = game.id, let playedAt = game.playedAt { gameDates[id] = playedAt }
+            }
+
+            let shotRequest: NSFetchRequest<CombineShotData> = CombineShotData.fetchRequest()
+            let shots = try context.fetch(shotRequest)
+            let scorer = CombineGame()
+            var rescoredGameIds: Set<UUID> = []
+            for shot in shots {
+                let target = Int(shot.targetSpeed)
+                let tolerance = SpeedZone.getZone(for: target).tolerance
+                let oldInZone = abs(shot.actualSpeed - Float(target)) <= tolerance
+                let newInZone = SpeedMath.isInZone(actual: shot.actualSpeed, target: target, tolerance: tolerance)
+                if newInZone != oldInZone {
+                    flipped += 1
+                    applyOnTargetDelta(newInZone ? 1 : -1, target: target, date: shot.gameId.flatMap { gameDates[$0] })
+                }
+                let (points, tier) = scorer.calculateScore(target: target, actual: shot.actualSpeed)
+                if shot.points != Int16(points) || shot.accuracy != tier.rawValue {
+                    shot.points = Int16(points)
+                    shot.accuracy = tier.rawValue
+                    if let gameId = shot.gameId { rescoredGameIds.insert(gameId) }
+                }
+            }
+
+            // Re-total rescored games and refresh the high score.
+            for game in games {
+                guard let id = game.id, rescoredGameIds.contains(id) else { continue }
+                let gameShots = shots.filter { $0.gameId == id }
+                game.totalScore = gameShots.reduce(0) { $0 + $1.points }
+            }
+            if let best = games.map({ Int($0.totalScore) }).max() {
+                dataService.updateCombineHighScore(best)
+            }
+
+            try context.save()
+            UserDefaults.standard.set(true, forKey: migrationKey)
+            loadSpeedProfiles()
+            recalculateOverallStats()
+            print("Boundary classification repair complete: \(flipped) records reclassified")
+        } catch {
+            print("Boundary classification repair failed: \(error)")
+        }
+    }
+
+    private func applyOnTargetDelta(_ delta: Int, target: Int, date: Date?) {
+        if let profile = speedProfiles[target] {
+            profile.onTargetPutts = max(0, profile.onTargetPutts + Int32(delta))
+        }
+        if let date = date {
+            let snapshot = getOrCreateDailySnapshot(for: Calendar.current.startOfDay(for: date))
+            snapshot.onTargetPutts = max(0, snapshot.onTargetPutts + Int32(delta))
         }
     }
 

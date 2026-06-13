@@ -12,6 +12,7 @@ struct LadderSessionView: View {
     @EnvironmentObject var trainingViewModel: TrainingViewModel
     @EnvironmentObject var bluetoothService: BluetoothService
     @State private var showEndSessionAlert = false
+    @State private var showResetBlockAlert = false
 
     @AppStorage("liveViewTheme") private var themeRaw: String = LiveViewTheme.light.rawValue
     @Environment(\.colorScheme) private var colorScheme
@@ -63,7 +64,10 @@ struct LadderSessionView: View {
                 })
                 .frame(maxHeight: .infinity)
 
-                SportEndButton(tokens: tokens, showAlert: $showEndSessionAlert)
+                HStack(spacing: 12) {
+                    SportResetButton(tokens: tokens, showAlert: $showResetBlockAlert)
+                    SportEndButton(tokens: tokens, showAlert: $showEndSessionAlert)
+                }
                     .padding(.horizontal, 22)
                     .padding(.top, 4)
                     .padding(.bottom, 22)
@@ -79,6 +83,12 @@ struct LadderSessionView: View {
             Button("End", role: .destructive) { trainingViewModel.endSession() }
         } message: {
             Text("Are you sure you want to end the ladder? Your progress will be saved.")
+        }
+        .alert("Reset Block?", isPresented: $showResetBlockAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Reset", role: .destructive) { trainingViewModel.resetBlock() }
+        } message: {
+            Text("This clears all putts and restarts the block from the beginning.")
         }
     }
 }

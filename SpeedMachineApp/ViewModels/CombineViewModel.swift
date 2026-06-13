@@ -35,14 +35,18 @@ class CombineViewModel: ObservableObject {
         let shotNumber = game.currentShot + 1
         let target = game.currentTarget
 
-        game.recordShot(actualSpeed: speed)
+        // Round to the displayed 0.1 MPH resolution so scoring and stats see
+        // the same number the player does (matches the training path).
+        let roundedSpeed = (speed * 10).rounded() / 10
+
+        game.recordShot(actualSpeed: roundedSpeed)
 
         if let lastShot = game.lastShot {
             dataService.recordCombineShot(
                 game: gameData,
                 shotNumber: shotNumber,
                 targetSpeed: target,
-                actualSpeed: speed,
+                actualSpeed: roundedSpeed,
                 points: lastShot.points,
                 accuracy: lastShot.accuracy.rawValue
             )
@@ -51,7 +55,7 @@ class CombineViewModel: ObservableObject {
             let tolerance = SpeedZone.getZone(for: target).tolerance
             statsService.recordPutt(
                 targetSpeed: target,
-                actualSpeed: speed,
+                actualSpeed: roundedSpeed,
                 tolerance: tolerance
             )
         }

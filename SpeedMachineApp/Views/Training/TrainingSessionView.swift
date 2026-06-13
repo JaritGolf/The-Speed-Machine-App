@@ -184,6 +184,7 @@ struct PressureSessionView: View {
     @EnvironmentObject var trainingViewModel: TrainingViewModel
     @EnvironmentObject var bluetoothService: BluetoothService
     @State private var showEndSessionAlert = false
+    @State private var showResetBlockAlert = false
 
     @AppStorage("liveViewTheme") private var themeRaw: String = LiveViewTheme.light.rawValue
     @Environment(\.colorScheme) private var colorScheme
@@ -232,7 +233,10 @@ struct PressureSessionView: View {
                               lastPuttLabel: lastPuttLabel)
                     .frame(maxHeight: .infinity)
 
-                SportEndButton(tokens: tokens, showAlert: $showEndSessionAlert, title: "END PRESSURE")
+                HStack(spacing: 12) {
+                    SportResetButton(tokens: tokens, showAlert: $showResetBlockAlert)
+                    SportEndButton(tokens: tokens, showAlert: $showEndSessionAlert, title: "END PRESSURE")
+                }
                     .padding(.horizontal, 22)
                     .padding(.top, 4)
                     .padding(.bottom, 22)
@@ -248,6 +252,12 @@ struct PressureSessionView: View {
             Button("End", role: .destructive) { trainingViewModel.endSession() }
         } message: {
             Text("Are you sure you want to end this pressure challenge? Your progress will be saved.")
+        }
+        .alert("Reset Block?", isPresented: $showResetBlockAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Reset", role: .destructive) { trainingViewModel.resetBlock() }
+        } message: {
+            Text("This clears all putts and restarts the block from the beginning.")
         }
     }
 
@@ -697,8 +707,11 @@ struct BlockFailedView: View {
             if countdown == 0 {
                 didFire = true
                 // Brief tail so the ring visibly hits empty before the screen swaps.
+                // Capture the VM explicitly so the delayed closure can't fault on
+                // EnvironmentObject lookup if the view is being torn down concurrently.
+                let vm = trainingViewModel
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    trainingViewModel.retryBlock()
+                    vm.retryBlock()
                 }
             }
         }

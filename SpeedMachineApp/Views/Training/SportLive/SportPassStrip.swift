@@ -33,6 +33,18 @@ struct SportPassStrip: View {
     var totalPutts: Int = 0
     var target: Int = 0
     var tolerance: Float = 0.5
+    /// When true (multi-speed standard / gate-test blocks), the tachs become a
+    /// fixed-width, finger-scrollable strip with a target-speed label per putt.
+    var isMultiSpeed: Bool = false
+
+    /// Labeled scrolling tachs only for multi-speed standard & gate-test blocks.
+    /// Make-in-row and single-speed blocks keep the existing compress/auto-scroll behavior.
+    private var showSpeedLabels: Bool {
+        switch config {
+        case .standard, .gateTest: return isMultiSpeed
+        default: return false
+        }
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -83,7 +95,8 @@ struct SportPassStrip: View {
                     total: totalPutts,
                     target: target,
                     tolerance: tolerance,
-                    tokens: tokens
+                    tokens: tokens,
+                    labeled: showSpeedLabels
                 )
                 .padding(.horizontal, 18)
                 .padding(.bottom, 4)
@@ -204,13 +217,34 @@ struct TachBars: View {
     let target: Int
     let tolerance: Float
     let tokens: SportTokens
+    /// Multi-speed blocks: fixed-width, finger-scrollable strip with a target-speed
+    /// label per putt. Default false keeps the original compress / auto-scroll tachs.
+    var labeled: Bool = false
 
     private let maxBarH: CGFloat = 40
     private let minBarH: CGFloat = 2
     private var visMax: Float { tolerance * 2.0 }    // e.g. 1.0 MPH when zone is ±0.5
     private var totalHeight: CGFloat { maxBarH * 2 } // 80pt
 
+    // Labeled mode: fixed slot wide enough for a 2-digit MPH label at 5–6 ft.
+    private let gap: CGFloat = 2
+    private var labeledSlotW: CGFloat { fs(34) }
+
+    // Manual drag-to-review offset (positive = pulled back toward older putts).
+    @State private var dragOffset: CGFloat = 0
+    @GestureState private var liveDrag: CGFloat = 0
+
     var body: some View {
+        if labeled {
+            labeledBody
+        } else {
+            compactBody
+        }
+    }
+
+    // MARK: - Original compress / auto-scroll tachs (single-speed & make-in-row)
+
+    private var compactBody: some View {
         GeometryReader { geo in
             let barCount = max(1, total)
             let totalGap = CGFloat(barCount - 1) * 2
@@ -232,43 +266,7 @@ struct TachBars: View {
                             .frame(height: 1)
 
                         if let p = putt {
-                            // p.difference = |roundedActual - target| — matches what is shown on screen
-                            let isDeadOn = p.difference < 0.001
-
-                            if isDeadOn {
-                                // Gold 3D star replaces the tach bar for a perfect putt
-                                let starSize: CGFloat = max(10, min(barWidth, 22))
-                                Image(systemName: "star.fill")
-                                    .font(.system(size: starSize, weight: .black))
-                                    .foregroundStyle(
-                                        LinearGradient(
-                                            colors: [
-                                                Color(red: 1.0,  green: 0.90, blue: 0.20), // bright highlight
-                                                Color(red: 0.95, green: 0.70, blue: 0.00), // warm gold
-                                                Color(red: 0.72, green: 0.45, blue: 0.00)  // deep amber
-                                            ],
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
-                                        )
-                                    )
-                                    .shadow(color: Color(red: 1.0, green: 0.75, blue: 0.0).opacity(0.45), radius: 3, x: 0, y: 0)
-                                    .shadow(color: Color.black.opacity(0.30), radius: 2, x: 1, y: 1.5)
-                            } else {
-                                let dev = p.actualSpeed - p.targetSpeed
-                                let clamped = max(-visMax, min(visMax, dev))
-                                let ratio = CGFloat(abs(clamped) / visMax)
-                                let barH = minBarH + ratio * (maxBarH - minBarH)
-                                let color: Color = p.isInZone ? tokens.zone : tokens.miss
-                                let isAbove = dev >= 0
-
-                                // ZStack centers children at y=0 (center of container).
-                                // Shift up by barH/2 → bottom edge on center line (above target).
-                                // Shift down by barH/2 → top edge on center line (below target).
-                                RoundedRectangle(cornerRadius: 3)
-                                    .fill(color)
-                                    .frame(width: barWidth, height: barH)
-                                    .offset(y: isAbove ? -(barH / 2) : (barH / 2))
-                            }
+                            tachMark(for: p, slotWidth: barWidth)
                         }
                     }
                     .frame(width: barWidth, height: totalHeight)
@@ -281,6 +279,123 @@ struct TachBars: View {
             .animation(.easeInOut(duration: 0.3), value: history.count)
         }
         .frame(height: totalHeight)
+    }
+
+    // MARK: - Labeled, fixed-width, finger-scrollable tachs (multi-speed)
+
+    private var labeledBody: some View {
+        GeometryReader { geo in
+            let slotStride = labeledSlotW + gap
+            // Fill the viewport with slots, then grow & scroll once putts exceed it.
+            let visibleSlots = max(1, Int(floor((geo.size.width + gap) / slotStride)))
+            let slotCount = max(visibleSlots, history.count)
+            let contentW = CGFloat(slotCount) * slotStride - gap
+            // Auto-scroll so the newest putt sits at the right edge.
+            let autoScrollX = max(0, contentW - geo.size.width)
+            // Drag pulls older putts back into view; clamp within [live, oldest].
+            let clampedDrag = min(autoScrollX, max(0, dragOffset + liveDrag))
+            let offsetX = -(autoScrollX - clampedDrag)
+
+            HStack(spacing: gap) {
+                ForEach(0..<slotCount, id: \.self) { i in
+                    let putt = i < history.count ? history[i] : nil
+
+                    ZStack {
+                        // Hairline through center of each slot
+                        Rectangle()
+                            .fill(tokens.subtle)
+                            .frame(height: 1)
+
+                        if let p = putt {
+                            tachMark(for: p, slotWidth: labeledSlotW)
+
+                            // Target speed for this putt, sitting on the center line over the bar.
+                            Text("\(Int(p.targetSpeed.rounded()))")
+                                .font(.inter(fs(20), weight: .heavy))
+                                .monospacedDigit()
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.5)
+                                .foregroundColor(tokens.fg)
+                                .padding(.horizontal, 3)
+                                .padding(.vertical, 1)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 4)
+                                        .fill(tokens.bg)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 4)
+                                                .stroke(tokens.subtle, lineWidth: 1)
+                                        )
+                                )
+                        }
+                    }
+                    .frame(width: labeledSlotW, height: totalHeight)
+                    .clipped()
+                }
+            }
+            .frame(width: contentW, alignment: .leading)
+            .offset(x: offsetX)
+            .frame(width: geo.size.width, alignment: .leading)
+            .clipped()
+            .contentShape(Rectangle())
+            .gesture(
+                DragGesture()
+                    .updating($liveDrag) { value, state, _ in
+                        state = value.translation.width
+                    }
+                    .onEnded { value in
+                        dragOffset = min(autoScrollX, max(0, dragOffset + value.translation.width))
+                    }
+            )
+            .animation(.easeInOut(duration: 0.3), value: history.count)
+        }
+        .frame(height: totalHeight)
+        // New putt → snap back to the newest tach so the latest result is never missed.
+        .onChange(of: history.count) { _, _ in
+            withAnimation(.easeInOut(duration: 0.3)) { dragOffset = 0 }
+        }
+    }
+
+    // MARK: - Shared tach mark (bar or gold dead-on star)
+
+    @ViewBuilder
+    private func tachMark(for p: PuttResult, slotWidth: CGFloat) -> some View {
+        // p.difference = |roundedActual - target| — matches what is shown on screen
+        let isDeadOn = p.difference < 0.001
+
+        if isDeadOn {
+            // Gold 3D star replaces the tach bar for a perfect putt
+            let starSize: CGFloat = max(10, min(slotWidth, 22))
+            Image(systemName: "star.fill")
+                .font(.system(size: starSize, weight: .black))
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [
+                            Color(red: 1.0,  green: 0.90, blue: 0.20), // bright highlight
+                            Color(red: 0.95, green: 0.70, blue: 0.00), // warm gold
+                            Color(red: 0.72, green: 0.45, blue: 0.00)  // deep amber
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .shadow(color: Color(red: 1.0, green: 0.75, blue: 0.0).opacity(0.45), radius: 3, x: 0, y: 0)
+                .shadow(color: Color.black.opacity(0.30), radius: 2, x: 1, y: 1.5)
+        } else {
+            let dev = p.actualSpeed - p.targetSpeed
+            let clamped = max(-visMax, min(visMax, dev))
+            let ratio = CGFloat(abs(clamped) / visMax)
+            let barH = minBarH + ratio * (maxBarH - minBarH)
+            let color: Color = p.isInZone ? tokens.zone : tokens.miss
+            let isAbove = dev >= 0
+
+            // ZStack centers children at y=0 (center of container).
+            // Shift up by barH/2 → bottom edge on center line (above target).
+            // Shift down by barH/2 → top edge on center line (below target).
+            RoundedRectangle(cornerRadius: 3)
+                .fill(color)
+                .frame(width: slotWidth, height: barH)
+                .offset(y: isAbove ? -(barH / 2) : (barH / 2))
+        }
     }
 }
 

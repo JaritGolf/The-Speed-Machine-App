@@ -73,6 +73,30 @@ struct SpeedZone {
     }
 }
 
+// Make/miss classification math.
+// All speed comparisons happen in integer tenths of a MPH (the device/display
+// resolution). In 32-bit Float, 10.6 − 10.0 = 0.6000004 while the tolerance
+// 0.6 stores as 0.6000000, so `abs(speed − target) <= tolerance` fails at the
+// exact boundary — a 10.6 MPH putt at a 10 MPH ±0.6 target read as a miss.
+// Integer tenths make the boundary exact.
+enum SpeedMath {
+    /// Speed in integer tenths of a MPH.
+    static func tenths(_ value: Float) -> Int {
+        return Int((value * 10).rounded())
+    }
+
+    /// Make/miss vs target ± tolerance.
+    static func isInZone(actual: Float, target: Int, tolerance: Float) -> Bool {
+        return abs(tenths(actual) - target * 10) <= tenths(tolerance)
+    }
+
+    /// Make/miss vs an explicit accept range (block.acceptRange).
+    static func isInZone(actual: Float, min: Float, max: Float) -> Bool {
+        let a = tenths(actual)
+        return a >= tenths(min) && a <= tenths(max)
+    }
+}
+
 // Accuracy tiers
 enum AccuracyTier: String {
     case perfect = "Perfect"
