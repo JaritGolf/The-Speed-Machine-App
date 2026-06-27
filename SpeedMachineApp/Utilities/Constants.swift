@@ -65,7 +65,11 @@ struct SpeedZone {
         SpeedZone(number: 1, name: "Touch",    speedRange: 3...6,   tolerance: 0.5, multiplier: 1.0),
         SpeedZone(number: 2, name: "Moderate", speedRange: 7...9,   tolerance: 0.5, multiplier: 1.15),
         SpeedZone(number: 3, name: "Firm",     speedRange: 10...12, tolerance: 0.6, multiplier: 1.35),
-        SpeedZone(number: 4, name: "Power",    speedRange: 13...15, tolerance: 0.7, multiplier: 1.6)
+        SpeedZone(number: 4, name: "Power",    speedRange: 13...15, tolerance: 0.7, multiplier: 1.6),
+        // Zones 5–6 cover 16–20 MPH. Training tops out at 15 (Zone 4); these speeds
+        // are Combine-only and become available once 15 unlocks the full ladder.
+        SpeedZone(number: 5, name: "Max",      speedRange: 16...18, tolerance: 0.8, multiplier: 1.8),
+        SpeedZone(number: 6, name: "Elite",    speedRange: 19...20, tolerance: 0.9, multiplier: 2.0)
     ]
 
     static func getZone(for speed: Int) -> SpeedZone {
@@ -116,6 +120,10 @@ enum AccuracyTier: String {
         case .miss: return 0
         }
     }
+
+    /// Whether this tier counts as a "make" (inside ±tolerance).
+    /// perfect/excellent/good/inZone are makes; close/miss are not.
+    var isInZone: Bool { self != .close && self != .miss }
 
     var color: Color {
         switch self {

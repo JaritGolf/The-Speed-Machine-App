@@ -19,6 +19,10 @@ struct StatsDashboardView: View {
     @State private var showCombineStats = false
     @State private var selectedSpeedProfile: SpeedProfileData?
 
+    @AppStorage("hasSeenStatsTour") private var seenStatsTour = false
+    @State private var statsTourIndex: Int? = nil
+    private let statsTourSteps = TourCopy.stats
+
     private func fmtPutts(_ n: Int) -> (String, String) {
         n >= 1000 ? (String(format: "%.1f", Double(n) / 1000.0), "k") : ("\(n)", "")
     }
@@ -30,6 +34,7 @@ struct StatsDashboardView: View {
             VStack(spacing: 0) {
                 StatsHeader(title: "STATS") { dismiss() }
 
+                ScrollViewReader { proxy in
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 0) {
                         // KPI 3-up
@@ -39,33 +44,40 @@ struct StatsDashboardView: View {
                             KpiCell(value: p.0, unit: p.1, label: "PUTTS")
                             KpiCell(value: "\(statsService.currentPracticeStreak)", unit: " day", label: "STREAK")
                         }
+                        .coachmarkAnchor(0)
+                        .id(0)
                         .padding(.horizontal, 32)
                         .padding(.vertical, 22)
 
                         // Needs Work
                         if !statsService.weakestSpeeds.isEmpty {
-                            HStack(alignment: .center, spacing: 18) {
+                            VStack(alignment: .leading, spacing: 12) {
                                 Text("NEEDS WORK")
                                     .font(.custom("Inter-Bold", size: 14))
                                     .kerning(2.1)
                                     .foregroundColor(AppColors.accentAmber)
-                                HStack(spacing: 22) {
-                                    ForEach(statsService.weakestSpeeds.prefix(3), id: \.targetSpeed) { p in
-                                        HStack(alignment: .firstTextBaseline, spacing: 5) {
+                                HStack(spacing: 0) {
+                                    ForEach(Array(statsService.weakestSpeeds.prefix(3).enumerated()), id: \.element.targetSpeed) { index, p in
+                                        HStack(alignment: .firstTextBaseline, spacing: 4) {
                                             Text("\(p.targetSpeed)")
-                                                .font(.custom("Inter-Black", size: 26))
+                                                .font(.custom("Inter-Black", size: 24))
                                                 .foregroundColor(AppColors.error)
                                             Text("MPH")
-                                                .font(.custom("Inter-Bold", size: 14))
+                                                .font(.custom("Inter-Bold", size: 13))
                                                 .foregroundColor(AppColors.error)
                                             Text("\(Int(p.accuracy))%")
-                                                .font(.custom("Inter-Bold", size: 15))
+                                                .font(.custom("Inter-Bold", size: 14))
                                                 .foregroundColor(AppColors.textSubdued)
+                                        }
+                                        .lineLimit(1)
+                                        .fixedSize(horizontal: true, vertical: false)
+                                        if index < statsService.weakestSpeeds.prefix(3).count - 1 {
+                                            Spacer(minLength: 12)
                                         }
                                     }
                                 }
-                                Spacer(minLength: 0)
                             }
+                            .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal, 32)
                             .padding(.vertical, 14)
                             .overlay(Rectangle().fill(AppColors.border).frame(height: 1), alignment: .top)
@@ -74,15 +86,17 @@ struct StatsDashboardView: View {
                         // Speed Ladder header
                         HStack {
                             Text("SPEED LADDER")
-                                .font(.custom("Inter-Bold", size: 15))
+                                .font(.custom("Inter-Bold", size: 18))
                                 .kerning(2.0)
                                 .foregroundColor(AppColors.textSubdued)
                             Spacer()
-                            Text("TAP TO EXPLORE →")
+                            Text("TAP FOR MORE")
                                 .font(.custom("Inter-Bold", size: 13))
                                 .kerning(1.0)
                                 .foregroundColor(Color(hex: "d4d4d4"))
                         }
+                        .coachmarkAnchor(1)
+                        .id(1)
                         .padding(.horizontal, 32)
                         .padding(.top, 16)
                         .padding(.bottom, 10)
@@ -97,6 +111,10 @@ struct StatsDashboardView: View {
                     }
                     .padding(.bottom, 16)
                 }
+                .onChange(of: statsTourIndex) { _, i in
+                    if let i { withAnimation(.easeInOut(duration: 0.35)) { proxy.scrollTo(i, anchor: .center) } }
+                }
+                }
             }
         }
         .safeAreaInset(edge: .bottom) {
@@ -106,6 +124,18 @@ struct StatsDashboardView: View {
                 case .history: showSessionHistory = true
                 case .combine: showCombineStats = true
                 case .stats:   break
+                }
+            }
+            .coachmarkAnchor(2)
+        }
+        .coachmarkTour(statsTourSteps, index: $statsTourIndex, style: .appColors()) {
+            seenStatsTour = true
+            statsTourIndex = nil
+        }
+        .onAppear {
+            if !seenStatsTour && statsTourIndex == nil {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                    if !seenStatsTour { statsTourIndex = 0 }
                 }
             }
         }
@@ -120,7 +150,7 @@ struct StatsDashboardView: View {
 
 /// Accuracy → tier color (mockup g/a/r): ≥70 green, ≥50 amber, else red.
 func statAccuracyColor(_ accuracy: Double) -> Color {
-    if accuracy >= 70 { return AppColors.accentGreen }
+    if accuracy >= 75 { return AppColors.accentGreen }
     if accuracy >= 50 { return AppColors.accentAmber }
     return AppColors.error
 }
@@ -184,7 +214,9 @@ struct SpeedLadderRow: View {
             Text("\(profile.targetSpeed)")
                 .font(.custom("Inter-Black", size: 22))
                 .foregroundColor(.black)
-                .frame(width: 28, alignment: .trailing)
+                .lineLimit(1)
+                .fixedSize()
+                .frame(width: 34, alignment: .trailing)
 
             GeometryReader { geo in
                 ZStack(alignment: .leading) {

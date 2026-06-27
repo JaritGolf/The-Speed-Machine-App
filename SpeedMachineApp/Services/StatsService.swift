@@ -30,6 +30,9 @@ class StatsService: ObservableObject {
     @Published var currentPracticeStreak: Int = 0
     @Published var weakestSpeeds: [SpeedProfileData] = []
     @Published var strongestSpeeds: [SpeedProfileData] = []
+    /// Speeds (3–15 goal range) most in need of a tune-up, ranked by decay-risk × weakness.
+    /// Powers the Maintenance / Daily Tune-Up recall round.
+    @Published var maintenanceFocusSpeeds: [Int] = []
 
     private init() {
         loadSpeedProfiles()
@@ -248,8 +251,32 @@ class StatsService: ObservableObject {
         weakestSpeeds = Array(qualified.sorted { $0.accuracy < $1.accuracy }.prefix(3))
         strongestSpeeds = Array(qualified.sorted { $0.accuracy > $1.accuracy }.prefix(3))
 
+        // Maintenance focus: practiced speeds in the 3–15 goal range, ranked by how much a
+        // tune-up would help (low accuracy and/or long since last practiced). Top 5.
+        let goalRange = 3...15
+        maintenanceFocusSpeeds = qualified
+            .filter { goalRange.contains(Int($0.targetSpeed)) }
+            .sorted { maintenancePriority(for: $0) > maintenancePriority(for: $1) }
+            .prefix(5)
+            .map { Int($0.targetSpeed) }
+
         // Practice streak (consecutive days with at least 1 putt)
         currentPracticeStreak = calculatePracticeStreak()
+    }
+
+    /// Whole calendar days since a speed was last practiced (nil if never).
+    func daysSincePracticed(_ speed: Int) -> Int? {
+        guard let last = speedProfiles[speed]?.lastPracticedAt else { return nil }
+        let cal = Calendar.current
+        return cal.dateComponents([.day], from: cal.startOfDay(for: last), to: cal.startOfDay(for: Date())).day
+    }
+
+    /// Tune-up priority: weakness (100 − accuracy) plus a decay penalty per stale day.
+    private func maintenancePriority(for profile: SpeedProfileData) -> Double {
+        let weakness = max(0, 100.0 - profile.accuracy)
+        let staleDays = Double(daysSincePracticed(Int(profile.targetSpeed)) ?? 0)
+        let decayPerDay = 6.0
+        return weakness + staleDays * decayPerDay
     }
 
     private func calculatePracticeStreak() -> Int {
@@ -292,6 +319,24 @@ class StatsService: ObservableObject {
     }
 
     // MARK: - Session Detail Queries
+
+    /// All putt records on/after `since` (nil = all time), oldest first.
+    /// Spine for the time-series Trends charts. Covers training + practice modes
+    /// (Combine shots carry no per-shot timestamp and are intentionally excluded).
+    func getPuttRecords(since: Date?) -> [PuttRecordData] {
+        let request: NSFetchRequest<PuttRecordData> = PuttRecordData.fetchRequest()
+        if let since = since {
+            request.predicate = NSPredicate(format: "timestamp >= %@", since as NSDate)
+        }
+        request.sortDescriptors = [NSSortDescriptor(keyPath: \PuttRecordData.timestamp, ascending: true)]
+
+        do {
+            return try context.fetch(request)
+        } catch {
+            print("Failed to fetch putt records for trends: \(error)")
+            return []
+        }
+    }
 
     /// Get all putt records for a specific session (for session deep-dive)
     func getPuttRecords(for sessionId: UUID) -> [PuttRecordData] {
@@ -573,7 +618,7 @@ class StatsService: ObservableObject {
 
             let shotRequest: NSFetchRequest<CombineShotData> = CombineShotData.fetchRequest()
             let shots = try context.fetch(shotRequest)
-            let scorer = CombineGame()
+            let scorer = CombineGame(speeds: [])  // scorer only — calculateScore is independent of the target pool
             var rescoredGameIds: Set<UUID> = []
             for shot in shots {
                 let target = Int(shot.targetSpeed)
@@ -619,6 +664,184 @@ class StatsService: ObservableObject {
         if let date = date {
             let snapshot = getOrCreateDailySnapshot(for: Calendar.current.startOfDay(for: date))
             snapshot.onTargetPutts = max(0, snapshot.onTargetPutts + Int32(delta))
+        }
+    }
+
+    // MARK: - Reconcile: rebuild all aggregates from de-duplicated raw events
+
+    /// One-time repair for iCloud/CloudKit row duplication. `NSPersistentCloudKitContainer`
+    /// enforces no uniqueness, so the two independent counters drifted apart: the per-speed
+    /// SpeedProfile counter (which `totalLifetimePutts` and the Home/Stats KPIs read) collapses
+    /// duplicate rows on load and under-counts, while the per-day DailySnapshot counter (which the
+    /// Trends consistency card reads) over-counts. This de-duplicates the raw events by their stable
+    /// `id`, then rebuilds BOTH aggregates from the clean set so every screen reads one number.
+    /// Training putts (`PuttRecordData`) and Combine shots (`CombineShotData`) are both replayed.
+    func reconcileStatsFromRawData() {
+        let migrationKey = "statsReconciledFromRaw_v1"
+        guard !UserDefaults.standard.bool(forKey: migrationKey) else { return }
+
+        let cal = Calendar.current
+
+        struct ReplayEvent {
+            let date: Date
+            let target: Int
+            let actual: Float
+            let isOnTarget: Bool
+        }
+
+        do {
+            // 1a. De-duplicate training putts by stable id (delete the extras).
+            let puttRequest: NSFetchRequest<PuttRecordData> = PuttRecordData.fetchRequest()
+            let allPutts = try context.fetch(puttRequest)
+            var seenPutt = Set<String>()
+            var putts: [PuttRecordData] = []
+            for p in allPutts {
+                let key = p.id?.uuidString
+                    ?? "nil:\(p.timestamp?.timeIntervalSince1970 ?? 0):\(p.targetSpeed):\(p.actualSpeed):\(p.sessionId?.uuidString ?? "-")"
+                if seenPutt.insert(key).inserted { putts.append(p) } else { context.delete(p) }
+            }
+
+            // 1b. De-duplicate Combine shots by stable id.
+            let shotRequest: NSFetchRequest<CombineShotData> = CombineShotData.fetchRequest()
+            let allShots = try context.fetch(shotRequest)
+            var seenShot = Set<String>()
+            var shots: [CombineShotData] = []
+            for s in allShots {
+                let key = s.id?.uuidString ?? "nil:\(s.gameId?.uuidString ?? "-"):\(s.shotNumber)"
+                if seenShot.insert(key).inserted { shots.append(s) } else { context.delete(s) }
+            }
+
+            // Combine shots carry no per-shot timestamp — anchor them to their game's playedAt.
+            let gameRequest: NSFetchRequest<CombineGameData> = CombineGameData.fetchRequest()
+            let games = try context.fetch(gameRequest)
+            var gameDate: [UUID: Date] = [:]
+            for g in games {
+                guard let id = g.id, let d = g.playedAt else { continue }
+                gameDate[id] = gameDate[id].map { Swift.min($0, d) } ?? d
+            }
+
+            // 2. Preserve per-day practiceSeconds (not derivable from putts) before wiping snapshots.
+            let snapRequest: NSFetchRequest<DailySnapshotData> = DailySnapshotData.fetchRequest()
+            let oldSnapshots = try context.fetch(snapRequest)
+            var practiceByDay: [Date: Double] = [:]
+            for s in oldSnapshots {
+                guard let d = s.date else { continue }
+                let day = cal.startOfDay(for: d)
+                practiceByDay[day] = Swift.max(practiceByDay[day] ?? 0, s.practiceSeconds)
+            }
+
+            // 3a. Delete all snapshots — they'll be rebuilt from scratch.
+            for s in oldSnapshots { context.delete(s) }
+
+            // 3b. Collapse duplicate SpeedProfile rows to one per speed, then zero the survivor.
+            let profileRequest: NSFetchRequest<SpeedProfileData> = SpeedProfileData.fetchRequest()
+            let allProfiles = try context.fetch(profileRequest)
+            var profileMap: [Int: SpeedProfileData] = [:]
+            for p in allProfiles {
+                let speed = Int(p.targetSpeed)
+                if profileMap[speed] == nil { profileMap[speed] = p } else { context.delete(p) }
+            }
+            for speed in 3...20 {
+                let profile = profileMap[speed] ?? {
+                    let np = SpeedProfileData(context: context)
+                    np.targetSpeed = Int16(speed)
+                    return np
+                }()
+                profile.totalPutts = 0
+                profile.onTargetPutts = 0
+                profile.totalDeviation = 0
+                profile.totalSignedDeviation = 0
+                profile.sumSquaredDeviation = 0
+                profile.sumActualSpeed = 0
+                profile.bestStreak = 0
+                profile.currentStreak = 0
+                profile.recentPutts = 0
+                profile.recentOnTargetPutts = 0
+                profile.lastPracticedAt = nil
+                profileMap[speed] = profile
+            }
+
+            // 4. Build one chronological event stream (only 3–20 MPH, so profile and snapshot
+            //    count the identical set and their totals are guaranteed equal).
+            var events: [ReplayEvent] = []
+            for p in putts {
+                guard let ts = p.timestamp else { continue }
+                let target = Int(p.targetSpeed.rounded())
+                guard (3...20).contains(target) else { continue }
+                let isOn = SpeedMath.isInZone(actual: p.actualSpeed, target: target, tolerance: p.tolerance)
+                events.append(ReplayEvent(date: ts, target: target, actual: p.actualSpeed, isOnTarget: isOn))
+            }
+            for s in shots {
+                guard let gid = s.gameId, let base = gameDate[gid] else { continue }
+                let target = Int(s.targetSpeed)
+                guard (3...20).contains(target) else { continue }
+                let tol = SpeedZone.getZone(for: target).tolerance
+                let isOn = SpeedMath.isInZone(actual: s.actualSpeed, target: target, tolerance: tol)
+                // Offset by shotNumber so shots within a game keep their order.
+                let date = base.addingTimeInterval(Double(s.shotNumber))
+                events.append(ReplayEvent(date: date, target: target, actual: s.actualSpeed, isOnTarget: isOn))
+            }
+            events.sort { $0.date < $1.date }
+
+            // 5. Replay — mirrors updateSpeedProfile + updateDailySnapshot exactly.
+            var snapByDay: [Date: DailySnapshotData] = [:]
+            func snapshot(for day: Date) -> DailySnapshotData {
+                if let existing = snapByDay[day] { return existing }
+                let ns = DailySnapshotData(context: context)
+                ns.date = day
+                ns.totalPutts = 0
+                ns.onTargetPutts = 0
+                ns.totalDeviation = 0
+                ns.sumSquaredDeviation = 0
+                ns.practiceSeconds = 0
+                snapByDay[day] = ns
+                return ns
+            }
+
+            for e in events {
+                let dev = abs(Double(e.actual) - Double(e.target))
+                let signed = Double(e.actual) - Double(e.target)
+
+                if let profile = profileMap[e.target] {
+                    profile.totalPutts += 1
+                    if e.isOnTarget {
+                        profile.onTargetPutts += 1
+                        profile.currentStreak += 1
+                        if profile.currentStreak > profile.bestStreak { profile.bestStreak = profile.currentStreak }
+                    } else {
+                        profile.currentStreak = 0
+                    }
+                    profile.totalDeviation += dev
+                    profile.totalSignedDeviation += signed
+                    profile.sumSquaredDeviation += Double(e.actual) * Double(e.actual)
+                    profile.sumActualSpeed += Double(e.actual)
+                    profile.lastPracticedAt = e.date
+                }
+
+                let snap = snapshot(for: cal.startOfDay(for: e.date))
+                snap.totalPutts += 1
+                if e.isOnTarget { snap.onTargetPutts += 1 }
+                snap.totalDeviation += dev
+                snap.sumSquaredDeviation += Double(e.actual) * Double(e.actual)
+            }
+
+            // 6. Restore preserved practice time.
+            for (day, secs) in practiceByDay {
+                snapshot(for: day).practiceSeconds = secs
+            }
+
+            try context.save()
+            UserDefaults.standard.set(true, forKey: migrationKey)
+
+            loadSpeedProfiles()
+            recalculateOverallStats()
+            snapshotStatsToKV()
+
+            let rebuiltTotal = profileMap.values.reduce(0) { $0 + Int($1.totalPutts) }
+            print("Stats reconcile complete: \(events.count) events → \(rebuiltTotal) putts across \(snapByDay.count) days "
+                  + "(removed \(allPutts.count - putts.count) dup putts, \(allShots.count - shots.count) dup shots).")
+        } catch {
+            print("Stats reconcile failed: \(error)")
         }
     }
 

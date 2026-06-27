@@ -22,6 +22,9 @@ enum SportPassStripConfig {
     case ladder(currentRung: Int, totalRungs: Int, puttsHit: Int)
     /// Exploration: single column PUTTS LEFT (countdown from totalPutts)
     case exploration(totalPutts: Int, puttsTaken: Int)
+    /// Free Practice: PUTTS LEFT (or PUTTS HIT when `total == nil`/infinite) + IN ZONE.
+    /// Gets tach history bars but no pass-needed countdown (no pass gate in free practice).
+    case practice(total: Int?, puttsTaken: Int, inZone: Int)
 }
 
 // MARK: - Main strip
@@ -41,7 +44,7 @@ struct SportPassStrip: View {
     /// Make-in-row and single-speed blocks keep the existing compress/auto-scroll behavior.
     private var showSpeedLabels: Bool {
         switch config {
-        case .standard, .gateTest: return isMultiSpeed
+        case .standard, .gateTest, .practice: return isMultiSpeed
         default: return false
         }
     }
@@ -82,6 +85,14 @@ struct SportPassStrip: View {
                         value: "\(max(0, total - taken))",
                         color: tokens.fg
                     )
+
+                case .practice(let total, let taken, let inZone):
+                    if let total = total {
+                        statColumn(label: "PUTTS\nLEFT", value: max(0, total - taken), color: tokens.fg)
+                    } else {
+                        statColumn(label: "PUTTS\nHIT", value: taken, color: tokens.fg)
+                    }
+                    statColumn(label: "IN\nZONE", value: inZone, color: tokens.fg)
                 }
             }
             .padding(.horizontal, 18)
@@ -226,9 +237,11 @@ struct TachBars: View {
     private var visMax: Float { tolerance * 2.0 }    // e.g. 1.0 MPH when zone is ±0.5
     private var totalHeight: CGFloat { maxBarH * 2 } // 80pt
 
-    // Labeled mode: fixed slot wide enough for a 2-digit MPH label at 5–6 ft.
+    // Labeled mode: fixed slot wide enough for a LARGE 2-digit MPH label readable
+    // at 5–6 ft. Wider slots mean fewer fit on screen — the scroll covers the rest.
     private let gap: CGFloat = 2
-    private var labeledSlotW: CGFloat { fs(34) }
+    private var labelFontSize: CGFloat { fs(38) }
+    private var labeledSlotW: CGFloat { fs(58) }
 
     // Manual drag-to-review offset (positive = pulled back toward older putts).
     @State private var dragOffset: CGFloat = 0
@@ -307,25 +320,27 @@ struct TachBars: View {
                             .frame(height: 1)
 
                         if let p = putt {
+                            // Short, thin divider between this number and the previous one.
+                            if i > 0 {
+                                Rectangle()
+                                    .fill(tokens.dim)
+                                    .frame(width: 1, height: 18)
+                                    .offset(x: -(labeledSlotW / 2) + 0.5)
+                            }
+
                             tachMark(for: p, slotWidth: labeledSlotW)
 
-                            // Target speed for this putt, sitting on the center line over the bar.
+                            // Target speed for this putt, on the center line directly over the
+                            // bar — transparent background so the tach stays visible behind it;
+                            // a faint same-as-bg halo keeps the number legible over the color.
                             Text("\(Int(p.targetSpeed.rounded()))")
-                                .font(.inter(fs(20), weight: .heavy))
+                                .font(.inter(labelFontSize, weight: .heavy))
                                 .monospacedDigit()
                                 .lineLimit(1)
-                                .minimumScaleFactor(0.5)
+                                .minimumScaleFactor(0.6)
                                 .foregroundColor(tokens.fg)
-                                .padding(.horizontal, 3)
-                                .padding(.vertical, 1)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 4)
-                                        .fill(tokens.bg)
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 4)
-                                                .stroke(tokens.subtle, lineWidth: 1)
-                                        )
-                                )
+                                .shadow(color: tokens.bg.opacity(0.9), radius: 1.5)
+                                .shadow(color: tokens.bg.opacity(0.9), radius: 1.5)
                         }
                     }
                     .frame(width: labeledSlotW, height: totalHeight)

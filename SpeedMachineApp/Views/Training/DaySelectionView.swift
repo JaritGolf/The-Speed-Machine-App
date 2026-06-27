@@ -13,6 +13,10 @@ struct DaySelectionView: View {
 
     @State private var selectedDay: TrainingDay?
 
+    @AppStorage("hasSeenDaySelectionTour") private var seenDayTour = false
+    @State private var dayTourIndex: Int? = nil
+    private let dayTourSteps = TourCopy.daySelection
+
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 6), count: 3)
 
     private var allDays: [TrainingDay] { trainingViewModel.getAllDays() }
@@ -48,19 +52,25 @@ struct DaySelectionView: View {
                 } else {
                     // Progress block
                     progressBlock
+                        .coachmarkAnchor(0)
                         .padding(.horizontal, 32)
                         .padding(.top, 14)
 
-                    ScrollView(showsIndicators: false) {
-                        VStack(alignment: .leading, spacing: 22) {
-                            let phases = Array(Set(allDays.map { $0.phase })).sorted()
-                            ForEach(phases, id: \.self) { phase in
-                                phaseSection(phase: phase)
+                    ScrollViewReader { proxy in
+                        ScrollView(showsIndicators: false) {
+                            VStack(alignment: .leading, spacing: 22) {
+                                let phases = Array(Set(allDays.map { $0.phase })).sorted()
+                                ForEach(phases, id: \.self) { phase in
+                                    phaseSection(phase: phase)
+                                }
                             }
+                            .padding(.horizontal, 32)
+                            .padding(.top, 22)
+                            .padding(.bottom, 16)
                         }
-                        .padding(.horizontal, 32)
-                        .padding(.top, 22)
-                        .padding(.bottom, 16)
+                        .onChange(of: dayTourIndex) { _, i in
+                            if let i { withAnimation(.easeInOut(duration: 0.35)) { proxy.scrollTo(i, anchor: .center) } }
+                        }
                     }
 
                     if let track = currentTrack {
@@ -73,6 +83,7 @@ struct DaySelectionView: View {
                                 .background(AppColors.accentGreen)
                                 .clipShape(Capsule())
                         }
+                        .coachmarkAnchor(2)
                         .padding(.horizontal, 32)
                         .padding(.top, 10)
                         .padding(.bottom, 26)
@@ -80,11 +91,20 @@ struct DaySelectionView: View {
                 }
             }
         }
+        .coachmarkTour(dayTourSteps, index: $dayTourIndex, style: .appColors()) {
+            seenDayTour = true
+            dayTourIndex = nil
+        }
         .fullScreenCover(item: $selectedDay) { day in
             BlockSelectionView(day: day)
         }
         .onAppear {
             trainingViewModel.repairMissingCompletions()
+            if !seenDayTour && dayTourIndex == nil && !allDays.isEmpty {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                    if !seenDayTour { dayTourIndex = 0 }
+                }
+            }
         }
         .onChange(of: trainingViewModel.shouldNavigateHome) { _, shouldGo in
             if shouldGo {
@@ -139,7 +159,13 @@ struct DaySelectionView: View {
                 }
                 LazyVGrid(columns: columns, spacing: 6) {
                     ForEach(days) { day in
-                        TrackCard(day: day) { selectedDay = day }
+                        if day.id == allDays.first?.id {
+                            TrackCard(day: day) { selectedDay = day }
+                                .coachmarkAnchor(1)
+                                .id(1)
+                        } else {
+                            TrackCard(day: day) { selectedDay = day }
+                        }
                     }
                 }
             }
@@ -270,6 +296,10 @@ struct BlockSelectionView: View {
     @EnvironmentObject var dataService: DataService
     @Environment(\.dismiss) var dismiss
 
+    @AppStorage("hasSeenBlockSelectionTour") private var seenBlockTour = false
+    @State private var blockTourIndex: Int? = nil
+    private let blockTourSteps = TourCopy.blockSelection
+
     private var completedBlocks: Int {
         day.blocks.filter { dataService.isBlockCompleted(dayNumber: day.day, blockId: $0.blockId) }.count
     }
@@ -321,11 +351,22 @@ struct BlockSelectionView: View {
                 .padding(.top, 14)
                 .padding(.bottom, 14)
 
-                ScrollView(showsIndicators: false) {
-                    VStack(spacing: 0) {
-                        ForEach(Array(day.blocks.enumerated()), id: \.element.id) { idx, block in
-                            BlockRow(block: block, day: day, index: idx)
+                ScrollViewReader { proxy in
+                    ScrollView(showsIndicators: false) {
+                        VStack(spacing: 0) {
+                            ForEach(Array(day.blocks.enumerated()), id: \.element.id) { idx, block in
+                                if idx == 0 {
+                                    BlockRow(block: block, day: day, index: idx)
+                                        .coachmarkAnchor(0)
+                                        .id(0)
+                                } else {
+                                    BlockRow(block: block, day: day, index: idx)
+                                }
+                            }
                         }
+                    }
+                    .onChange(of: blockTourIndex) { _, i in
+                        if let i { withAnimation(.easeInOut(duration: 0.35)) { proxy.scrollTo(i, anchor: .center) } }
                     }
                 }
 
@@ -341,9 +382,21 @@ struct BlockSelectionView: View {
                             .background(AppColors.accentGreen)
                             .clipShape(Capsule())
                     }
+                    .coachmarkAnchor(1)
                     .padding(.horizontal, 32)
                     .padding(.top, 10)
                     .padding(.bottom, 26)
+                }
+            }
+        }
+        .coachmarkTour(blockTourSteps, index: $blockTourIndex, style: .appColors()) {
+            seenBlockTour = true
+            blockTourIndex = nil
+        }
+        .onAppear {
+            if !seenBlockTour && blockTourIndex == nil && !day.blocks.isEmpty {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                    if !seenBlockTour { blockTourIndex = 0 }
                 }
             }
         }

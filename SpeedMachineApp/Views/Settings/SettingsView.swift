@@ -51,6 +51,22 @@ struct SettingsView: View {
                             themeRow
                             SettingsFooter("Dark is recommended for the 5–6 ft viewing distance.")
 
+                            SettingsSectionLabel("HELP")
+                            Button {
+                                resetAllTutorials()
+                                dismiss()
+                            } label: {
+                                SettingsRow {
+                                    Text("REPLAY ALL TUTORIALS").modifier(RowLabel(color: AppColors.accentGreen))
+                                    Spacer()
+                                    Image(systemName: "chevron.right")
+                                        .font(.system(size: 16, weight: .regular))
+                                        .foregroundColor(AppColors.textSubdued)
+                                }
+                            }
+                            .buttonStyle(.plain)
+                            SettingsFooter("Replay the guided tours — they'll appear again as you visit each screen.")
+
                             SettingsSectionLabel("DEVICE")
                             NavigationLink { BluetoothSettingsView() } label: { bluetoothRow }
                                 .buttonStyle(.plain)
@@ -193,6 +209,13 @@ struct SettingsView: View {
         formatter.dateStyle = .medium
         formatter.timeStyle = .short
         return formatter.string(from: date)
+    }
+
+    /// Re-arms every guided tour so they fire again on the next visit to each screen.
+    private func resetAllTutorials() {
+        let keys = ["hasSeenTour", "hasSeenDaySelectionTour", "hasSeenBlockSelectionTour",
+                    "hasSeenRecallTour", "hasSeenPracticeTour", "hasSeenCombineTour", "hasSeenStatsTour"]
+        for key in keys { UserDefaults.standard.set(false, forKey: key) }
     }
 
     private func backUpNow() {

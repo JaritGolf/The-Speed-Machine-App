@@ -121,15 +121,36 @@ struct CombineStatsView: View {
                         .foregroundColor(improving ? AppColors.accentGreen : AppColors.error)
                 }
             }
-            SimpleLineChart(values: chrono.map { Double($0.totalScore) }, color: AppColors.accentAmber)
-                .frame(height: 120)
-            HStack {
-                Text(chrono.first?.playedAt?.toDisplayString() ?? "")
-                Spacer()
-                Text(chrono.last?.playedAt?.toDisplayString() ?? "")
+            HStack(alignment: .top, spacing: 8) {
+                // Y axis: highest score (top) → lowest score (bottom).
+                VStack(alignment: .trailing, spacing: 0) {
+                    Text("\(Int(chrono.map { $0.totalScore }.max() ?? 0))")
+                    Spacer(minLength: 0)
+                    Text("\(Int(chrono.map { $0.totalScore }.min() ?? 0))")
+                }
+                .font(.custom("Inter-SemiBold", size: 9))
+                .foregroundColor(AppColors.textSubdued)
+                .frame(width: 28, height: 120, alignment: .trailing)
+
+                VStack(spacing: 6) {
+                    SimpleLineChart(values: chrono.map { Double($0.totalScore) }, color: AppColors.accentAmber)
+                        .frame(height: 120)
+                    // X axis: oldest game (left) → newest (right).
+                    HStack {
+                        Text(chrono.first?.playedAt?.toDisplayString() ?? "")
+                        Spacer()
+                        Text(chrono.last?.playedAt?.toDisplayString() ?? "")
+                    }
+                    .font(.custom("Inter-SemiBold", size: 10))
+                    .foregroundColor(AppColors.textSubdued)
+                }
             }
-            .font(.custom("Inter-SemiBold", size: 10))
-            .foregroundColor(AppColors.textSubdued)
+
+            Text("Y: GAME SCORE (pts) · X: DATE PLAYED")
+                .font(.custom("Inter-SemiBold", size: 9))
+                .kerning(0.5)
+                .foregroundColor(AppColors.textSubdued)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(.horizontal, 32)
         .padding(.vertical, 18)

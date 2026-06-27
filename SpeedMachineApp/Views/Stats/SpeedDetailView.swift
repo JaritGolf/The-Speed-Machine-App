@@ -10,6 +10,8 @@ import SwiftUI
 struct SpeedDetailView: View {
     let profile: SpeedProfileData
     @Environment(\.dismiss) var dismiss
+    @EnvironmentObject var statsService: StatsService
+    @State private var trendRange: TrendsView.TimeRange = .thirtyDays
 
     private var zone: SpeedZone { SpeedZone.getZone(for: Int(profile.targetSpeed)) }
     private var hasData: Bool { profile.totalPutts > 0 }
@@ -24,6 +26,69 @@ struct SpeedDetailView: View {
     private var tendencyLabel: String {
         if abs(signed) < 0.1 { return "On Target" }
         return signed > 0 ? "Trending Fast" : "Trending Slow"
+    }
+
+    /// Rolling-accuracy series for THIS speed over the selected range.
+    /// Mirrors TrendsView's per-zone path (filter → rollingAccuracy → stride),
+    /// with smaller windows since a single speed is sparse.
+    private func trendData(for range: TrendsView.TimeRange) -> [TrendDatum] {
+        let mySpeed = Int(profile.targetSpeed)
+        let putts = statsService.getPuttRecords(since: range.since)
+            .filter { Int(($0.targetSpeed).rounded()) == mySpeed }
+        let w = TrendsMath.window(forCount: putts.count, divisor: 5, min: 6, max: 24)
+        let full = TrendsMath.rollingAccuracy(putts, window: w)
+        return TrendsMath.stride(full, to: 50)
+    }
+
+    @ViewBuilder
+    private var accuracyOverTimeSection: some View {
+        let data = trendData(for: trendRange)
+        VStack(alignment: .leading, spacing: 16) {
+            Text("ACCURACY OVER TIME")
+                .font(.custom("Inter-Bold", size: 13))
+                .kerning(2.0)
+                .foregroundColor(AppColors.textSubdued)
+
+            rangeTabs
+
+            if data.count >= 2 {
+                LabeledAccuracyChart(data: data, color: accColor, chartHeight: 110)
+
+                Text("Y: % OF \(profile.targetSpeed) MPH PUTTS IN TARGET ZONE (ROLLING) · X: DATE")
+                    .font(.custom("Inter-SemiBold", size: 9))
+                    .kerning(0.5)
+                    .foregroundColor(AppColors.textSubdued)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            } else {
+                Text("Not enough \(profile.targetSpeed) MPH putts yet to chart a trend.")
+                    .font(.custom("Inter-SemiBold", size: 12))
+                    .foregroundColor(AppColors.textSubdued)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.vertical, 24)
+            }
+        }
+        .padding(.horizontal, 32)
+        .padding(.vertical, 20)
+        .overlay(Rectangle().fill(AppColors.border).frame(height: 1), alignment: .top)
+    }
+
+    private var rangeTabs: some View {
+        HStack(spacing: 0) {
+            ForEach(TrendsView.TimeRange.allCases, id: \.self) { range in
+                Button { trendRange = range } label: {
+                    VStack(spacing: 6) {
+                        Text(range.rawValue)
+                            .font(.custom("Inter-Bold", size: 12))
+                            .kerning(1.0)
+                            .foregroundColor(trendRange == range ? .black : AppColors.textSubdued)
+                        Rectangle()
+                            .fill(trendRange == range ? Color.black : Color.clear)
+                            .frame(height: 2)
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+            }
+        }
     }
 
     var body: some View {
@@ -68,6 +133,9 @@ struct SpeedDetailView: View {
                         }
                         .padding(.horizontal, 32)
                         .padding(.vertical, 22)
+
+                        // Accuracy over time (per-speed rolling trend)
+                        accuracyOverTimeSection
 
                         // Tendency
                         if hasData {

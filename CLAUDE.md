@@ -4,6 +4,8 @@
 
 - **Arthur does not use the Terminal.** Never instruct him to run terminal commands manually. If anything requires a shell command (clearing DerivedData, running scripts, installing packages, etc.), Claude should run it directly using its Bash tool and report the result.
 
+- **NEVER use the iOS Simulator. Arthur tests everything manually.** Claude must not boot, install to, launch, screenshot, or drive the Simulator, and must not use `simctl`, computer-use, or QA skills to run the app — not even to "verify a change works," and not even when it seems helpful. The ONLY runtime step Claude may take is a headless `xcodebuild … build` to confirm the code **compiles**. After a successful build, STOP and hand off to Arthur for all testing. This is an absolute rule with no "unless explicitly asked" exception during normal work — if Arthur ever wants the Simulator used, he will say so unmistakably in that moment; otherwise assume never.
+
 ---
 
 ## Admin Panel (`speed-machine-admin`)

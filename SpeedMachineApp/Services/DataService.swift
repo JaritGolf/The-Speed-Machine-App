@@ -60,6 +60,7 @@ class DataService: ObservableObject {
             combineHighScore = Int(userProgress.combineHighScore)
 
             migrateGateTestsToICloudKV()
+            migrateCombineHighScoresIfNeeded()
             restoreProgressFromKVIfNeeded()
             restoreStatsFromKVIfNeeded()
             restoreHistoryFromKVIfNeeded()
@@ -95,6 +96,7 @@ class DataService: ObservableObject {
             combineHighScore = Int(userProgress.combineHighScore)
 
             migrateGateTestsToICloudKV()
+            migrateCombineHighScoresIfNeeded()
             restoreProgressFromKVIfNeeded()
             restoreStatsFromKVIfNeeded()
             restoreHistoryFromKVIfNeeded()
@@ -231,6 +233,46 @@ class DataService: ObservableObject {
         }
     }
 
+    // MARK: - Per-Mode Combine High Scores
+    // Each Combine mode (Main / Low / High / Even) keeps its own high score, since the
+    // speed sets — and therefore the max possible scores — differ. Stored in iCloud KV
+    // (mirrored to UserDefaults) like gate tests, so no Core Data migration is needed.
+
+    private let combineModeMigrationKey = "combineModeHighScoresMigrated_v1"
+
+    func combineHighScore(forKey key: String) -> Int {
+        Int(NSUbiquitousKeyValueStore.default.longLong(forKey: key))
+    }
+
+    /// Writes the score if it beats the stored high score for that key. Returns the
+    /// resulting high score. Keeps the legacy `combineHighScore` field mirrored to Main
+    /// for back-compat (SettingsView / CombineStatsView read it).
+    @discardableResult
+    func setCombineHighScore(_ score: Int, forKey key: String) -> Int {
+        let current = combineHighScore(forKey: key)
+        guard score > current else { return current }
+        NSUbiquitousKeyValueStore.default.set(Int64(score), forKey: key)
+        NSUbiquitousKeyValueStore.default.synchronize()
+        if key == CombineMode.main.highScoreKey {
+            updateCombineHighScore(score)
+        }
+        return score
+    }
+
+    /// One-time seed of the Main key from the legacy single high score.
+    private func migrateCombineHighScoresIfNeeded() {
+        guard !UserDefaults.standard.bool(forKey: combineModeMigrationKey) else { return }
+        let legacy = Int(userProgress.combineHighScore)
+        if legacy > 0 {
+            let mainKey = CombineMode.main.highScoreKey
+            if legacy > combineHighScore(forKey: mainKey) {
+                NSUbiquitousKeyValueStore.default.set(Int64(legacy), forKey: mainKey)
+                NSUbiquitousKeyValueStore.default.synchronize()
+            }
+        }
+        UserDefaults.standard.set(true, forKey: combineModeMigrationKey)
+    }
+
     // MARK: - Gate Test Tracking
 
     private let passedGateTestsKey = "passedGateTests"
@@ -249,6 +291,37 @@ class DataService: ObservableObject {
 
     func hasPassedGateTest(gateId: String) -> Bool {
         return getPassedGateTests().contains(gateId)
+    }
+
+    // MARK: - Unlock Celebration Tracking
+    // Which milestone-unlock popups have already been shown (one-time each), plus a
+    // one-shot backfill flag so existing players don't get retroactive popups.
+
+    private let shownUnlockCelebrationsKey = "shownUnlockCelebrations"
+    private let unlockBackfillKey = "unlockCelebrationsBackfilled_v1"
+
+    func getShownUnlockCelebrations() -> Set<String> {
+        let array = NSUbiquitousKeyValueStore.default.array(forKey: shownUnlockCelebrationsKey) as? [String] ?? []
+        return Set(array)
+    }
+
+    func recordShownUnlockCelebration(id: String) {
+        var shown = getShownUnlockCelebrations()
+        shown.insert(id)
+        NSUbiquitousKeyValueStore.default.set(Array(shown), forKey: shownUnlockCelebrationsKey)
+        NSUbiquitousKeyValueStore.default.synchronize()
+    }
+
+    func hasShownUnlockCelebration(id: String) -> Bool {
+        return getShownUnlockCelebrations().contains(id)
+    }
+
+    var unlockCelebrationsBackfilled: Bool {
+        get { NSUbiquitousKeyValueStore.default.bool(forKey: unlockBackfillKey) }
+        set {
+            NSUbiquitousKeyValueStore.default.set(newValue, forKey: unlockBackfillKey)
+            NSUbiquitousKeyValueStore.default.synchronize()
+        }
     }
 
     private func migrateGateTestsToICloudKV() {
@@ -577,11 +650,11 @@ class DataService: ObservableObject {
         saveContext()
     }
 
-    func completeCombineGame(_ game: CombineGameData, finalScore: Int) {
+    func completeCombineGame(_ game: CombineGameData, finalScore: Int, modeKey: String) {
         game.isComplete = true
         game.totalScore = Int16(finalScore)
 
-        updateCombineHighScore(finalScore)
+        setCombineHighScore(finalScore, forKey: modeKey)
         saveContext()
         snapshotHistoryToKV()
     }

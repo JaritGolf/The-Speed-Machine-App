@@ -168,6 +168,47 @@ class AdaptiveSpeedEngine {
         return 1.0 + (fullWeight - 1.0) * warmupBiasFactor
     }
 
+    // MARK: - Public Weighted Selection (standalone modes)
+
+    /// Pick `count` speeds from `pool`, biased toward the user's weak speeds via `weight(for:)`.
+    /// Uses independent weighted draws (with replacement) so it works for any `count` vs pool
+    /// size — unlike `generateWeightedSequence`, which forces every pool speed to appear at least
+    /// once. When `avoidImmediateRepeats` is true, the same speed never lands twice in a row.
+    /// Used by Recall rounds, Maintenance tune-ups, and randomized Combine.
+    func weightedRandomSpeeds(from pool: [Int], count: Int, avoidImmediateRepeats: Bool = true) -> [Int] {
+        let cleanPool = Array(Set(pool)).sorted()
+        guard !cleanPool.isEmpty, count > 0 else { return [] }
+        guard cleanPool.count > 1 else { return Array(repeating: cleanPool[0], count: count) }
+
+        var result: [Int] = []
+        var lastPicked: Int? = nil
+
+        for _ in 0..<count {
+            var candidates = cleanPool
+            if avoidImmediateRepeats, let last = lastPicked, candidates.count > 1 {
+                candidates.removeAll { $0 == last }
+            }
+            let weights = candidates.map { weight(for: $0) }
+            let pick = weightedPick(candidates, weights: weights) ?? candidates.randomElement()!
+            result.append(pick)
+            lastPicked = pick
+        }
+        return result
+    }
+
+    /// Weighted random selection of a single item proportional to its weight.
+    private func weightedPick(_ items: [Int], weights: [Double]) -> Int? {
+        guard !items.isEmpty else { return nil }
+        let total = weights.reduce(0, +)
+        guard total > 0 else { return items.randomElement() }
+        var r = Double.random(in: 0..<total)
+        for (index, w) in weights.enumerated() {
+            r -= w
+            if r < 0 { return items[index] }
+        }
+        return items.last
+    }
+
     // MARK: - Sequence Generation
 
     /// Generate an adaptive sequence for a block.

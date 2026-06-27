@@ -9,21 +9,40 @@ import Foundation
 import Combine
 
 class CombineViewModel: ObservableObject {
-    @Published var game = CombineGame()
+    @Published var game: CombineGame
     @Published var isGameActive = false
-    @Published var highScore: Int = 0
+    @Published var selectedMode: CombineMode = .main
+    /// High score per mode, keyed by `CombineMode.highScoreKey`.
+    @Published var highScores: [String: Int] = [:]
 
     private let dataService = DataService.shared
     private let statsService = StatsService.shared
+    private let mastery = MasteryService.shared
     private var gameData: CombineGameData?
     private var gameStartTime: Date?
 
     init() {
-        highScore = dataService.combineHighScore
+        game = CombineGame(speeds: MasteryService.shared.eligibleSpeeds(for: .main))
+        loadHighScores()
     }
 
-    func startNewGame() {
-        game.reset()
+    private func loadHighScores() {
+        var scores: [String: Int] = [:]
+        for mode in CombineMode.allCases {
+            scores[mode.highScoreKey] = dataService.combineHighScore(forKey: mode.highScoreKey)
+        }
+        highScores = scores
+    }
+
+    /// High score for the currently selected mode.
+    var highScore: Int { highScores[selectedMode.highScoreKey] ?? 0 }
+
+    /// High score for a specific mode (used by the picker).
+    func highScore(for mode: CombineMode) -> Int { highScores[mode.highScoreKey] ?? 0 }
+
+    func startNewGame(mode: CombineMode) {
+        selectedMode = mode
+        game = CombineGame(speeds: mastery.eligibleSpeeds(for: mode))
         isGameActive = true
         gameData = dataService.createCombineGame()
         gameStartTime = Date()
@@ -68,11 +87,8 @@ class CombineViewModel: ObservableObject {
     func completeGame() {
         guard let gameData = gameData else { return }
 
-        dataService.completeCombineGame(gameData, finalScore: game.totalScore)
-
-        if game.totalScore > highScore {
-            highScore = game.totalScore
-        }
+        dataService.completeCombineGame(gameData, finalScore: game.totalScore, modeKey: selectedMode.highScoreKey)
+        loadHighScores()
 
         // Track practice time
         if let startTime = gameStartTime {
@@ -95,7 +111,7 @@ class CombineViewModel: ObservableObject {
     }
 
     var maxScore: Int {
-        return CombineGame.maxPossibleScore
+        return game.maxPossibleScore
     }
 
     var scorePercentage: Double {

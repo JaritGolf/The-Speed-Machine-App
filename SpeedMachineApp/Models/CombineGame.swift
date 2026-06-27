@@ -8,22 +8,81 @@
 import Foundation
 import Combine
 
+/// The selectable Combine game modes. Each mode defines the pool of target speeds it draws
+/// from. Which speeds are actually playable is gated by the golfer's Training progress
+/// (see MasteryService.eligibleSpeeds / isModeUnlocked).
+///
+/// Note: lives here rather than its own file because the app target compiles an explicit
+/// source list — a new standalone file would need manual pbxproj wiring to be picked up.
+enum CombineMode: String, CaseIterable, Identifiable {
+    case main   // 3–20, grows with unlocked speeds
+    case low    // 3–10
+    case high   // 11–20
+    case even   // even speeds only: 4, 6, 8, 10, 12, 14, 16, 18, 20
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .main: return "Main"
+        case .low:  return "Low Speeds"
+        case .high: return "High Speeds"
+        case .even: return "Even Numbers"
+        }
+    }
+
+    /// Short range descriptor shown under the title.
+    var rangeLabel: String {
+        switch self {
+        case .main: return "3–20 MPH"
+        case .low:  return "3–10 MPH"
+        case .high: return "11–20 MPH"
+        case .even: return "Even · 4–20 MPH"
+        }
+    }
+
+    /// Per-mode high-score storage key (iCloud KV + UserDefaults).
+    var highScoreKey: String { "combineHighScore_\(rawValue)" }
+
+    /// Full (unfiltered) speed pool for this mode, before unlock gating.
+    func allSpeeds() -> [Int] {
+        switch self {
+        case .main: return Array(3...20)
+        case .low:  return Array(3...10)
+        case .high: return Array(11...20)
+        case .even: return stride(from: 4, through: 20, by: 2).map { $0 }  // 9 speeds
+        }
+    }
+}
+
 class CombineGame: ObservableObject {
     @Published var currentShot: Int = 0
     @Published var totalScore: Int = 0
     @Published var shots: [CombineShot] = []
     @Published var isComplete: Bool = false
 
-    let targets: [Int] = [
-        6, 10, 14, 18,     // Shot 1-4: One from each zone (low to high)
-        3, 7, 11, 15, 19,  // Shot 5-9: Full spectrum
-        6, 10, 14, 18,     // Shot 10-13: Repeat zones
-        8, 12, 16, 20,     // Shot 14-17: Different speeds
-        10                  // Shot 18: Medium finish
-    ]
+    /// The pool of target speeds this game draws from — set by the selected Combine mode,
+    /// already filtered to the golfer's unlocked speeds (see MasteryService.eligibleSpeeds).
+    let speeds: [Int]
+
+    @Published var targets: [Int] = []
+
+    init(speeds: [Int]) {
+        self.speeds = speeds
+        targets = Self.generateTargets(from: speeds)
+    }
+
+    /// One shot per speed per session: every eligible speed in the mode's pool appears exactly
+    /// once, in random play order. Reshuffled each game so the order can't be memorized.
+    /// (The live view displays these sorted low→high; the shuffle only sets which speed is the
+    /// current target next.)
+    private static func generateTargets(from speeds: [Int]) -> [Int] {
+        guard !speeds.isEmpty else { return [] }
+        return speeds.shuffled()
+    }
 
     func recordShot(actualSpeed: Float) {
-        guard currentShot < TrainingConstants.combineShots else { return }
+        guard currentShot < targets.count else { return }
 
         let target = targets[currentShot]
         let (points, tier) = calculateScore(target: target, actual: actualSpeed)
@@ -40,7 +99,7 @@ class CombineGame: ObservableObject {
         totalScore += points
         currentShot += 1
 
-        if currentShot >= TrainingConstants.combineShots {
+        if currentShot >= targets.count {
             isComplete = true
         }
     }
@@ -88,6 +147,7 @@ class CombineGame: ObservableObject {
         totalScore = 0
         shots.removeAll()
         isComplete = false
+        targets = Self.generateTargets(from: speeds)
     }
 
     var currentTarget: Int {
@@ -103,15 +163,13 @@ class CombineGame: ObservableObject {
         return shots.last
     }
 
-    // Maximum possible score calculation
-    static var maxPossibleScore: Int {
-        let game = CombineGame()
-        var total = 0
-        for target in game.targets {
-            let zone = SpeedZone.getZone(for: target)
-            total += Int(10.0 * zone.multiplier)
+    // Maximum possible score for the current target set. The target speeds (and thus the
+    // mix of zone multipliers) vary by mode and unlock state, so this is computed from the
+    // generated targets rather than a fixed pattern.
+    var maxPossibleScore: Int {
+        targets.reduce(0) { total, target in
+            total + Int(10.0 * SpeedZone.getZone(for: target).multiplier)
         }
-        return total
     }
 }
 

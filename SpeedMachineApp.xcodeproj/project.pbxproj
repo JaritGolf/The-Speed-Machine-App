@@ -58,6 +58,16 @@
 		F60D13A7C2E94B0087A11001 /* SpeedMachineAppTests/SpeedMathTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60D13A7C2E94B0087A11002 /* SpeedMachineAppTests/SpeedMathTests.swift */; };
 		F60D13A7C2E94B0087A11003 /* SpeedMachineAppTests/MasteryServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60D13A7C2E94B0087A11004 /* SpeedMachineAppTests/MasteryServiceTests.swift */; };
 		F60D13A7C2E94B0087A11005 /* SpeedMachineApp/Services/MasteryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60D13A7C2E94B0087A11006 /* SpeedMachineApp/Services/MasteryService.swift */; };
+		F60D13A7C2E94B0087A20001 /* SpeedMachineApp/Models/RecallRound.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60D13A7C2E94B0087A20002 /* SpeedMachineApp/Models/RecallRound.swift */; };
+		F60D13A7C2E94B0087A20003 /* SpeedMachineApp/ViewModels/RecallViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60D13A7C2E94B0087A20004 /* SpeedMachineApp/ViewModels/RecallViewModel.swift */; };
+		F60D13A7C2E94B0087A20005 /* SpeedMachineApp/Views/Recall/RecallModeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60D13A7C2E94B0087A20006 /* SpeedMachineApp/Views/Recall/RecallModeView.swift */; };
+		F60D13A7C2E94B0087A30001 /* SpeedMachineApp/Models/PracticeSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60D13A7C2E94B0087A30002 /* SpeedMachineApp/Models/PracticeSession.swift */; };
+		F60D13A7C2E94B0087A30003 /* SpeedMachineApp/ViewModels/PracticeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60D13A7C2E94B0087A30004 /* SpeedMachineApp/ViewModels/PracticeViewModel.swift */; };
+		F60D13A7C2E94B0087A30005 /* SpeedMachineApp/Views/Practice/PracticeModeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60D13A7C2E94B0087A30006 /* SpeedMachineApp/Views/Practice/PracticeModeView.swift */; };
+		F60D13A7C2E94B0087A40005 /* SpeedMachineApp/Views/Onboarding/OnboardingTour.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60D13A7C2E94B0087A40006 /* SpeedMachineApp/Views/Onboarding/OnboardingTour.swift */; };
+		F60D13A7C2E94B0087A50005 /* SpeedMachineApp/Views/Home/UnlockCelebration.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60D13A7C2E94B0087A50006 /* SpeedMachineApp/Views/Home/UnlockCelebration.swift */; };
+		F60D13A7C2E94B0087A60005 /* SpeedMachineApp/Views/Onboarding/Coachmark.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60D13A7C2E94B0087A60006 /* SpeedMachineApp/Views/Onboarding/Coachmark.swift */; };
+		F60D13A7C2E94B0087A60007 /* SpeedMachineApp/Views/Onboarding/TourCopy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60D13A7C2E94B0087A60008 /* SpeedMachineApp/Views/Onboarding/TourCopy.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -113,11 +123,16 @@
 		A1793D1B61E8F47394CE3AED /* SpeedMachineApp/Views/Stats/SessionHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedMachineApp/Views/Stats/SessionHistoryView.swift; sourceTree = "<group>"; };
 		A1C85736F0AA480896B92799 /* SpeedMachineApp/Views/Training/SportLive/SportEndButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedMachineApp/Views/Training/SportLive/SportEndButton.swift; sourceTree = "<group>"; };
 		A1D4F500B2C34E8A9F123456 /* SpeedMachineApp/Utilities/AdaptiveLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedMachineApp/Utilities/AdaptiveLayout.swift; sourceTree = "<group>"; };
+		AA0E02742FEA11A8006116D9 /* SpeedMachineApp_OLD_DO_NOT_OPEN.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = SpeedMachineApp_OLD_DO_NOT_OPEN.xcodeproj; sourceTree = "<group>"; };
+		AA0E06FA2FEA2AD9006116D9 /* SpeedMachineApp_OLD_DO_NOT_OPEN.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = SpeedMachineApp_OLD_DO_NOT_OPEN.xcodeproj; sourceTree = "<group>"; };
+		AA0EFDF62FE85A19006116D9 /* SpeedMachineApp_OLD_DO_NOT_OPEN.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = SpeedMachineApp_OLD_DO_NOT_OPEN.xcodeproj; sourceTree = "<group>"; };
 		AA8FAED12FCBA77500DBEBC0 /* SpeedMachineApp_OLD_DO_NOT_OPEN.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = SpeedMachineApp_OLD_DO_NOT_OPEN.xcodeproj; sourceTree = "<group>"; };
 		AA8FB2232FCDDDAE00DBEBC0 /* SpeedMachineApp_OLD_DO_NOT_OPEN.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = SpeedMachineApp_OLD_DO_NOT_OPEN.xcodeproj; sourceTree = "<group>"; };
 		AA953BCE2FDC9F2500765E54 /* SpeedMachineApp_OLD_DO_NOT_OPEN.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = SpeedMachineApp_OLD_DO_NOT_OPEN.xcodeproj; sourceTree = "<group>"; };
 		AA953F0A2FDCBD4F00765E54 /* SpeedMachineApp_OLD_DO_NOT_OPEN.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = SpeedMachineApp_OLD_DO_NOT_OPEN.xcodeproj; sourceTree = "<group>"; };
 		AA9547852FDCC77300765E54 /* SpeedMachineApp_OLD_DO_NOT_OPEN.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = SpeedMachineApp_OLD_DO_NOT_OPEN.xcodeproj; sourceTree = "<group>"; };
+		AA9548A72FDDC00B00765E54 /* SpeedMachineApp_OLD_DO_NOT_OPEN.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = SpeedMachineApp_OLD_DO_NOT_OPEN.xcodeproj; sourceTree = "<group>"; };
+		AA954D142FDE069B00765E54 /* SpeedMachineApp_OLD_DO_NOT_OPEN.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = SpeedMachineApp_OLD_DO_NOT_OPEN.xcodeproj; sourceTree = "<group>"; };
 		AADEE73F2FDC637900BE2D64 /* SpeedMachineApp_OLD_DO_NOT_OPEN.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = SpeedMachineApp_OLD_DO_NOT_OPEN.xcodeproj; sourceTree = "<group>"; };
 		AAF330222F26C60100FC9201 /* SpeedMachineApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SpeedMachineApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AAF3302F2F26C60300FC9201 /* SpeedMachineAppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SpeedMachineAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -137,6 +152,16 @@
 		F60D13A7C2E94B0087A11002 /* SpeedMachineAppTests/SpeedMathTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedMachineAppTests/SpeedMathTests.swift; sourceTree = "<group>"; };
 		F60D13A7C2E94B0087A11004 /* SpeedMachineAppTests/MasteryServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedMachineAppTests/MasteryServiceTests.swift; sourceTree = "<group>"; };
 		F60D13A7C2E94B0087A11006 /* SpeedMachineApp/Services/MasteryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedMachineApp/Services/MasteryService.swift; sourceTree = "<group>"; };
+		F60D13A7C2E94B0087A20002 /* SpeedMachineApp/Models/RecallRound.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedMachineApp/Models/RecallRound.swift; sourceTree = "<group>"; };
+		F60D13A7C2E94B0087A20004 /* SpeedMachineApp/ViewModels/RecallViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedMachineApp/ViewModels/RecallViewModel.swift; sourceTree = "<group>"; };
+		F60D13A7C2E94B0087A20006 /* SpeedMachineApp/Views/Recall/RecallModeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedMachineApp/Views/Recall/RecallModeView.swift; sourceTree = "<group>"; };
+		F60D13A7C2E94B0087A30002 /* SpeedMachineApp/Models/PracticeSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedMachineApp/Models/PracticeSession.swift; sourceTree = "<group>"; };
+		F60D13A7C2E94B0087A30004 /* SpeedMachineApp/ViewModels/PracticeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedMachineApp/ViewModels/PracticeViewModel.swift; sourceTree = "<group>"; };
+		F60D13A7C2E94B0087A30006 /* SpeedMachineApp/Views/Practice/PracticeModeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedMachineApp/Views/Practice/PracticeModeView.swift; sourceTree = "<group>"; };
+		F60D13A7C2E94B0087A40006 /* SpeedMachineApp/Views/Onboarding/OnboardingTour.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedMachineApp/Views/Onboarding/OnboardingTour.swift; sourceTree = "<group>"; };
+		F60D13A7C2E94B0087A50006 /* SpeedMachineApp/Views/Home/UnlockCelebration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedMachineApp/Views/Home/UnlockCelebration.swift; sourceTree = "<group>"; };
+		F60D13A7C2E94B0087A60006 /* SpeedMachineApp/Views/Onboarding/Coachmark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedMachineApp/Views/Onboarding/Coachmark.swift; sourceTree = "<group>"; };
+		F60D13A7C2E94B0087A60008 /* SpeedMachineApp/Views/Onboarding/TourCopy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedMachineApp/Views/Onboarding/TourCopy.swift; sourceTree = "<group>"; };
 		F74AA334AC0F48468876FBDA /* SpeedMachineApp/Services/DataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedMachineApp/Services/DataService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -216,6 +241,27 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		AA0E02762FEA11A8006116D9 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		AA0E06FC2FEA2AD9006116D9 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		AA0EFDF82FE85A19006116D9 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		AA65DFCC2F26E74000ED1515 /* Recovered References */ = {
 			isa = PBXGroup;
 			children = (
@@ -270,6 +316,16 @@
 				F60D13A7C2E94B0087A11002 /* SpeedMachineAppTests/SpeedMathTests.swift */,
 				F60D13A7C2E94B0087A11004 /* SpeedMachineAppTests/MasteryServiceTests.swift */,
 				F60D13A7C2E94B0087A11006 /* SpeedMachineApp/Services/MasteryService.swift */,
+				F60D13A7C2E94B0087A20002 /* SpeedMachineApp/Models/RecallRound.swift */,
+				F60D13A7C2E94B0087A20004 /* SpeedMachineApp/ViewModels/RecallViewModel.swift */,
+				F60D13A7C2E94B0087A20006 /* SpeedMachineApp/Views/Recall/RecallModeView.swift */,
+				F60D13A7C2E94B0087A30002 /* SpeedMachineApp/Models/PracticeSession.swift */,
+				F60D13A7C2E94B0087A30004 /* SpeedMachineApp/ViewModels/PracticeViewModel.swift */,
+				F60D13A7C2E94B0087A30006 /* SpeedMachineApp/Views/Practice/PracticeModeView.swift */,
+				F60D13A7C2E94B0087A40006 /* SpeedMachineApp/Views/Onboarding/OnboardingTour.swift */,
+				F60D13A7C2E94B0087A50006 /* SpeedMachineApp/Views/Home/UnlockCelebration.swift */,
+				F60D13A7C2E94B0087A60006 /* SpeedMachineApp/Views/Onboarding/Coachmark.swift */,
+				F60D13A7C2E94B0087A60008 /* SpeedMachineApp/Views/Onboarding/TourCopy.swift */,
 			);
 			name = "Recovered References";
 			sourceTree = "<group>";
@@ -303,6 +359,20 @@
 			sourceTree = "<group>";
 		};
 		AA9547872FDCC77300765E54 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		AA9548A92FDDC00B00765E54 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		AA954D162FDE069B00765E54 /* Products */ = {
 			isa = PBXGroup;
 			children = (
 			);
@@ -441,12 +511,20 @@
 			projectDirPath = "";
 			projectReferences = (
 				{
-					ProductGroup = AA8FAED32FCBA77500DBEBC0 /* Products */;
-					ProjectRef = AA8FAED12FCBA77500DBEBC0 /* SpeedMachineApp_OLD_DO_NOT_OPEN.xcodeproj */;
+					ProductGroup = AA0E02762FEA11A8006116D9 /* Products */;
+					ProjectRef = AA0E02742FEA11A8006116D9 /* SpeedMachineApp_OLD_DO_NOT_OPEN.xcodeproj */;
 				},
 				{
-					ProductGroup = AA953BD02FDC9F2500765E54 /* Products */;
-					ProjectRef = AA953BCE2FDC9F2500765E54 /* SpeedMachineApp_OLD_DO_NOT_OPEN.xcodeproj */;
+					ProductGroup = AA9548A92FDDC00B00765E54 /* Products */;
+					ProjectRef = AA9548A72FDDC00B00765E54 /* SpeedMachineApp_OLD_DO_NOT_OPEN.xcodeproj */;
+				},
+				{
+					ProductGroup = AA0EFDF82FE85A19006116D9 /* Products */;
+					ProjectRef = AA0EFDF62FE85A19006116D9 /* SpeedMachineApp_OLD_DO_NOT_OPEN.xcodeproj */;
+				},
+				{
+					ProductGroup = AA0E06FC2FEA2AD9006116D9 /* Products */;
+					ProjectRef = AA0E06FA2FEA2AD9006116D9 /* SpeedMachineApp_OLD_DO_NOT_OPEN.xcodeproj */;
 				},
 				{
 					ProductGroup = AA953F0C2FDCBD4F00765E54 /* Products */;
@@ -457,12 +535,24 @@
 					ProjectRef = AADEE73F2FDC637900BE2D64 /* SpeedMachineApp_OLD_DO_NOT_OPEN.xcodeproj */;
 				},
 				{
-					ProductGroup = AA8FB2252FCDDDAE00DBEBC0 /* Products */;
-					ProjectRef = AA8FB2232FCDDDAE00DBEBC0 /* SpeedMachineApp_OLD_DO_NOT_OPEN.xcodeproj */;
+					ProductGroup = AA954D162FDE069B00765E54 /* Products */;
+					ProjectRef = AA954D142FDE069B00765E54 /* SpeedMachineApp_OLD_DO_NOT_OPEN.xcodeproj */;
+				},
+				{
+					ProductGroup = AA8FAED32FCBA77500DBEBC0 /* Products */;
+					ProjectRef = AA8FAED12FCBA77500DBEBC0 /* SpeedMachineApp_OLD_DO_NOT_OPEN.xcodeproj */;
+				},
+				{
+					ProductGroup = AA953BD02FDC9F2500765E54 /* Products */;
+					ProjectRef = AA953BCE2FDC9F2500765E54 /* SpeedMachineApp_OLD_DO_NOT_OPEN.xcodeproj */;
 				},
 				{
 					ProductGroup = AA9547872FDCC77300765E54 /* Products */;
 					ProjectRef = AA9547852FDCC77300765E54 /* SpeedMachineApp_OLD_DO_NOT_OPEN.xcodeproj */;
+				},
+				{
+					ProductGroup = AA8FB2252FCDDDAE00DBEBC0 /* Products */;
+					ProjectRef = AA8FB2232FCDDDAE00DBEBC0 /* SpeedMachineApp_OLD_DO_NOT_OPEN.xcodeproj */;
 				},
 			);
 			projectRoot = "";
@@ -552,6 +642,16 @@
 				54A9AEF9DED9627A813048DD /* SpeedMachineApp/Services/StatsService.swift in Sources */,
 				E5EEA101F69FD2597A6168AE /* SpeedMachineApp/Services/AdaptiveSpeedEngine.swift in Sources */,
 				F60D13A7C2E94B0087A11005 /* SpeedMachineApp/Services/MasteryService.swift in Sources */,
+				F60D13A7C2E94B0087A20001 /* SpeedMachineApp/Models/RecallRound.swift in Sources */,
+				F60D13A7C2E94B0087A20003 /* SpeedMachineApp/ViewModels/RecallViewModel.swift in Sources */,
+				F60D13A7C2E94B0087A20005 /* SpeedMachineApp/Views/Recall/RecallModeView.swift in Sources */,
+				F60D13A7C2E94B0087A30001 /* SpeedMachineApp/Models/PracticeSession.swift in Sources */,
+				F60D13A7C2E94B0087A30003 /* SpeedMachineApp/ViewModels/PracticeViewModel.swift in Sources */,
+				F60D13A7C2E94B0087A30005 /* SpeedMachineApp/Views/Practice/PracticeModeView.swift in Sources */,
+				F60D13A7C2E94B0087A40005 /* SpeedMachineApp/Views/Onboarding/OnboardingTour.swift in Sources */,
+				F60D13A7C2E94B0087A50005 /* SpeedMachineApp/Views/Home/UnlockCelebration.swift in Sources */,
+				F60D13A7C2E94B0087A60005 /* SpeedMachineApp/Views/Onboarding/Coachmark.swift in Sources */,
+				F60D13A7C2E94B0087A60007 /* SpeedMachineApp/Views/Onboarding/TourCopy.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

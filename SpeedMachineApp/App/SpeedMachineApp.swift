@@ -14,6 +14,8 @@ struct SpeedMachineApp: App {
     @StateObject private var bluetoothService = BluetoothService()
     @StateObject private var trainingViewModel = TrainingViewModel()
     @StateObject private var combineViewModel = CombineViewModel()
+    @StateObject private var recallViewModel = RecallViewModel()
+    @StateObject private var practiceViewModel = PracticeViewModel()
     @StateObject private var dataService = DataService.shared
     @StateObject private var statsService = StatsService.shared
 
@@ -26,12 +28,17 @@ struct SpeedMachineApp: App {
             .environmentObject(bluetoothService)
             .environmentObject(trainingViewModel)
             .environmentObject(combineViewModel)
+            .environmentObject(recallViewModel)
+            .environmentObject(practiceViewModel)
             .environmentObject(dataService)
             .environmentObject(statsService)
             .onAppear {
                 // One-time migrations for existing users
                 statsService.migrateExistingData()
                 statsService.fixBoundaryClassification()
+                // De-dupe CloudKit row duplication and rebuild all stat aggregates
+                // from raw events so every screen reads one consistent number.
+                statsService.reconcileStatsFromRawData()
             }
         }
     }

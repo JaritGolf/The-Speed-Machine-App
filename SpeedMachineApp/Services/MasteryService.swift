@@ -399,4 +399,55 @@ class MasteryService {
         guard let prerequisite = sortedPool.last(where: { $0 < speed }) else { return true }
         return tier(forSpeed: prerequisite) >= .familiar
     }
+
+    // MARK: - Combine Mode Unlocks
+
+    /// Highest speed currently playable in Combine, derived from passed Training gate tests.
+    ///
+    /// Speeds unlock zone-by-zone as gates are passed. Passing the Zone-3 gate unlocks
+    /// entry to Zone 4 (13–15) — i.e. it unlocks 15 MPH — which per the design opens the
+    /// ENTIRE ladder (3–20) in Combine. Gate IDs come from speed-machine-training-program.json.
+    func combineUnlockedCeiling() -> Int {
+        let passed = dataService.getPassedGateTests()
+        if passed.contains("gate-zone3") || passed.contains("gate-zone4") || passed.contains("gate-final") {
+            return 20
+        }
+        if passed.contains("gate-zone2") { return 12 }
+        if passed.contains("gate-zone1") { return 9 }
+        return 6
+    }
+
+    /// Speeds usable for a mode right now. Main grows with the unlock ceiling; the preset
+    /// modes return their full pool (they're only selectable once fully unlocked — see
+    /// `isModeUnlocked`), but the filter is applied defensively regardless.
+    func eligibleSpeeds(for mode: CombineMode) -> [Int] {
+        let ceiling = combineUnlockedCeiling()
+        return mode.allSpeeds().filter { $0 <= ceiling }
+    }
+
+    /// Whether a Combine mode can be played. Main is always playable (it grows with you);
+    /// the presets unlock only once their entire speed range is unlocked.
+    func isModeUnlocked(_ mode: CombineMode) -> Bool {
+        switch mode {
+        case .main:
+            return true
+        default:
+            let ceiling = combineUnlockedCeiling()
+            return (mode.allSpeeds().max() ?? Int.max) <= ceiling
+        }
+    }
+
+    /// User-facing reason a preset mode is still locked, or nil if it's unlocked.
+    /// Names the Training gate test that opens the mode. High/Even open at the Zone 3
+    /// Gate Test (it unlocks 15 MPH, which opens the whole ladder).
+    func lockRequirement(for mode: CombineMode) -> String? {
+        guard !isModeUnlocked(mode) else { return nil }
+        let gate: String
+        switch mode {
+        case .low:         gate = "Zone 2 Gate Test"  // unlocks 10
+        case .high, .even: gate = "Zone 3 Gate Test"  // unlocks 15 → all speeds
+        case .main:        return nil                  // never locked
+        }
+        return "Pass the \(gate) in Training to unlock"
+    }
 }
