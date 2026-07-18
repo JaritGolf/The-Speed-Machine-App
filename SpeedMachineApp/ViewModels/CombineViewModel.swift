@@ -14,12 +14,18 @@ class CombineViewModel: ObservableObject {
     @Published var selectedMode: CombineMode = .main
     /// High score per mode, keyed by `CombineMode.highScoreKey`.
     @Published var highScores: [String: Int] = [:]
+    /// Gates the router's switch to CombineCompleteView. Stays false for a beat
+    /// after the final shot so the last putt's result holds on ActiveCombineView
+    /// (same 3 s the board holds every other shot's result chip) before the
+    /// complete screen takes over.
+    @Published var readyToShowComplete = false
 
     private let dataService = DataService.shared
     private let statsService = StatsService.shared
     private let mastery = MasteryService.shared
     private var gameData: CombineGameData?
     private var gameStartTime: Date?
+    private var completeTransitionWorkItem: DispatchWorkItem?
 
     init() {
         game = CombineGame(speeds: MasteryService.shared.eligibleSpeeds(for: .main))
@@ -41,6 +47,8 @@ class CombineViewModel: ObservableObject {
     func highScore(for mode: CombineMode) -> Int { highScores[mode.highScoreKey] ?? 0 }
 
     func startNewGame(mode: CombineMode) {
+        completeTransitionWorkItem?.cancel()
+        readyToShowComplete = false
         selectedMode = mode
         game = CombineGame(speeds: mastery.eligibleSpeeds(for: mode))
         isGameActive = true
@@ -95,10 +103,30 @@ class CombineViewModel: ObservableObject {
             statsService.addPracticeTime(seconds: Date().timeIntervalSince(startTime))
         }
 
-        isGameActive = false
+        // isGameActive stays true here — it means "there is a game session to
+        // display" (active or just-completed). CombineModeView's router uses
+        // game.isComplete to switch between ActiveCombineView and
+        // CombineCompleteView. Only endGame() (Play Again / Done / early
+        // abort) sets isGameActive back to false. Previously this line set
+        // isGameActive = false here too, which made the router fall straight
+        // back to the mode's pre-game CombineStartView on the final putt,
+        // skipping CombineCompleteView entirely.
+
+        // Hold on ActiveCombineView for the same 3 s every other shot's result
+        // chip gets (see ActiveCombineContent) before the router is allowed to
+        // switch to CombineCompleteView, so the last putt's result is visible
+        // instead of being replaced instantly by the complete screen.
+        let workItem = DispatchWorkItem { [weak self] in
+            self?.readyToShowComplete = true
+        }
+        completeTransitionWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0, execute: workItem)
     }
 
     func endGame() {
+        completeTransitionWorkItem?.cancel()
+        readyToShowComplete = false
+
         // Track practice time even if game ended early
         if let startTime = gameStartTime {
             statsService.addPracticeTime(seconds: Date().timeIntervalSince(startTime))

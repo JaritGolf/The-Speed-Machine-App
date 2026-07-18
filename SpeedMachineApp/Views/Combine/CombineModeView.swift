@@ -42,7 +42,7 @@ struct CombineModeView: View {
             tokens.bg.ignoresSafeArea()
 
             if combineViewModel.isGameActive {
-                if combineViewModel.game.isComplete {
+                if combineViewModel.game.isComplete && combineViewModel.readyToShowComplete {
                     CombineCompleteView()
                 } else {
                     ActiveCombineView()
@@ -838,8 +838,11 @@ struct CombineCompleteView: View {
         return "Keep Practicing!"
     }
 
-    private var orderedTiers: [AccuracyTier] {
-        [.perfect, .excellent, .good, .inZone, .close, .miss]
+    private var scoringPutts: Int { game.shots.filter { $0.accuracy != .miss }.count }
+    private var missedPutts: Int { game.shots.filter { $0.accuracy == .miss }.count }
+    private var averagePointsPerPutt: Double {
+        guard !game.shots.isEmpty else { return 0 }
+        return Double(game.totalScore) / Double(game.shots.count)
     }
 
     var body: some View {
@@ -900,31 +903,50 @@ struct CombineCompleteView: View {
                     .padding(.top, 16)
                     .padding(.bottom, 32)
 
-                    // Accuracy breakdown
+                    // Summary stats
                     VStack(spacing: 0) {
-                        let breakdown = getBreakdown()
-                        ForEach(orderedTiers, id: \.rawValue) { tier in
-                            let count = breakdown[tier.rawValue] ?? 0
-                            HStack {
-                                Text(tier.rawValue.uppercased())
-                                    .font(.inter(13, weight: .bold))
-                                    .tracking(1.0)
-                                    .foregroundColor(tier == .miss ? tokens.miss : tokens.fg.opacity(0.75))
-                                Spacer()
-                                Text("\(count)")
-                                    .font(.inter(20))
-                                    .foregroundColor(tier == .miss ? tokens.miss : tokens.fg)
-                            }
-                            .padding(.horizontal, 32)
-                            .padding(.vertical, 12)
-
-                            if tier != .miss {
-                                Rectangle()
-                                    .fill(tokens.subtle)
-                                    .frame(height: 1)
-                                    .padding(.horizontal, 32)
-                            }
+                        HStack {
+                            Text("AVG POINTS / PUTT")
+                                .font(.inter(13, weight: .bold))
+                                .tracking(1.0)
+                                .foregroundColor(tokens.fg.opacity(0.75))
+                            Spacer()
+                            Text(String(format: "%.1f", averagePointsPerPutt))
+                                .font(.inter(20))
+                                .foregroundColor(tokens.fg)
                         }
+                        .padding(.horizontal, 32)
+                        .padding(.vertical, 12)
+
+                        Rectangle().fill(tokens.subtle).frame(height: 1).padding(.horizontal, 32)
+
+                        HStack {
+                            Text("SCORING PUTTS")
+                                .font(.inter(13, weight: .bold))
+                                .tracking(1.0)
+                                .foregroundColor(tokens.fg.opacity(0.75))
+                            Spacer()
+                            Text("\(scoringPutts)")
+                                .font(.inter(20))
+                                .foregroundColor(tokens.fg)
+                        }
+                        .padding(.horizontal, 32)
+                        .padding(.vertical, 12)
+
+                        Rectangle().fill(tokens.subtle).frame(height: 1).padding(.horizontal, 32)
+
+                        HStack {
+                            Text("MISSED PUTTS")
+                                .font(.inter(13, weight: .bold))
+                                .tracking(1.0)
+                                .foregroundColor(tokens.miss)
+                            Spacer()
+                            Text("\(missedPutts)")
+                                .font(.inter(20))
+                                .foregroundColor(tokens.miss)
+                        }
+                        .padding(.horizontal, 32)
+                        .padding(.vertical, 12)
                     }
                     .padding(.bottom, 32)
 
@@ -961,12 +983,6 @@ struct CombineCompleteView: View {
                 }
             }
         }
-    }
-
-    func getBreakdown() -> [String: Int] {
-        var b: [String: Int] = [:]
-        for shot in game.shots { b[shot.accuracy.rawValue, default: 0] += 1 }
-        return b
     }
 }
 
